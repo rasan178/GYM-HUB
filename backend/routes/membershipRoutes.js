@@ -1,0 +1,16 @@
+const express = require('express');
+const router = express.Router();
+const {
+  getAllMemberships,
+  getMembershipById,
+
+} = require('../controllers/membershipController');
+
+const { protect  } = require('../middleware/authMiddleware');
+
+// ===== Membership Routes =====
+router.get('/', protect, getAllMemberships);                 // User=own, Admin=all + filters + pagination
+router.get('/:id', protect, getMembershipById);              // User=own, Admin=all
+
+
+module.exports = router;
