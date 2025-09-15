@@ -14,7 +14,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/auth/login');
+      router.push('/pages');
     }
   }, [user, loading, router]);
 
