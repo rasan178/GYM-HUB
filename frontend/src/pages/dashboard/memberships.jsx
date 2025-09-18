@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import api from '../utils/axiosInstance';
-import MainLayout from '../components/Layouts/MainLayout';
-import MembershipCard from '../components/Cards/MembershipCard';
-import { API_PATHS } from '../utils/apiPaths';
-import SkeletonLoader from '../components/Loaders/SkeletonLoader';
+import api from '../../utils/axiosInstance';
+import MainLayout from '../../components/Layouts/MainLayout';
+import MembershipCard from '../../components/Cards/MembershipCard';
+import { API_PATHS } from '../../utils/apiPaths';
+import SkeletonLoader from '../../components/Loaders/SkeletonLoader';
 
 const Memberships = () => {
   const [memberships, setMemberships] = useState([]);

@@ -7,12 +7,13 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [mounted, setMounted] = useState(false); // prevent hydration issues
-  const Router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
-  const isAdmin = user?.role === "admin";
+  const isAdmin = role === "admin";
 
   const attachToken = () => {
     if (typeof window === "undefined") return;
@@ -25,12 +26,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   const refreshUser = async () => {
-    if (typeof window === "undefined") return; // SSR guard
+    if (typeof window === "undefined") return;
     attachToken();
     const token = localStorage.getItem("token");
+
     if (!token) {
       setUser(null);
+      setRole(null);
       setLoading(false);
+
+      // 🚨 Unauthenticated access redirect
+      if (router.pathname.startsWith("/dashboard") || router.pathname.startsWith("/admin")) {
+        router.replace("/auth/login");
+      }
       return;
     }
 
@@ -38,19 +46,41 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       const res = await api.get(API_PATHS.AUTH.GET_PROFILE);
       setUser(res.data);
+      setRole(res.data.role || localStorage.getItem("role"));
       setError(null);
+
+      // 🚨 Restrict /admin to admin only
+      if (router.pathname.startsWith("/admin") && res.data.role !== "admin") {
+        router.replace("/dashboard"); // normal users go back to dashboard
+      }
     } catch (err) {
       console.error("refreshUser error:", err.response?.data || err.message);
       setUser(null);
+      setRole(null);
       setError(err.response?.data?.message || "Failed to fetch user profile");
+
+      // 🚨 Invalid token or error → redirect to login
+      if (router.pathname.startsWith("/dashboard") || router.pathname.startsWith("/admin")) {
+        router.replace("/auth/login");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    setMounted(true); // mark client-side render
+    setMounted(true);
     refreshUser();
+
+    if (typeof window !== "undefined") {
+      const handleStorageChange = () => {
+        setRole(localStorage.getItem("role"));
+      };
+      window.addEventListener("storage", handleStorageChange);
+      return () => {
+        window.removeEventListener("storage", handleStorageChange);
+      };
+    }
   }, []);
 
   const login = async (email, password) => {
@@ -58,9 +88,7 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       const res = await api.post(API_PATHS.AUTH.LOGIN, { email, password });
 
-      const token = res.data.token;
-      const role = res.data.role;
-      const name = res.data.name;
+      const { token, role, name } = res.data;
       if (!token) throw new Error("No token received from server");
 
       if (typeof window !== "undefined") {
@@ -70,8 +98,8 @@ export const AuthProvider = ({ children }) => {
       }
 
       attachToken();
-
-      await refreshUser(); // ✅ ensures user is set in context immediately
+      setRole(role);
+      await refreshUser();
 
       return res.data;
     } catch (err) {
@@ -89,7 +117,8 @@ export const AuthProvider = ({ children }) => {
         email,
         password,
       });
-      const token = res.data.token;
+
+      const { token } = res.data;
       if (!token) throw new Error("No token received from server");
 
       if (typeof window !== "undefined") {
@@ -99,36 +128,35 @@ export const AuthProvider = ({ children }) => {
       await refreshUser();
     } catch (err) {
       console.error("register error:", err.response?.data || err.message);
-      setError(
-        err.response?.data?.message || err.message || "Registration failed"
-      );
+      setError(err.response?.data?.message || err.message || "Registration failed");
       throw err;
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("token");
       localStorage.removeItem("role");
       localStorage.removeItem("name");
     }
-    attachToken(); // remove header
+    attachToken();
     setUser(null);
+    setRole(null);
     setError(null);
-    Router.push("/auth/login").then(() => {
+
+    // ✅ always redirect to login after logout
+    router.push("/auth/login").then(() => {
       if (typeof window !== "undefined") window.location.reload();
     });
   };
 
-  // prevent hydration mismatch by not rendering children until mounted
-  if (!mounted) {
-    return null; // or <div>Loading...</div>
-  }
+  if (!mounted) return null;
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        role,
         loading,
         error,
         isAdmin,

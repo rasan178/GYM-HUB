@@ -55,8 +55,9 @@ Task:
 
 Return a pure JSON object like this:
 {
-    "question": "Daily Diet Plan",
-    "answer": "Detailed diet schedule for the day"
+    
+    "Detailed diet schedule for the day"
+    
 }
 Important: Only return valid JSON.
 `;

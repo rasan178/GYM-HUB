@@ -1,178 +1,114 @@
-import { useState } from 'react';
-import api from '../../utils/axiosInstance';
-import MainLayout from '../../components/Layouts/MainLayout';
-import { useRouter } from 'next/router';
-import TextInput from '../../components/Inputs/TextInput';
-import SelectInput from '../../components/Inputs/SelectInput';
-import { API_PATHS } from '../../utils/apiPaths';
-import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
+import { useState, useEffect } from "react";
+import { LuPlus } from "react-icons/lu";
+import toast from "react-hot-toast";
+import moment from "moment";
+import MainLayout from "../../components/Layouts/MainLayout";
+import { useRouter } from "next/router";
+import { API_PATHS } from "../../utils/apiPaths";
+import api from "../../utils/axiosInstance";
+import { CARD_BG } from "../../utils/data";
+import SummaryCard from "../../components/Cards/SummaryCard";
+import Modal from "../../components/Modal";
+import DeleteAlertContent from "../../components/DeleteAlertContent";
+import CreateAIPlanForm from "../../components/Forms/CreateAIPlanForm";
 
 const AIPlan = () => {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    planType: 'Workout',
-    age: '',
-    gender: '',
-    height: '',
-    weight: '',
-    fitnessGoal: '',
-    experienceLevel: '',
-    healthConditions: '',
-    workoutAvailability: '',
-    numberOfDays: '',
-    eatingHabits: '',
-    activityLevel: '',
-    caloriePreference: '',
-    supplementUse: '',
-    budgetLifestyle: '',
-    title: ''
-  });
-  const [questions, setQuestions] = useState([]);
-  const [localError, setLocalError] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [openDeleteAlert, setOpenDeleteAlert] = useState({ open: false, data: null });
 
-  const handleChange = e => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const addQuestion = () => {
-    setQuestions(prev => [...prev, { question: '', answer: '' }]);
-  };
-
-  const handleQuestionChange = (index, field, value) => {
-    setQuestions(prev => {
-      const newQuestions = [...prev];
-      newQuestions[index] = { ...newQuestions[index], [field]: value };
-      return newQuestions;
-    });
-  };
-
-  const removeQuestion = (index) => {
-    setQuestions(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const submitPlan = async () => {
-    setIsSubmitting(true);
+  // Fetch all AI plan sessions
+  const fetchAllSessions = async () => {
+    setLoading(true);
     try {
-      const inputs = formData.planType === 'Workout'
-        ? {
-            age: formData.age,
-            gender: formData.gender,
-            height: formData.height,
-            weight: formData.weight,
-            fitnessGoal: formData.fitnessGoal,
-            experienceLevel: formData.experienceLevel,
-            healthConditions: formData.healthConditions,
-            workoutAvailability: formData.workoutAvailability,
-            numberOfDays: formData.numberOfDays
-          }
-        : {
-            eatingHabits: formData.eatingHabits,
-            activityLevel: formData.activityLevel,
-            caloriePreference: formData.caloriePreference,
-            supplementUse: formData.supplementUse,
-            budgetLifestyle: formData.budgetLifestyle
-          };
-      const res = await api.post(formData.planType === 'Workout' ? API_PATHS.AI.GENERATE_WORKOUT : API_PATHS.AI.GENERATE_DIET, inputs);
-      const sessionRes = await api.post(API_PATHS.SESSION.CREATE, {
-        planType: formData.planType,
-        title: formData.title,
-        inputs,
-        questions
-      });
-      router.push(`/ai-plan/result/${sessionRes.data.session._id}`);
-      setLocalError(null);
-    } catch (err) {
-      setLocalError(err.response?.data?.message || 'Failed to generate plan');
+      const res = await api.get(API_PATHS.SESSIONS.GET_MY);
+      setSessions(res.data || []);
+    } catch (error) {
+      console.error("Error fetching AI plan sessions:", error);
+      toast.error("Failed to fetch AI plans");
+      setSessions([]);
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
+  // Delete AI plan session
+  const deleteSession = async (session) => {
+    if (!session?._id) return;
+    try {
+      await api.delete(API_PATHS.SESSIONS.DELETE(session._id));
+      toast.success("Session deleted successfully");
+      setOpenDeleteAlert({ open: false, data: null });
+      fetchAllSessions();
+    } catch (error) {
+      console.error("Error deleting session:", error);
+      toast.error("Failed to delete session");
+    }
+  };
+
+  useEffect(() => {
+    fetchAllSessions();
+  }, []);
+
   return (
     <MainLayout>
-      <h1 className="text-2xl font-bold mb-4">Generate AI Plan</h1>
-      {localError && <div className="alert alert-error mb-4">{localError}</div>}
-      <div className="card bg-base-100 shadow-xl p-6 max-w-2xl mx-auto">
-        <SelectInput
-          label="Plan Type"
-          name="planType"
-          options={[{ value: 'Workout', label: 'Workout' }, { value: 'Diet', label: 'Diet' }]}
-          value={formData.planType}
-          onChange={handleChange}
-        />
-        <TextInput
-          label="Title"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          required
-        />
-        {formData.planType === 'Workout' ? (
-          <>
-            <TextInput label="Age" name="age" value={formData.age} onChange={handleChange} required />
-            <SelectInput
-              label="Gender"
-              name="gender"
-              options={[{ value: 'Male', label: 'Male' }, { value: 'Female', label: 'Female' }, { value: 'Other', label: 'Other' }]}
-              value={formData.gender}
-              onChange={handleChange}
-              required
-            />
-            <TextInput label="Height (cm)" name="height" value={formData.height} onChange={handleChange} required />
-            <TextInput label="Weight (kg)" name="weight" value={formData.weight} onChange={handleChange} required />
-            <TextInput label="Fitness Goal" name="fitnessGoal" value={formData.fitnessGoal} onChange={handleChange} required />
-            <SelectInput
-              label="Experience Level"
-              name="experienceLevel"
-              options={[{ value: 'Beginner', label: 'Beginner' }, { value: 'Intermediate', label: 'Intermediate' }, { value: 'Advanced', label: 'Advanced' }]}
-              value={formData.experienceLevel}
-              onChange={handleChange}
-              required
-            />
-            <TextInput label="Health Conditions" name="healthConditions" value={formData.healthConditions} onChange={handleChange} />
-            <TextInput label="Workout Availability" name="workoutAvailability" value={formData.workoutAvailability} onChange={handleChange} required />
-            <TextInput label="Number of Days" name="numberOfDays" value={formData.numberOfDays} onChange={handleChange} required />
-          </>
+      <div className="container mx-auto pt-4 pb-4">
+        {loading ? (
+          <p className="text-center text-gray-500">Loading sessions...</p>
+        ) : sessions.length === 0 ? (
+          <p className="text-center text-gray-500">No AI Plans available. Create a new one!</p>
         ) : (
-          <>
-            <TextInput label="Eating Habits" name="eatingHabits" value={formData.eatingHabits} onChange={handleChange} required />
-            <TextInput label="Activity Level" name="activityLevel" value={formData.activityLevel} onChange={handleChange} required />
-            <TextInput label="Calorie Preference" name="caloriePreference" value={formData.caloriePreference} onChange={handleChange} required />
-            <TextInput label="Supplement Use" name="supplementUse" value={formData.supplementUse} onChange={handleChange} />
-            <TextInput label="Budget & Lifestyle" name="budgetLifestyle" value={formData.budgetLifestyle} onChange={handleChange} required />
-          </>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-7 pt-1 pb-6">
+            {sessions.map((session, index) => (
+              <SummaryCard
+                key={session._id}
+                colors={CARD_BG[index % CARD_BG.length]}
+                title={session.inputs.title || ""}
+                fitnessGoal={session.inputs.fitnessGoal || ""}
+                planType={session.planType || "-"}
+                workoutAvailability={session.inputs.workoutAvailability || ""}
+                questions={session.questions?.length || "-"}
+                lastUpdated={session.updatedAt ? moment(session.updatedAt).format("Do MMM YYYY") : "-"}
+                onSelect={() => router.push(`/ai-plan/result/${session._id}`)}
+                onDelete={() => setOpenDeleteAlert({ open: true, data: session })}
+              />
+            ))}
+          </div>
         )}
-        <div className="form-control mb-4">
-          <label className="label"><span className="label-text">Questions</span></label>
-          {questions.map((q, index) => (
-            <div key={index} className="flex gap-2 mb-2">
-              <TextInput
-                label="Question"
-                name={`question-${index}`}
-                value={q.question}
-                onChange={e => handleQuestionChange(index, 'question', e.target.value)}
-              />
-              <TextInput
-                label="Answer"
-                name={`answer-${index}`}
-                value={q.answer}
-                onChange={e => handleQuestionChange(index, 'answer', e.target.value)}
-              />
-              <button className="btn btn-sm btn-error mt-8" onClick={() => removeQuestion(index)}>Remove</button>
-            </div>
-          ))}
-          <button className="btn btn-sm btn-secondary mt-2" onClick={addQuestion}>Add Question</button>
-        </div>
+
+        {/* Add New AI Plan Button */}
         <button
-          className="btn btn-primary w-full mt-4"
-          onClick={submitPlan}
-          disabled={isSubmitting}
+          className="fixed bottom-10 right-10 h-12 flex items-center gap-3 bg-gradient-to-r from-orange-400 to-orange-500 text-white px-6 py-2 rounded-full shadow-lg hover:shadow-2xl z-50"
+          onClick={() => setOpenCreateModal(true)}
         >
-          {isSubmitting ? <SpinnerLoader /> : 'Generate Plan'}
+          <LuPlus className="text-2xl" /> Add New
         </button>
       </div>
+
+      {/* Create AI Plan Modal */}
+      <Modal isOpen={openCreateModal} onClose={() => setOpenCreateModal(false)} hideHeader>
+        <CreateAIPlanForm
+          onSuccess={() => {
+            fetchAllSessions();
+            setOpenCreateModal(false);
+          }}
+          onClose={() => setOpenCreateModal(false)} // pass close handler to form
+        />
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={openDeleteAlert.open}
+        onClose={() => setOpenDeleteAlert({ open: false, data: null })}
+        title="Delete Plan"
+      >
+        <DeleteAlertContent
+          content="Are you sure you want to delete this AI plan?"
+          onDelete={() => deleteSession(openDeleteAlert.data)}
+        />
+      </Modal>
     </MainLayout>
   );
 };

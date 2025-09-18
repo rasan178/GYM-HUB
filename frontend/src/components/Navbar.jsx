@@ -4,17 +4,16 @@ import AuthContext from "../context/AuthContext";
 
 const Navbar = () => {
   const { user, logout, error } = useContext(AuthContext);
-  const [role, setRole] = useState(
-    () => (typeof window !== "undefined" ? localStorage.getItem("role") : null)
-  );
+  const [role, setRole] = useState(null);
 
+  // Only run on client to read role
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const interval = setInterval(() => {
-      setRole(localStorage.getItem("role"));
-    }, 500);
-    return () => clearInterval(interval);
-  }, []);
+    if (typeof window !== "undefined") {
+      const storedRole = localStorage.getItem("role");
+      setRole(storedRole);
+    }
+  }, [user]); // re-run when user changes (e.g. login/logout)
+
 
   return (
     <div className="navbar bg-base-100 shadow-lg">
