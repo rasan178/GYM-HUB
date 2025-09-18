@@ -1,6 +1,5 @@
 import { useContext, useEffect } from 'react';
 import AuthContext from '../../context/AuthContext';
-import { useRouter } from 'next/router';
 import AdminLayout from '../../components/Layouts/AdminLayout';
 import Link from 'next/link';
 import SpinnerLoader from '../../components/Loaders/SpinnerLoader';

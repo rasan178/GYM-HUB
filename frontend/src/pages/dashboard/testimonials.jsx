@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
-import api from '../utils/axiosInstance';
-import MainLayout from '../components/Layouts/MainLayout';
+import api from '../../utils/axiosInstance';
+import MainLayout from '../../components/Layouts/MainLayout';
 import { useContext } from 'react';
-import AuthContext from '../context/AuthContext';
-import TextInput from '../components/Inputs/TextInput';
-import FileInput from '../components/Inputs/FileInput';
-import Modal from '../components/Modal';
-import TestimonialCard from '../components/Cards/TestimonialCard';
-import { API_PATHS } from '../utils/apiPaths';
-import { canEditTestimonial } from '../utils/helpers';
-import SpinnerLoader from '../components/Loaders/SpinnerLoader';
-import SkeletonLoader from '../components/Loaders/SkeletonLoader';
+import AuthContext from '../../context/AuthContext';
+import TextInput from '../../components/Inputs/TextInput';
+import FileInput from '../../components/Inputs/FileInput';
+import Modal from '../../components/Modal';
+import TestimonialCard from '../../components/Cards/TestimonialCard';
+import { API_PATHS } from '../../utils/apiPaths';
+import { canEditTestimonial } from '../../utils/helpers';
+import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
+import SkeletonLoader from '../../components/Loaders/SkeletonLoader';
 
 const Testimonials = () => {
   const { user, error } = useContext(AuthContext);
