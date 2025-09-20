@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../../utils/axiosInstance';
-import MainLayout from '../../components/Layouts/MainLayout';
+import DashboardLayout from '../../components/Layouts/DashboardLayout';
 import { useContext } from 'react';
 import AuthContext from '../../context/AuthContext';
 import TextInput from '../../components/Inputs/TextInput';
@@ -88,7 +88,7 @@ const Testimonials = () => {
   if (isLoading) return <SkeletonLoader />;
 
   return (
-    <MainLayout>
+    <DashboardLayout>
       <h1 className="text-2xl font-bold mb-4">Testimonials</h1>
       {error && <div className="alert alert-error mb-4">{error}</div>}
       {localError && <div className="alert alert-error mb-4">{localError}</div>}
@@ -116,7 +116,7 @@ const Testimonials = () => {
           {isSubmitting ? <SpinnerLoader /> : 'Submit'}
         </button>
       </Modal>
-    </MainLayout>
+    </DashboardLayout>
   );
 };
 

@@ -1,15 +1,16 @@
-import { useContext, useState } from "react";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
-import AuthContext from "../../context/AuthContext";
+import Navbar from '../Navbar';
+import Footer from '../Footer';
+import Sidebar from '../Sidebar';
+import { useContext, useState } from 'react';
+import AuthContext from '../../context/AuthContext';
 
-const AdminLayout = ({ children }) => {
-  const { role } = useContext(AuthContext);
+const DashboardLayout = ({ children }) => {
+  const { error, role } = useContext(AuthContext); // get role to show user menu
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Navbar at the top */}
+      {/* Navbar */}
       <header className="w-full">
         <Navbar />
       </header>
@@ -21,9 +22,12 @@ const AdminLayout = ({ children }) => {
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 overflow-auto p-6 bg-gray-100">{children}</main>
+        <main className="flex-1 overflow-auto p-6 bg-gray-100">
+          {error && <div className="alert alert-error mb-4">{error}</div>}
+          {children}
+        </main>
 
-        {/* Mobile drawer */}
+        {/* Mobile sidebar drawer */}
         {sidebarOpen && (
           <div className="fixed inset-0 z-50 flex">
             {/* Overlay */}
@@ -53,8 +57,11 @@ const AdminLayout = ({ children }) => {
       >
         ☰
       </button>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
 
-export default AdminLayout;
+export default DashboardLayout;
