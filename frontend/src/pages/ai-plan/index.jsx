@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { LuPlus } from "react-icons/lu";
 import toast from "react-hot-toast";
 import moment from "moment";
-import MainLayout from "../../components/Layouts/MainLayout";
+import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import { useRouter } from "next/router";
 import { API_PATHS } from "../../utils/apiPaths";
 import api from "../../utils/axiosInstance";
@@ -53,7 +53,7 @@ const AIPlan = () => {
   }, []);
 
   return (
-    <MainLayout>
+    <DashboardLayout>
       <div className="container mx-auto pt-4 pb-4">
         {loading ? (
           <p className="text-center text-gray-500">Loading sessions...</p>
@@ -109,7 +109,7 @@ const AIPlan = () => {
           onDelete={() => deleteSession(openDeleteAlert.data)}
         />
       </Modal>
-    </MainLayout>
+    </DashboardLayout>
   );
 };
 

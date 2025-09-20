@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import AuthContext from "../../context/AuthContext";
 import api from "../../utils/axiosInstance";
-import MainLayout from "../../components/Layouts/MainLayout";
+import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import TextInput from "../../components/Inputs/TextInput";
 import FileInput from "../../components/Inputs/FileInput";
 import { API_PATHS } from "../../utils/apiPaths";
@@ -65,7 +65,7 @@ const Profile = () => {
   if (loading || !user) return <SpinnerLoader />;
 
   return (
-    <MainLayout>
+    <DashboardLayout>
       <h1 className="text-2xl font-bold mb-4">Profile</h1>
       {error && <div className="alert alert-error mb-4">{error}</div>}
       {localError && <div className="alert alert-error mb-4">{localError}</div>}
@@ -92,7 +92,7 @@ const Profile = () => {
           </button>
         </form>
       </div>
-    </MainLayout>
+    </DashboardLayout>
   );
 };
 
