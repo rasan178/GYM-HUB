@@ -37,7 +37,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-black text-white shadow-xl border-b border-white/10">
+      <nav className="bg-black text-white shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -144,7 +144,7 @@ const Navbar = () => {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 bg-black border-t border-white/10">
+            <div className="px-2 pt-2 pb-3 space-y-1 bg-black">
               {/* Always visible links for newcomers */}
               {!user && (
                 <>

@@ -146,8 +146,8 @@ export default function Home() {
 
   return (
     <MainLayout>
-      {/* Hero Section */}
-      <section className="relative bg-black text-white py-24 overflow-hidden h-[400px] md:h-[550px] flex items-center">
+      {/* Hero Section - Start at top with no margin/padding */}
+      <section className="relative bg-black text-white overflow-hidden h-[400px] md:h-[550px] flex items-center pt-16">
         {/* Background Image Carousel */}
         <div className="absolute inset-0">
           {heroImages.map((image, index) => (
@@ -467,7 +467,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link href="/auth/register">
-              <button className="bg-black text-white px-8 py-4 font-semibold hover:bg-gray-800 transition-colors">
+              <button className="border-2 border-black bg-black text-white px-8 py-4 font-semibold hover:bg-white hover:text-black transition-colors">
                 Join Now
               </button>
             </Link>
