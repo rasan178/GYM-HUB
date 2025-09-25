@@ -1,12 +1,12 @@
 import { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import AuthContext from "../../context/AuthContext";
-import api from "../../utils/axiosInstance";
-import DashboardLayout from "../../components/Layouts/DashboardLayout";
-import TextInput from "../../components/Inputs/TextInput";
-import FileInput from "../../components/Inputs/FileInput";
-import { API_PATHS } from "../../utils/apiPaths";
-import SpinnerLoader from "../../components/Loaders/SpinnerLoader";
+import AuthContext from "../context/AuthContext";
+import api from "../utils/axiosInstance";
+import DashboardLayout from "../components/Layouts/DashboardLayout";
+import TextInput from "../components/Inputs/TextInput";
+import FileInput from "../components/Inputs/FileInput";
+import { API_PATHS } from "../utils/apiPaths";
+import SpinnerLoader from "../components/Loaders/SpinnerLoader";
 
 const Profile = () => {
   const { user, loading, error, refreshUser } = useContext(AuthContext);
