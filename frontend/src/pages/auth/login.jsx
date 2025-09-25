@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect } from "react";
 import AuthContext from "../../context/AuthContext";
 import { useRouter } from "next/router";
-import MainLayout from "../../components/Layouts/MainLayout";
+import AuthLayout from "../../components/Layouts/AuthLayout";
 import TextInput from "../../components/Inputs/TextInput";
 
 const Login = () => {
@@ -36,7 +36,7 @@ const Login = () => {
   if (!mounted) return null; // prevent hydration errors
 
   return (
-    <MainLayout>
+    <AuthLayout>
       <h1 className="text-2xl font-bold mb-4">Login</h1>
       {(localError || authError) && (
         <div className="alert alert-error mb-4">{localError || authError}</div>
@@ -59,7 +59,7 @@ const Login = () => {
           Login
         </button>
       </form>
-    </MainLayout>
+    </AuthLayout>
   );
 };
 
