@@ -14,7 +14,6 @@ const Sidebar = ({ role }) => {
   ];
 
   const userMenu = [
-    { name: "Profile", path: "/dashboard/profile" },
     { name: "My Membership", path: "/dashboard/memberships" },
     { name: "My Bookings", path: "/dashboard/bookings" },
     { name: "AI Plan", path: "/ai-plan" },
