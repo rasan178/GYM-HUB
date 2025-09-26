@@ -66,8 +66,18 @@ exports.createTrainer = async (req, res) => {
   try {
     let { trainerName, email, specialty, experience, qualifications, bio, schedule, contactInfo, socialLinks } = req.body;
 
-    if (typeof specialty === "string") specialty = specialty.split(",").map(s => s.trim());
+    // Parse form-data string fields
+    if (typeof specialty === "string") {
+      try {
+        specialty = JSON.parse(specialty); // try JSON first
+      } catch {
+        specialty = specialty.split(",").map(s => s.trim());
+      }
+    }
     if (typeof schedule === "string") schedule = JSON.parse(schedule);
+    if (typeof contactInfo === "string") contactInfo = JSON.parse(contactInfo);
+    if (typeof socialLinks === "string") socialLinks = JSON.parse(socialLinks);
+
     if (!Array.isArray(schedule)) return res.status(400).json({ message: "Schedule must be an array" });
 
     const existingTrainer = await Trainer.findOne({ email });
@@ -101,8 +111,18 @@ exports.updateTrainer = async (req, res) => {
 
     let { trainerName, email, specialty, experience, qualifications, bio, schedule, contactInfo, socialLinks } = req.body;
 
-    if (typeof specialty === "string") specialty = specialty.split(",").map(s => s.trim());
+    // Parse form-data string fields
+    if (typeof specialty === "string") {
+      try {
+        specialty = JSON.parse(specialty);
+      } catch {
+        specialty = specialty.split(",").map(s => s.trim());
+      }
+    }
     if (typeof schedule === "string") schedule = JSON.parse(schedule);
+    if (typeof contactInfo === "string") contactInfo = JSON.parse(contactInfo);
+    if (typeof socialLinks === "string") socialLinks = JSON.parse(socialLinks);
+
     if (schedule && !Array.isArray(schedule)) return res.status(400).json({ message: "Schedule must be an array" });
 
     if (email && email !== trainer.email) {
