@@ -2,128 +2,113 @@
 
 import React from 'react';
 
-const BookingLoader = ({ text = "Booking...", size = "sm" }) => {
-  const sizeClasses = {
-    xs: { dot: 'w-1.5 h-1.5', text: 'text-xs' },
-    sm: { dot: 'w-2 h-2', text: 'text-sm' },
-    md: { dot: 'w-3 h-3', text: 'text-base' },
-    lg: { dot: 'w-4 h-4', text: 'text-lg' }
-  };
+// Consolidated size configurations
+const SIZES = {
+  xs: { dot: 'w-1.5 h-1.5', text: 'text-xs', gap: 'gap-1', spinner: 'w-4 h-4 border-2' },
+  sm: { dot: 'w-2 h-2', text: 'text-sm', gap: 'gap-1.5', spinner: 'w-5 h-5 border-2' },
+  md: { dot: 'w-3 h-3', text: 'text-base', gap: 'gap-2', spinner: 'w-7 h-7 border-3' },
+  lg: { dot: 'w-4 h-4', text: 'text-lg', gap: 'gap-3', spinner: 'w-9 h-9 border-4' }
+};
 
-  const currentSize = sizeClasses[size] || sizeClasses.sm;
+// Shared shimmer effect component
+const ShimmerEffect = () => (
+  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_1.5s_infinite]"></div>
+);
+
+// Animated dots with wave effect
+const AnimatedDots = ({ size = "sm", count = 3 }) => {
+  const currentSize = SIZES[size] || SIZES.sm;
+  
+  return (
+    <div className={`flex ${currentSize.gap}`}>
+      {Array.from({ length: count }, (_, i) => (
+        <div 
+          key={i}
+          className={`${currentSize.dot} bg-current rounded-full animate-bounce opacity-${70 + i * 15} transform transition-all`}
+          style={{ 
+            animationDelay: `${i * 160}ms`, 
+            animationDuration: '0.8s',
+            animationTimingFunction: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+// Main loader with dots
+const BookingLoader = ({ text = "Booking...", size = "sm" }) => {
+  const currentSize = SIZES[size] || SIZES.sm;
 
   return (
-    <div className="flex items-center justify-center gap-3">
-      {/* Animated dots with staggered bounce */}
-      <div className="flex gap-1">
-        <div 
-          className={`${currentSize.dot} bg-current rounded-full animate-bounce opacity-80`}
-          style={{ animationDelay: '0ms', animationDuration: '1s' }}
-        ></div>
-        <div 
-          className={`${currentSize.dot} bg-current rounded-full animate-bounce opacity-90`}
-          style={{ animationDelay: '150ms', animationDuration: '1s' }}
-        ></div>
-        <div 
-          className={`${currentSize.dot} bg-current rounded-full animate-bounce`}
-          style={{ animationDelay: '300ms', animationDuration: '1s' }}
-        ></div>
-      </div>
-      
-      {/* Loading text with pulse animation */}
-      <span className={`${currentSize.text} font-semibold animate-pulse`}>
-        {text}
+    <div className="flex items-center justify-center gap-4">
+      <AnimatedDots size={size} />
+      <span className={`${currentSize.text} font-bold tracking-wider uppercase relative overflow-hidden`}>
+        <span className="inline-block animate-pulse">{text}</span>
       </span>
     </div>
   );
 };
 
-// Professional spinner version with modern design
+// Spinner variant
 export const BookingSpinner = ({ text = "Processing...", size = "sm", variant = "primary" }) => {
-  const sizeClasses = {
-    xs: { spinner: 'w-3 h-3 border', text: 'text-xs' },
-    sm: { spinner: 'w-4 h-4 border-2', text: 'text-sm' },
-    md: { spinner: 'w-6 h-6 border-2', text: 'text-base' },
-    lg: { spinner: 'w-8 h-8 border-3', text: 'text-lg' }
-  };
-
+  const currentSize = SIZES[size] || SIZES.sm;
+  
   const variants = {
     primary: 'border-current border-t-transparent',
-    inverse: 'border-white/30 border-t-white',
+    inverse: 'border-white/40 border-t-white',
     accent: 'border-gray-300 border-t-black'
   };
 
-  const currentSize = sizeClasses[size] || sizeClasses.sm;
-  const currentVariant = variants[variant] || variants.primary;
-
   return (
-    <div className="flex items-center justify-center gap-3">
-      {/* Modern spinning circle */}
-      <div className={`${currentSize.spinner} ${currentVariant} rounded-full animate-spin`}></div>
-      
-      {/* Loading text */}
-      <span className={`${currentSize.text} font-semibold`}>
+    <div className="flex items-center justify-center gap-4">
+      <div className={`${currentSize.spinner} ${variants[variant] || variants.primary} rounded-full animate-spin drop-shadow-lg`}></div>
+      <span className={`${currentSize.text} font-bold tracking-wider uppercase`}>
         {text}
       </span>
     </div>
   );
 };
 
-// Elegant pulse version with breathing effect
-export const BookingPulse = ({ text = "Loading...", size = "sm", intensity = "normal" }) => {
-  const sizeClasses = {
-    xs: { circle: 'w-2 h-2', text: 'text-xs' },
-    sm: { circle: 'w-3 h-3', text: 'text-sm' },
-    md: { circle: 'w-4 h-4', text: 'text-base' },
-    lg: { circle: 'w-5 h-5', text: 'text-lg' }
-  };
-
-  const intensityClasses = {
-    subtle: 'animate-pulse opacity-60',
-    normal: 'animate-pulse opacity-80',
-    strong: 'animate-pulse opacity-100'
-  };
-
-  const currentSize = sizeClasses[size] || sizeClasses.sm;
-  const currentIntensity = intensityClasses[intensity] || intensityClasses.normal;
-
-  return (
-    <div className="flex items-center justify-center gap-3">
-      {/* Breathing circle with ripple effect */}
-      <div className="relative">
-        <div className={`${currentSize.circle} bg-current rounded-full ${currentIntensity}`}></div>
-        <div className={`${currentSize.circle} bg-current rounded-full absolute inset-0 ${currentIntensity}`}
-             style={{ animationDelay: '0.5s' }}></div>
-      </div>
-      
-      {/* Loading text with synchronized pulse */}
-      <span className={`${currentSize.text} font-semibold ${currentIntensity}`}>
-        {text}
-      </span>
-    </div>
-  );
-};
-
-// Advanced skeleton loader for booking cards
+// Skeleton with shimmer effect
 export const BookingSkeleton = ({ className = "" }) => {
+  const SkeletonBar = ({ width }) => (
+    <div className={`bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 h-4 ${width} relative overflow-hidden`}>
+      <ShimmerEffect />
+    </div>
+  );
+
   return (
-    <div className={`animate-pulse ${className}`}>
-      <div className="bg-gray-200 h-48 w-full mb-4"></div>
-      <div className="space-y-3">
-        <div className="bg-gray-200 h-4 w-3/4 rounded"></div>
-        <div className="bg-gray-200 h-3 w-full rounded"></div>
-        <div className="bg-gray-200 h-3 w-5/6 rounded"></div>
-        <div className="flex space-x-2">
-          <div className="bg-gray-200 h-3 w-1/3 rounded"></div>
-          <div className="bg-gray-200 h-3 w-1/4 rounded"></div>
+    <div className={`relative overflow-hidden animate-pulse ${className}`}>
+      {/* Image placeholder */}
+      <div className="bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 h-56 w-full mb-6 relative overflow-hidden">
+        <ShimmerEffect />
+      </div>
+      
+      {/* Content placeholders */}
+      <div className="space-y-4 px-2">
+        <div className="bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 h-6 w-3/4 relative overflow-hidden">
+          <ShimmerEffect />
         </div>
-        <div className="bg-gray-200 h-10 w-full rounded mt-4"></div>
+        <SkeletonBar width="w-full" />
+        <SkeletonBar width="w-5/6" />
+        
+        {/* Info rows */}
+        <div className="flex space-x-2 pt-2">
+          <SkeletonBar width="w-1/3" />
+          <SkeletonBar width="w-1/4" />
+        </div>
+        
+        {/* Button placeholder */}
+        <div className="bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 h-12 w-full mt-6 relative overflow-hidden">
+          <ShimmerEffect />
+        </div>
       </div>
     </div>
   );
 };
 
-// Complete loading state component
+// Full-screen loading
 export const LoadingState = ({ 
   text = "Loading...", 
   type = "bounce", 
@@ -132,34 +117,51 @@ export const LoadingState = ({
 }) => {
   const LoaderComponent = {
     bounce: BookingLoader,
-    spin: BookingSpinner,
-    pulse: BookingPulse
+    spin: BookingSpinner
   }[type] || BookingLoader;
 
   const content = (
-    <div className="flex flex-col items-center justify-center space-y-4">
+    <div className="flex flex-col items-center justify-center space-y-8">
       <LoaderComponent text={text} size={size} />
       <div className="text-center max-w-md">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-600 font-medium tracking-wide">
           Please wait while we process your request...
         </p>
+        <div className="mt-2 flex items-center justify-center gap-2">
+          {Array.from({ length: 3 }, (_, i) => (
+            <div 
+              key={i}
+              className="w-1 h-1 bg-gray-400 rounded-full animate-ping" 
+              style={{ animationDelay: `${i * 0.5}s` }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-white/95 backdrop-blur-sm flex items-center justify-center z-50">
         {content}
       </div>
     );
   }
 
-  return (
-    <div className="py-12">
-      {content}
-    </div>
-  );
+  return <div className="py-16 px-4">{content}</div>;
+};
+
+// Inline loader for buttons
+export const InlineLoader = ({ size = "sm", variant = "dots" }) => {
+  const currentSize = SIZES[size] || SIZES.sm;
+
+  if (variant === 'spinner') {
+    return (
+      <div className={`${currentSize.dot} border border-current border-t-transparent rounded-full animate-spin`}></div>
+    );
+  }
+
+  return <AnimatedDots size={size} count={3} />;
 };
 
 export default BookingLoader;
