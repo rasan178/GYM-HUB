@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef } from "react";
 import { Search, Calendar, Clock, User, Eye, X } from "lucide-react";
 import api from "../utils/axiosInstance";
 import MainLayout from "../components/Layouts/MainLayout";
@@ -19,6 +19,8 @@ const Classes = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isBooking, setIsBooking] = useState({});
   const [isViewingDetails, setIsViewingDetails] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const dateInputRef = useRef(null);
 
   useEffect(() => {
     if (date === null || date) fetchClasses();
@@ -64,17 +66,62 @@ const Classes = () => {
     }
   };
 
+  const getTrainerName = (classData) => {
+    // Try all possible paths for trainer name
+    if (classData.trainer) {
+      if (typeof classData.trainer === 'string') return classData.trainer;
+      if (classData.trainer.trainerName) return classData.trainer.trainerName;
+      if (classData.trainer.name) return classData.trainer.name;
+      if (classData.trainer.firstName) return `${classData.trainer.firstName} ${classData.trainer.lastName || ''}`.trim();
+    }
+    if (classData.trainerName) return classData.trainerName;
+    if (classData.instructorName) return classData.instructorName;
+    if (classData.instructor) {
+      if (typeof classData.instructor === 'string') return classData.instructor;
+      if (classData.instructor.name) return classData.instructor.name;
+    }
+    return "N/A";
+  };
+
   const filterClasses = () => {
+    console.log('Classes data:', classes);
+    console.log('Search query:', searchQuery);
+    
     if (!searchQuery.trim()) {
       setFilteredClasses(classes);
       return;
     }
 
-    const filtered = classes.filter((c) =>
-      c.className.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.trainer?.trainerName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const query = searchQuery.toLowerCase().trim();
+    
+    const filtered = classes.filter((c) => {
+      // Get all searchable text
+      const className = String(c.className || "").toLowerCase();
+      const description = String(c.description || "").toLowerCase();
+      const trainerName = String(getTrainerName(c) || "").toLowerCase();
+      
+      // Log each class being checked
+      console.log('Checking class:', {
+        className: c.className,
+        description: c.description,
+        trainerData: c.trainer,
+        searchQuery: query,
+        matches: {
+          className: className.includes(query),
+          description: description.includes(query),
+          trainerName: trainerName.includes(query)
+        }
+      });
+      
+      // Check if query matches any field
+      const matches = className.includes(query) || 
+                     description.includes(query) || 
+                     trainerName.includes(query);
+      
+      return matches;
+    });
+    
+    console.log(`Found ${filtered.length} matches out of ${classes.length} classes`);
     setFilteredClasses(filtered);
   };
 
@@ -99,6 +146,14 @@ const Classes = () => {
     }
   };
 
+  const handleCalendarClick = () => {
+    setShowCalendar(true);
+    if (dateInputRef.current) {
+      dateInputRef.current.focus();
+      dateInputRef.current.showPicker();
+    }
+  };
+
   const ClassModal = () => {
     if (!selectedClass) return null;
 
@@ -107,10 +162,11 @@ const Classes = () => {
         <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
           <div className="p-6">
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-2xl font-bold text-black">{selectedClass.className}</h2>
+              <h2 className="text-2xl font-bold" style={{ color: '#000000' }}>{selectedClass.className}</h2>
               <button
                 onClick={() => setSelectedClass(null)}
-                className="text-black hover:bg-gray-100 p-2 rounded-full transition-colors"
+                className="hover:bg-gray-100 p-2 rounded-full transition-colors"
+                style={{ color: '#000000' }}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -120,16 +176,19 @@ const Classes = () => {
               <img
                 src={selectedClass.imageURLs[0]}
                 alt={selectedClass.className}
-                className="w-full h-64 object-cover rounded-lg mb-4 border border-black"
+                className="w-full h-64 object-cover rounded-lg mb-4"
+                style={{ border: '1px solid #000000' }}
               />
             )}
             
-            <div className="space-y-4 text-black">
+            <div className="space-y-4" style={{ color: '#000000' }}>
               <p className="text-gray-700">{selectedClass.description}</p>
               
               <div className="flex items-center gap-2">
                 <User className="w-5 h-5" />
-                <span className="font-medium">Trainer: {selectedClass.trainer?.trainerName || "N/A"}</span>
+                <span className="font-medium">
+                  Trainer: {getTrainerName(selectedClass)}
+                </span>
               </div>
               
               <div>
@@ -167,7 +226,7 @@ const Classes = () => {
     <MainLayout>
       <div className="bg-white min-h-screen">
         <div className="p-6">
-          <h1 className="text-3xl font-bold mb-6 text-black">Classes</h1>
+          <h1 className="text-3xl font-bold mb-6" style={{ color: '#000000' }}>Classes</h1>
           
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4">
@@ -182,24 +241,42 @@ const Classes = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#000000' }} />
               <input
                 type="text"
                 placeholder="Search classes, trainers..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-black rounded-lg bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 rounded-lg bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent"
+                style={{ 
+                  border: '1px solid #000000',
+                  color: '#000000',
+                  focusRingColor: '#000000'
+                }}
               />
             </div>
 
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black" />
+              <button
+                onClick={handleCalendarClick}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 z-10"
+                style={{ color: '#000000' }}
+              >
+                <Calendar className="w-5 h-5" />
+              </button>
               <input
+                ref={dateInputRef}
                 type="date"
                 name="date"
                 value={date || ""}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-black rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                onFocus={() => setShowCalendar(true)}
+                onBlur={() => setShowCalendar(false)}
+                className="w-full pl-10 pr-4 py-3 rounded-lg bg-white focus:outline-none focus:ring-2 focus:border-transparent date-input"
+                style={{ 
+                  border: '1px solid #000000',
+                  color: '#000000'
+                }}
               />
             </div>
           </div>
@@ -207,7 +284,7 @@ const Classes = () => {
           {date === null ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredClasses.map((c) => (
-                <div key={c._id} className="bg-white border-2 border-black rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                <div key={c._id} className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow" style={{ border: '2px solid #000000' }}>
                   <div className="relative">
                     <img
                       src={c.imageURLs?.[0] || "/images/default-class.png"}
@@ -216,7 +293,8 @@ const Classes = () => {
                     />
                     <button
                       onClick={() => fetchClassDetails(c._id)}
-                      className="absolute top-2 right-2 bg-white text-black p-2 rounded-full hover:bg-gray-100 transition-colors shadow-lg"
+                      className="absolute top-2 right-2 bg-white p-2 rounded-full hover:bg-gray-100 transition-colors shadow-lg"
+                      style={{ color: '#000000' }}
                       disabled={isViewingDetails}
                     >
                       <Eye className="w-4 h-4" />
@@ -224,25 +302,25 @@ const Classes = () => {
                   </div>
                   
                   <div className="p-4">
-                    <h2 className="text-xl font-bold text-black mb-2">{c.className}</h2>
+                    <h2 className="text-xl font-bold mb-2" style={{ color: '#000000' }}>{c.className}</h2>
                     <p className="text-gray-700 mb-3 line-clamp-2">{c.description}</p>
                     
                     <div className="flex items-center gap-2 mb-3">
-                      <User className="w-4 h-4 text-black" />
-                      <span className="text-black">
-                        <span className="font-medium">Trainer:</span> {c.trainer?.trainerName || "N/A"}
+                      <User className="w-4 h-4" style={{ color: '#000000' }} />
+                      <span style={{ color: '#000000' }}>
+                        <span className="font-medium">Trainer:</span> {getTrainerName(c)}
                       </span>
                     </div>
                     
                     <div className="mb-3">
                       <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="w-4 h-4 text-black" />
-                        <span className="font-medium text-black">Schedule:</span>
+                        <Calendar className="w-4 h-4" style={{ color: '#000000' }} />
+                        <span className="font-medium" style={{ color: '#000000' }}>Schedule:</span>
                       </div>
                       <div className="ml-6 space-y-1">
-                        {c.schedule.map((sch, idx) => (
+                        {c.schedule?.map((sch, idx) => (
                           <div key={idx} className="flex items-center gap-2 text-sm">
-                            <span className="font-medium text-black">{sch.day}</span>
+                            <span className="font-medium" style={{ color: '#000000' }}>{sch.day}</span>
                             <Clock className="w-3 h-3" />
                             <span className="text-gray-700">{sch.startTime} - {sch.endTime}</span>
                           </div>
@@ -251,7 +329,7 @@ const Classes = () => {
                     </div>
                     
                     <div className="mb-4">
-                      <span className="font-medium text-black">Status: </span>
+                      <span className="font-medium" style={{ color: '#000000' }}>Status: </span>
                       <span className={c.cancelled ? "text-red-600" : "text-green-600"}>
                         {c.cancelled ? "Cancelled" : "Available"}
                       </span>
@@ -259,9 +337,15 @@ const Classes = () => {
                     
                     {!c.cancelled && (
                       <button
-                        className="w-full bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full text-white py-2 px-4 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ 
+                          backgroundColor: '#000000',
+                          ':hover': { backgroundColor: '#333333' }
+                        }}
                         onClick={() => bookClass(c._id)}
                         disabled={isBooking[c._id]}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#333333'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#000000'}
                       >
                         {isBooking[c._id] ? <SpinnerLoader /> : "Join Class"}
                       </button>
@@ -273,7 +357,7 @@ const Classes = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredClasses.map((c) => (
-                <div key={c._id} className="bg-white border-2 border-black rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                <div key={c._id} className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow" style={{ border: '2px solid #000000' }}>
                   <div className="relative">
                     <img
                       src={c.imageURLs?.[0] || "/images/default-class.png"}
@@ -282,7 +366,8 @@ const Classes = () => {
                     />
                     <button
                       onClick={() => fetchClassDetails(c._id)}
-                      className="absolute top-2 right-2 bg-white text-black p-2 rounded-full hover:bg-gray-100 transition-colors shadow-lg"
+                      className="absolute top-2 right-2 bg-white p-2 rounded-full hover:bg-gray-100 transition-colors shadow-lg"
+                      style={{ color: '#000000' }}
                       disabled={isViewingDetails}
                     >
                       <Eye className="w-4 h-4" />
@@ -290,32 +375,32 @@ const Classes = () => {
                   </div>
                   
                   <div className="p-4">
-                    <h2 className="text-xl font-bold text-black mb-2">{c.className}</h2>
+                    <h2 className="text-xl font-bold mb-2" style={{ color: '#000000' }}>{c.className}</h2>
                     <p className="text-gray-700 mb-3 line-clamp-2">{c.description}</p>
                     
                     <div className="flex items-center gap-2 mb-3">
-                      <User className="w-4 h-4 text-black" />
-                      <span className="text-black">
-                        <span className="font-medium">Trainer:</span> {c.trainer?.trainerName || "N/A"}
+                      <User className="w-4 h-4" style={{ color: '#000000' }} />
+                      <span style={{ color: '#000000' }}>
+                        <span className="font-medium">Trainer:</span> {getTrainerName(c)}
                       </span>
                     </div>
                     
                     <div className="flex items-center gap-2 mb-3">
-                      <Clock className="w-4 h-4 text-black" />
-                      <span className="text-black">
-                        <span className="font-medium">Time:</span> {formatTime(c.schedule.startTime)} - {formatTime(c.schedule.endTime)}
+                      <Clock className="w-4 h-4" style={{ color: '#000000' }} />
+                      <span style={{ color: '#000000' }}>
+                        <span className="font-medium">Time:</span> {formatTime(c.schedule?.startTime)} - {formatTime(c.schedule?.endTime)}
                       </span>
                     </div>
                     
                     <div className="flex items-center gap-2 mb-3">
-                      <Calendar className="w-4 h-4 text-black" />
-                      <span className="text-black">
+                      <Calendar className="w-4 h-4" style={{ color: '#000000' }} />
+                      <span style={{ color: '#000000' }}>
                         <span className="font-medium">Date:</span> {date}
                       </span>
                     </div>
                     
                     <div className="mb-4">
-                      <span className="font-medium text-black">Status: </span>
+                      <span className="font-medium" style={{ color: '#000000' }}>Status: </span>
                       <span className={c.cancelled ? "text-red-600" : "text-green-600"}>
                         {c.cancelled ? "Cancelled" : "Available"}
                       </span>
@@ -323,9 +408,14 @@ const Classes = () => {
                     
                     {!c.cancelled && (
                       <button
-                        className="w-full bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full text-white py-2 px-4 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ 
+                          backgroundColor: '#000000'
+                        }}
                         onClick={() => bookClass(c._id)}
                         disabled={isBooking[c._id]}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#333333'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#000000'}
                       >
                         {isBooking[c._id] ? <SpinnerLoader /> : "Join Class"}
                       </button>
@@ -339,7 +429,7 @@ const Classes = () => {
           {filteredClasses.length === 0 && !isLoading && (
             <div className="text-center py-12">
               <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-medium text-black mb-2">No classes found</h3>
+              <h3 className="text-xl font-medium mb-2" style={{ color: '#000000' }}>No classes found</h3>
               <p className="text-gray-600">
                 {searchQuery ? "Try adjusting your search terms" : "No classes available for the selected criteria"}
               </p>
@@ -349,6 +439,17 @@ const Classes = () => {
       </div>
 
       <ClassModal />
+      
+      <style jsx>{`
+        .date-input::-webkit-calendar-picker-indicator {
+          opacity: 0;
+          position: absolute;
+          right: 0;
+          width: 100%;
+          height: 100%;
+          cursor: pointer;
+        }
+      `}</style>
     </MainLayout>
   );
 };
