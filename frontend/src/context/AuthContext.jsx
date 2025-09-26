@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
 
       // 🚨 Unauthenticated access redirect
-      if (router.pathname.startsWith("/dashboard") || router.pathname.startsWith("/admin")) {
+      if (router.pathname.startsWith("/profile") || router.pathname.startsWith("/admin")) {
         router.replace("/auth/login");
       }
       return;
