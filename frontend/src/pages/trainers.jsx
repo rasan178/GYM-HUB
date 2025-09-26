@@ -3,7 +3,6 @@ import api from '../utils/axiosInstance';
 import MainLayout from '../components/Layouts/MainLayout';
 import TrainerCard from '../components/Cards/TrainerCard';
 import { API_PATHS } from '../utils/apiPaths';
-import SkeletonLoader from '../components/Loaders/SkeletonLoader';
 
 const Trainers = () => {
   const [trainers, setTrainers] = useState([]);
@@ -25,8 +24,6 @@ const Trainers = () => {
       setIsLoading(false);
     }
   };
-
-  if (isLoading) return <SkeletonLoader />;
 
   return (
     <MainLayout>
