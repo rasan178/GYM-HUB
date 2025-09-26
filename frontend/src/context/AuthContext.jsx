@@ -144,8 +144,7 @@ export const AuthProvider = ({ children }) => {
     setRole(null);
     setError(null);
 
-    // ✅ always redirect to login after logout
-    router.push("/auth/login").then(() => {
+    router.push("/").then(() => {
       if (typeof window !== "undefined") window.location.reload();
     });
   };
