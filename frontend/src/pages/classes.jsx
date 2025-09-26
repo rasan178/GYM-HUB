@@ -6,7 +6,6 @@ import AuthContext from "../context/AuthContext";
 import { formatTime } from "../utils/helpers";
 import { API_PATHS } from "../utils/apiPaths";
 import BlackSpinnerLoader from "../components/Loaders/BlackSpinnerLoader";
-import BlackSkeletonLoader from "../components/Loaders/BlackSkeletonLoader";
 
 const Classes = () => {
   const { user, error } = useContext(AuthContext);
@@ -340,7 +339,6 @@ const Classes = () => {
     );
   };
 
-  if (isLoading) return <BlackSkeletonLoader />;
 
   return (
     <MainLayout>
