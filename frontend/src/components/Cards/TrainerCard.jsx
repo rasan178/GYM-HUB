@@ -24,7 +24,8 @@ const TrainerCard = ({ trainer }) => {
         <p>Phone: {trainer?.contactInfo?.phone || "N/A"}</p>
         <p>Address: {trainer?.contactInfo?.address || "N/A"}</p>
         <p>
-          Social: FB {trainer?.socialLinks?.facebook || "N/A"}, IG{" "}
+          Social Media: FB {trainer?.socialLinks?.facebook || "N/A"},
+           IG{" "}
           {trainer?.socialLinks?.instagram || "N/A"}
         </p>
       </div>
