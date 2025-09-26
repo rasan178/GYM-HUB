@@ -1,19 +1,34 @@
 import { useEffect, useState } from 'react';
-import { Search, Filter, Users, AlertCircle, Loader, SortAsc, Grid, List, ArrowUpDown, Facebook, Instagram } from 'lucide-react';
+import { Search, Filter, Users, AlertCircle, X, User, Mail, Award, Phone, MapPin, Facebook, Instagram, FileText, Briefcase, CheckCircle } from 'lucide-react';
 import api from '../utils/axiosInstance';
 import MainLayout from '../components/Layouts/MainLayout';
 import TrainerCard from '../components/Cards/TrainerCard';
 import { API_PATHS } from '../utils/apiPaths';
+
+// Simple loader component for trainers
+const TrainerLoader = ({ text = "Loading...", size = "md" }) => {
+  const sizeClasses = {
+    sm: "w-4 h-4",
+    md: "w-6 h-6",
+    lg: "w-8 h-8"
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className={`${sizeClasses[size]} border-2 border-white border-t-transparent rounded-full animate-spin`}></div>
+      <span className="text-white font-black uppercase tracking-wide">{text}</span>
+    </div>
+  );
+};
 
 const Trainers = () => {
   const [trainers, setTrainers] = useState([]);
   const [filteredTrainers, setFilteredTrainers] = useState([]);
   const [localError, setLocalError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('name');
-  const [viewMode, setViewMode] = useState('grid');
+  const [selectedTrainer, setSelectedTrainer] = useState(null);
 
   useEffect(() => {
     fetchTrainers();
@@ -21,16 +36,22 @@ const Trainers = () => {
 
   useEffect(() => {
     filterTrainers();
-  }, [trainers, searchTerm, statusFilter]);
+  }, [trainers, searchQuery, statusFilter]);
 
   const fetchTrainers = async () => {
     setIsLoading(true);
     try {
       const res = await api.get(API_PATHS.TRAINERS.GET_ALL);
-      setTrainers(res.data);
+      setTrainers(res.data || []);
       setLocalError(null);
     } catch (err) {
-      setLocalError(err.response?.data?.message || 'Failed to fetch trainers');
+      if (err.response?.status === 404) {
+        setTrainers([]);
+        setLocalError(err.response.data.message || "No trainers found");
+      } else {
+        setTrainers([]);
+        setLocalError(err.response?.data?.message || 'Failed to fetch trainers');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -47,15 +68,13 @@ const Trainers = () => {
       });
     }
 
-    // Search filter - handle array specialty properly
-    if (searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase().trim();
+    // Search filter
+    if (searchQuery.trim()) {
+      const searchLower = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(trainer => {
-        // Check name and email
         const nameMatch = trainer.trainerName?.toLowerCase().includes(searchLower);
         const emailMatch = trainer.email?.toLowerCase().includes(searchLower);
         
-        // Handle specialty - could be string or array
         let specialtyMatch = false;
         if (trainer.specialty) {
           if (Array.isArray(trainer.specialty)) {
@@ -67,7 +86,6 @@ const Trainers = () => {
           }
         }
         
-        // Also check qualifications and experience
         const qualificationMatch = trainer.qualifications?.toLowerCase().includes(searchLower);
         const experienceMatch = trainer.experience?.toLowerCase().includes(searchLower);
         
@@ -78,7 +96,11 @@ const Trainers = () => {
     setFilteredTrainers(filtered);
   };
 
-  // Add this function for social media links in list view
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter('all');
+  };
+
   const handleSocialClick = (platform, username) => {
     if (!username || username === "N/A") return;
     
@@ -94,18 +116,207 @@ const Trainers = () => {
     }
   };
 
-  const handleRetry = () => {
-    setLocalError(null);
-    fetchTrainers();
+  // Reusable components
+  const StatusBadge = ({ status, className = "" }) => (
+    <div className={`px-4 py-2 text-xs font-black uppercase tracking-widest backdrop-blur-sm border-2 ${
+      status?.toLowerCase() === 'active' 
+        ? 'bg-green-500/90 text-white border-green-300' 
+        : 'bg-red-500/90 text-white border-red-300'
+    } ${className}`}>
+      {status?.toLowerCase() === 'active' ? '✓ Active' : '⚠ Inactive'}
+    </div>
+  );
+
+  const InfoCard = ({ icon: Icon, title, value, bgColor = "gray" }) => {
+    const colorClasses = {
+      gray: { bg: "bg-gray-50 border-gray-200 text-gray-500", icon: "bg-black text-white" },
+      blue: { bg: "bg-blue-50 border-blue-200 text-blue-600", icon: "bg-blue-600 text-white" },
+      green: { bg: "bg-green-50 border-green-200 text-green-600", icon: "bg-green-600 text-white" },
+      purple: { bg: "bg-purple-50 border-purple-200 text-purple-600", icon: "bg-purple-600 text-white" }
+    };
+
+    const colors = colorClasses[bgColor];
+
+    return (
+      <div className={`flex items-center gap-3 p-3 border ${colors.bg}`}>
+        <div className={`p-2 rounded-full ${colors.icon}`}>
+          <Icon className="w-4 h-4" />
+        </div>
+        <div>
+          <div className={`text-xs font-bold uppercase tracking-wide ${colors.bg.split(' ')[2]} mb-1`}>
+            {title}
+          </div>
+          <span className="text-black font-bold">{value}</span>
+        </div>
+      </div>
+    );
+  };
+
+  const TrainerModal = () => {
+    if (!selectedTrainer) return null;
+
+    const specialtyText = Array.isArray(selectedTrainer.specialty)
+      ? selectedTrainer.specialty.join(', ')
+      : selectedTrainer.specialty || "Not specified";
+
+    return (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white border-4 border-black max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="p-6">
+            <div className="flex justify-between items-start mb-6 pb-4 border-b-4 border-black">
+              <div>
+                <h2 className="text-3xl font-black text-black uppercase tracking-wider mb-2">
+                  {selectedTrainer.trainerName}
+                </h2>
+                <div className="flex items-center gap-4">
+                  <StatusBadge status={selectedTrainer.status} />
+                  <div className="flex items-center gap-2">
+                    <Award className="w-4 h-4 text-black" />
+                    <span className="text-sm font-bold text-gray-600">Professional Trainer</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedTrainer(null)}
+                className="text-black hover:bg-black hover:text-white p-3 border-2 border-black transition-all duration-200 font-bold"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="grid lg:grid-cols-2 gap-6 text-black">
+              {/* Left Column - Image and Basic Info */}
+              <div className="space-y-4">
+                {selectedTrainer.image && (
+                  <div className="overflow-hidden border-4 border-black relative group">
+                    <img
+                      src={selectedTrainer.image}
+                      alt={selectedTrainer.trainerName}
+                      className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                )}
+
+                <div className="bg-gray-50 border-2 border-gray-200 p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="bg-black text-white p-2 rounded-full">
+                      <User className="w-4 h-4" />
+                    </div>
+                    <div className="text-xs font-bold uppercase tracking-wide text-gray-500">Specialty</div>
+                  </div>
+                  <p className="text-black font-bold ml-11">{specialtyText}</p>
+                </div>
+
+                {/* Social Links */}
+                <div className="bg-black p-4 border-2 border-black">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="bg-white text-black p-2 rounded-full">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <div className="text-xs font-bold uppercase tracking-wide text-white">Connect</div>
+                  </div>
+                  <div className="flex gap-2 ml-11">
+                    {selectedTrainer?.socialLinks?.facebook && selectedTrainer.socialLinks.facebook !== "N/A" && (
+                      <button
+                        onClick={() => handleSocialClick('facebook', selectedTrainer.socialLinks.facebook)}
+                        className="w-10 h-10 border-2 border-white bg-transparent text-white hover:bg-white hover:text-black transition-all duration-200 flex items-center justify-center"
+                        title="Visit Facebook Profile"
+                      >
+                        <Facebook className="w-4 h-4" />
+                      </button>
+                    )}
+                    {selectedTrainer?.socialLinks?.instagram && selectedTrainer.socialLinks.instagram !== "N/A" && (
+                      <button
+                        onClick={() => handleSocialClick('instagram', selectedTrainer.socialLinks.instagram)}
+                        className="w-10 h-10 border-2 border-white bg-transparent text-white hover:bg-white hover:text-black transition-all duration-200 flex items-center justify-center"
+                        title="Visit Instagram Profile"
+                      >
+                        <Instagram className="w-4 h-4" />
+                      </button>
+                    )}
+                    {(!selectedTrainer?.socialLinks?.facebook || selectedTrainer.socialLinks.facebook === "N/A") && 
+                     (!selectedTrainer?.socialLinks?.instagram || selectedTrainer.socialLinks.instagram === "N/A") && (
+                      <span className="text-sm text-gray-300">No social links</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Right Column - Details */}
+              <div className="space-y-4">
+                <InfoCard 
+                  icon={Mail} 
+                  title="Email" 
+                  value={selectedTrainer.email} 
+                  bgColor="blue"
+                />
+                
+                <InfoCard 
+                  icon={Briefcase} 
+                  title="Experience" 
+                  value={selectedTrainer.experience || "N/A"} 
+                  bgColor="green"
+                />
+
+                {selectedTrainer?.contactInfo?.phone && selectedTrainer.contactInfo.phone !== "N/A" && (
+                  <InfoCard 
+                    icon={Phone} 
+                    title="Phone" 
+                    value={selectedTrainer.contactInfo.phone} 
+                    bgColor="purple"
+                  />
+                )}
+
+                {selectedTrainer?.contactInfo?.address && selectedTrainer.contactInfo.address !== "N/A" && (
+                  <InfoCard 
+                    icon={MapPin} 
+                    title="Address" 
+                    value={selectedTrainer.contactInfo.address} 
+                  />
+                )}
+
+                {selectedTrainer.qualifications && (
+                  <div className="bg-yellow-50 border-2 border-yellow-200 p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="bg-yellow-600 text-white p-2 rounded-full">
+                        <Award className="w-4 h-4" />
+                      </div>
+                      <div className="text-xs font-bold uppercase tracking-wide text-yellow-600">Qualifications</div>
+                    </div>
+                    <p className="text-black font-bold text-sm leading-relaxed ml-11">{selectedTrainer.qualifications}</p>
+                  </div>
+                )}
+
+                {selectedTrainer.bio && (
+                  <div className="bg-gray-50 border-2 border-gray-200 p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="bg-black text-white p-2 rounded-full">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <div className="text-xs font-bold uppercase tracking-wide text-gray-500">About</div>
+                    </div>
+                    <p className="text-gray-700 text-sm leading-relaxed ml-11">{selectedTrainer.bio}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="pt-16 px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-center py-20">
-            <Loader className="w-12 h-12 text-white animate-spin mb-4" />
-            <p className="text-lg font-semibold text-white">Loading trainers...</p>
+        <div className="bg-white min-h-screen pt-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="bg-black text-white p-8 border-4 border-black">
+                <TrainerLoader text="Loading trainers..." size="lg" />
+              </div>
+            </div>
           </div>
         </div>
       </MainLayout>
@@ -114,292 +325,120 @@ const Trainers = () => {
 
   return (
     <MainLayout>
-      <div className="pt-16 px-4 sm:px-6 lg:px-8">
-        {/* Header Section */}
-        <div className="relative py-12 mb-12 overflow-hidden">
-          {/* Background pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0" style={{
-              backgroundImage: `radial-gradient(circle at 25% 25%, white 2px, transparent 2px), radial-gradient(circle at 75% 75%, white 2px, transparent 2px)`,
-              backgroundSize: '50px 50px'
-            }}></div>
-          </div>
-          
-          <div className="relative text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 border-4 border-white rounded-full mb-6">
-              <Users className="w-10 h-10 text-white" />
-            </div>
-            <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">
-              OUR TRAINERS
-            </h1>
-            <div className="w-24 h-1 bg-white mx-auto mb-4"></div>
-            <p className="text-white text-xl max-w-2xl mx-auto leading-relaxed">
-              Meet our certified fitness professionals dedicated to your success
-            </p>
-          </div>
-        </div>
-
-        {/* Error Message */}
-        {localError && (
-          <div className="mb-8">
-            <div className="border-2 border-white bg-black p-4 flex items-start">
-              <AlertCircle className="w-5 h-5 text-white mr-3 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-white font-semibold mb-2">Error Loading Trainers</p>
-                <p className="text-white text-sm mb-3">{localError}</p>
-                <button
-                  onClick={handleRetry}
-                  className="px-4 py-2 bg-white text-black border-2 border-white hover:bg-black hover:text-white transition-colors duration-200 font-semibold"
-                >
-                  RETRY
-                </button>
+      <div className="bg-white min-h-screen pt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="border-b-4 border-black pb-8 mb-8">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+              <div>
+                <h1 className="text-6xl font-black text-black uppercase tracking-wider mb-2">
+                  Expert Trainers
+                </h1>
+                <p className="text-xl text-gray-600 font-medium">
+                  Meet our certified fitness professionals dedicated to your success
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="bg-black text-white px-4 py-2 font-bold uppercase tracking-wide text-sm">
+                  {filteredTrainers.length} Trainers Available
+                </div>
               </div>
             </div>
           </div>
-        )}
+          
+          {localError && (
+            <div className="bg-red-50 border-2 border-red-500 text-red-800 px-6 py-4 mb-8 font-bold flex items-center gap-3">
+              <div className="bg-red-500 text-white p-2 rounded-full">
+                <X className="w-5 h-5" />
+              </div>
+              <span>{localError}</span>
+            </div>
+          )}
 
-        {/* Search and Filter Section */}
-        <div className="mb-12">
-          <div className="bg-white border-4 border-white p-6 shadow-2xl">
-            <div className="space-y-6">
-              {/* Search Bar */}
+          <div className="bg-gray-50 border-2 border-gray-200 p-6 mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <Filter className="w-6 h-6 text-black" />
+              <h2 className="text-xl font-black uppercase tracking-wide">Find Your Perfect Trainer</h2>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Search className="h-6 w-6 text-gray-400" />
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-2 rounded-full z-10">
+                  <Search className="w-5 h-5" />
                 </div>
                 <input
                   type="text"
-                  placeholder="Search trainers by name, specialty, qualifications, or experience..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 focus:border-black focus:outline-none transition-colors bg-white text-black placeholder-gray-400"
+                  placeholder="Search trainers, specialties, or qualifications..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-16 pr-6 py-4 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-black/20 font-medium text-lg"
                 />
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                {/* Filter Section */}
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <Filter className="w-5 h-5 text-black" />
-                    <span className="text-black font-semibold text-lg">Status:</span>
-                  </div>
-                  <div className="flex space-x-2">
-                    {['all', 'active', 'inactive'].map(status => (
-                      <button
-                        key={status}
-                        onClick={() => setStatusFilter(status)}
-                        className={`px-6 py-2 font-semibold text-sm uppercase tracking-wide transition-all duration-200 border-2 ${
-                          statusFilter === status
-                            ? 'bg-black text-white border-black'
-                            : 'bg-white text-black border-black hover:bg-black hover:text-white'
-                        }`}
-                      >
-                        {status === 'all' ? 'All' : status}
-                      </button>
-                    ))}
-                  </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Users className="w-5 h-5 text-black" />
+                  <span className="text-black font-black uppercase tracking-wide text-sm">Status:</span>
                 </div>
-
-                {/* Sort and View Controls */}
-                <div className="flex items-center space-x-4">
-                  {/* Sort Dropdown */}
-                  <div className="flex items-center space-x-2">
-                    <ArrowUpDown className="w-5 h-5 text-black" />
-                    <span className="text-black font-semibold">Sort:</span>
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      className="px-4 py-2 border-2 border-black bg-white text-black focus:outline-none font-semibold"
-                    >
-                      <option value="name">Name</option>
-                      <option value="experience">Experience</option>
-                      <option value="status">Status</option>
-                    </select>
-                  </div>
-
-                  {/* View Mode Toggle */}
-                  <div className="flex border-2 border-black">
+                <div className="flex gap-2">
+                  {['all', 'active', 'inactive'].map(status => (
                     <button
-                      onClick={() => setViewMode('grid')}
-                      className={`p-2 transition-colors ${
-                        viewMode === 'grid' 
-                          ? 'bg-black text-white' 
-                          : 'bg-white text-black hover:bg-gray-100'
+                      key={status}
+                      onClick={() => setStatusFilter(status)}
+                      className={`px-4 py-2 font-black text-sm uppercase tracking-wide transition-all duration-200 border-2 ${
+                        statusFilter === status
+                          ? 'bg-black text-white border-black'
+                          : 'bg-white text-black border-black hover:bg-black hover:text-white'
                       }`}
-                      title="Grid View"
                     >
-                      <Grid className="w-4 h-4" />
+                      {status === 'all' ? 'All' : status}
                     </button>
-                    <button
-                      onClick={() => setViewMode('list')}
-                      className={`p-2 transition-colors ${
-                        viewMode === 'list' 
-                          ? 'bg-black text-white' 
-                          : 'bg-white text-black hover:bg-gray-100'
-                      }`}
-                      title="List View"
-                    >
-                      <List className="w-4 h-4" />
-                    </button>
-                  </div>
+                  ))}
                 </div>
-              </div>
-
-              {/* Results Count and Active Filters */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t-2 border-gray-200">
-                <div className="text-black font-semibold text-lg">
-                  <span className="bg-black text-white px-3 py-1 mr-2">
-                    {filteredTrainers.length}
-                  </span>
-                  of {trainers.length} trainers
-                  {searchTerm.trim() && (
-                    <span className="text-gray-600 ml-2">
-                      for "{searchTerm.trim()}"
-                    </span>
-                  )}
-                </div>
-                
-                {/* Active Filters Display */}
-                {(searchTerm.trim() || statusFilter !== 'all' || sortBy !== 'name') && (
-                  <div className="flex items-center space-x-2 text-sm">
-                    <span className="text-gray-600">Active filters:</span>
-                    {statusFilter !== 'all' && (
-                      <span className="bg-gray-200 px-2 py-1 rounded">
-                        Status: {statusFilter}
-                      </span>
-                    )}
-                    {searchTerm.trim() && (
-                      <span className="bg-gray-200 px-2 py-1 rounded">
-                        Search: {searchTerm.trim()}
-                      </span>
-                    )}
-                    {sortBy !== 'name' && (
-                      <span className="bg-gray-200 px-2 py-1 rounded">
-                        Sort: {sortBy}
-                      </span>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           </div>
+
+          {filteredTrainers.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredTrainers.map((trainer) => (
+                <TrainerCard 
+                  key={trainer._id} 
+                  trainer={trainer} 
+                  onViewDetails={setSelectedTrainer}
+                />
+              ))}
+            </div>
+          )}
+
+          {filteredTrainers.length === 0 && (
+            <div className="text-center py-20">
+              <div className="bg-gray-100 border-2 border-gray-300 p-12 inline-block mb-6">
+                <Users className="w-24 h-24 mx-auto text-gray-400" />
+              </div>
+              <h3 className="text-4xl font-black text-black mb-4 uppercase tracking-wide">
+                No Trainers Found
+              </h3>
+              <p className="text-gray-600 text-xl mb-8 max-w-2xl mx-auto">
+                {searchQuery 
+                  ? `No trainers match your search "${searchQuery}". Try different keywords or clear your filters.`
+                  : statusFilter !== 'all'
+                    ? `No ${statusFilter} trainers found. Try adjusting your filter settings.`
+                    : "No trainers are currently available. Please check back later."
+                }
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button 
+                  onClick={clearFilters}
+                  className="px-8 py-3 border-2 border-black font-bold uppercase tracking-wide transition-all duration-200 bg-black text-white hover:bg-gray-800"
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-
-        {/* Trainers Grid/List */}
-        {filteredTrainers.length > 0 ? (
-          <div>
-            {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 pb-12">
-                {filteredTrainers.map(trainer => (
-                  <TrainerCard key={trainer._id} trainer={trainer} />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-6 pb-12">
-                {filteredTrainers.map(trainer => (
-                  <div key={trainer._id} className="bg-white border-4 border-black p-6 hover:shadow-xl transition-shadow">
-                    <div className="flex flex-col md:flex-row gap-6">
-                      {/* Image */}
-                      <div className="flex-shrink-0">
-                        <img
-                          src={trainer.image || '/images/default-trainer.png'}
-                          alt={trainer.trainerName}
-                          className="w-32 h-32 object-cover border-2 border-black"
-                        />
-                      </div>
-                      
-                      {/* Content */}
-                      <div className="flex-1 space-y-3">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="text-2xl font-bold text-black">{trainer.trainerName}</h3>
-                            <p className="text-gray-600">{Array.isArray(trainer.specialty) ? trainer.specialty.join(', ') : trainer.specialty}</p>
-                          </div>
-                          <div className={`px-3 py-1 text-xs font-bold border-2 ${
-                            trainer.status?.toLowerCase() === 'active' 
-                              ? 'bg-white text-black border-black' 
-                              : 'bg-black text-white border-black'
-                          }`}>
-                            {trainer.status?.toUpperCase() || 'UNKNOWN'}
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="font-semibold">Email:</span> {trainer.email}
-                          </div>
-                          <div>
-                            <span className="font-semibold">Experience:</span> {trainer.experience}
-                          </div>
-                          {trainer?.contactInfo?.phone && (
-                            <div>
-                              <span className="font-semibold">Phone:</span> {trainer.contactInfo.phone}
-                            </div>
-                          )}
-                          <div>
-                            <span className="font-semibold">Qualifications:</span> {trainer.qualifications}
-                          </div>
-                        </div>
-                        
-                        {trainer.bio && (
-                          <p className="text-sm text-gray-700 line-clamp-2">{trainer.bio}</p>
-                        )}
-                        
-                        {/* Social Links */}
-                        <div className="flex items-center space-x-3 pt-2">
-                          {trainer?.socialLinks?.facebook && trainer.socialLinks.facebook !== "N/A" && (
-                            <button
-                              onClick={() => handleSocialClick('facebook', trainer.socialLinks.facebook)}
-                              className="w-8 h-8 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors flex items-center justify-center"
-                            >
-                              <Facebook className="w-4 h-4" />
-                            </button>
-                          )}
-                          {trainer?.socialLinks?.instagram && trainer.socialLinks.instagram !== "N/A" && (
-                            <button
-                              onClick={() => handleSocialClick('instagram', trainer.socialLinks.instagram)}
-                              className="w-8 h-8 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors flex items-center justify-center"
-                            >
-                              <Instagram className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-center py-20">
-            <div className="bg-white rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-              <Users className="w-12 h-12 text-black" />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-4">
-              {searchTerm.trim() || statusFilter !== 'all' ? 'No trainers found' : 'No trainers available'}
-            </h3>
-            <p className="text-white text-lg mb-6 max-w-md mx-auto">
-              {searchTerm.trim() || statusFilter !== 'all' 
-                ? 'Try adjusting your search or filter criteria to find what you\'re looking for.' 
-                : 'Check back later for available trainers.'
-              }
-            </p>
-            {(searchTerm.trim() || statusFilter !== 'all' || sortBy !== 'name') && (
-              <button
-                onClick={() => {
-                  setSearchTerm('');
-                  setStatusFilter('all');
-                  setSortBy('name');
-                }}
-                className="px-8 py-3 bg-white text-black border-2 border-white hover:bg-black hover:text-white hover:border-white transition-all duration-200 font-semibold text-lg"
-              >
-                RESET ALL FILTERS
-              </button>
-            )}
-          </div>
-        )}
       </div>
+
+      <TrainerModal />
     </MainLayout>
   );
 };

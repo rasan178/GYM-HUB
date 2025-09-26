@@ -1,6 +1,6 @@
-import { User, Mail, Award, Calendar, FileText, CheckCircle, Phone, MapPin, Facebook, Instagram, Star, Briefcase } from 'lucide-react';
+import { User, Mail, Award, Calendar, FileText, CheckCircle, Phone, MapPin, Facebook, Instagram, Star, Briefcase, Eye, Users } from 'lucide-react';
 
-const TrainerCard = ({ trainer }) => {
+const TrainerCard = ({ trainer, onViewDetails }) => {
   // safely handle specialty
   const specialtyText = Array.isArray(trainer.specialty)
     ? trainer.specialty.join(', ')
@@ -22,108 +22,137 @@ const TrainerCard = ({ trainer }) => {
     }
   };
 
+  // Reusable components
+  const StatusBadge = ({ status, className = "" }) => (
+    <div className={`px-4 py-2 text-xs font-black uppercase tracking-widest backdrop-blur-sm border-2 ${
+      status?.toLowerCase() === 'active' 
+        ? 'bg-green-500/90 text-white border-green-300' 
+        : 'bg-red-500/90 text-white border-red-300'
+    } ${className}`}>
+      {status?.toLowerCase() === 'active' ? '✓ Active' : '⚠ Inactive'}
+    </div>
+  );
+
+  const InfoCard = ({ icon: Icon, title, value, bgColor = "gray" }) => {
+    const colorClasses = {
+      gray: { bg: "bg-gray-50 border-gray-200 text-gray-500", icon: "bg-black text-white" },
+      blue: { bg: "bg-blue-50 border-blue-200 text-blue-600", icon: "bg-blue-600 text-white" },
+      green: { bg: "bg-green-50 border-green-200 text-green-600", icon: "bg-green-600 text-white" },
+      purple: { bg: "bg-purple-50 border-purple-200 text-purple-600", icon: "bg-purple-600 text-white" }
+    };
+
+    const colors = colorClasses[bgColor];
+
+    return (
+      <div className={`flex items-center gap-3 p-3 border ${colors.bg}`}>
+        <div className={`p-2 rounded-full ${colors.icon}`}>
+          <Icon className="w-4 h-4" />
+        </div>
+        <div>
+          <div className={`text-xs font-bold uppercase tracking-wide ${colors.bg.split(' ')[2]} mb-1`}>
+            {title}
+          </div>
+          <span className="text-black font-bold">{value}</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="group relative bg-white border-4 border-black shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
-      {/* Image Section with Overlay */}
+    <div className="group bg-white border-2 border-black shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden">
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity duration-300 z-10"></div>
         <img
           src={trainer.image || '/images/default-trainer.png'}
           alt={trainer.trainerName}
-          className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
         />
         
-        {/* Status Badge */}
-        <div className="absolute top-4 right-4 z-20">
-          <div className={`px-4 py-2 text-xs font-bold border-2 transition-all duration-300 ${
-            trainer.status?.toLowerCase() === 'active' 
-              ? 'bg-white text-black border-black group-hover:bg-black group-hover:text-white' 
-              : 'bg-black text-white border-white group-hover:bg-white group-hover:text-black'
-          }`}>
-            <div className="flex items-center space-x-1">
-              <div className={`w-2 h-2 rounded-full ${
-                trainer.status?.toLowerCase() === 'active' ? 'bg-green-500' : 'bg-red-500'
-              }`}></div>
-              <span>{trainer.status?.toUpperCase() || 'UNKNOWN'}</span>
-            </div>
-          </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        
+        <div className="absolute top-4 right-4">
+          <button
+            onClick={() => onViewDetails && onViewDetails(trainer)}
+            className="bg-white/90 backdrop-blur-sm text-black p-3 rounded-full hover:bg-white hover:shadow-lg transform hover:scale-110 transition-all duration-300"
+          >
+            <Eye className="w-5 h-5" />
+          </button>
         </div>
-
-        {/* Name Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6 z-20">
-          <h2 className="text-2xl font-bold text-white mb-1">{trainer.trainerName}</h2>
-          <p className="text-white/80 text-sm">{specialtyText}</p>
-        </div>
-      </div>
-
-      {/* Content Section */}
-      <div className="p-6 space-y-4">
-        {/* Quick Info */}
-        <div className="grid grid-cols-2 gap-4 pb-4 border-b-2 border-gray-100">
-          <div className="text-center">
-            <Briefcase className="w-5 h-5 mx-auto text-black mb-1" />
-            <p className="text-xs font-semibold text-gray-600">EXPERIENCE</p>
-            <p className="text-sm font-bold text-black">{trainer.experience || 'N/A'}</p>
-          </div>
-          <div className="text-center">
-            <Star className="w-5 h-5 mx-auto text-black mb-1" />
-            <p className="text-xs font-semibold text-gray-600">STATUS</p>
-            <p className="text-sm font-bold text-black">{trainer.status?.toUpperCase() || 'N/A'}</p>
-          </div>
-        </div>
-
-        {/* Contact Info */}
-        <div className="space-y-3">
-          <div className="flex items-center group/item hover:bg-gray-50 -mx-2 px-2 py-1 rounded transition-colors">
-            <Mail className="w-4 h-4 mr-3 text-black flex-shrink-0" />
-            <span className="text-sm text-black truncate">{trainer.email}</span>
-          </div>
-          
-          {trainer?.contactInfo?.phone && trainer.contactInfo.phone !== "N/A" && (
-            <div className="flex items-center group/item hover:bg-gray-50 -mx-2 px-2 py-1 rounded transition-colors">
-              <Phone className="w-4 h-4 mr-3 text-black flex-shrink-0" />
-              <span className="text-sm text-black">{trainer.contactInfo.phone}</span>
-            </div>
-          )}
-          
-          {trainer?.contactInfo?.address && trainer.contactInfo.address !== "N/A" && (
-            <div className="flex items-start group/item hover:bg-gray-50 -mx-2 px-2 py-1 rounded transition-colors">
-              <MapPin className="w-4 h-4 mr-3 mt-0.5 text-black flex-shrink-0" />
-              <span className="text-sm text-black leading-tight">{trainer.contactInfo.address}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Qualifications */}
-        {trainer.qualifications && (
-          <div className="bg-gray-50 border-l-4 border-black p-3">
-            <div className="flex items-start">
-              <CheckCircle className="w-4 h-4 mr-2 mt-0.5 text-black flex-shrink-0" />
-              <div>
-                <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Qualifications</span>
-                <p className="text-sm text-black mt-1 leading-tight">{trainer.qualifications}</p>
-              </div>
-            </div>
+        
+        <StatusBadge status={trainer.status} className="absolute top-4 left-4" />
+        
+        {trainer.featured && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-black px-3 py-1 text-xs font-black uppercase tracking-wide border-2 border-yellow-300">
+            <Star className="w-3 h-3 inline mr-1" />
+            Featured
           </div>
         )}
+      </div>
+      
+      <div className="p-6 space-y-4">
+        <div>
+          <h2 className="text-2xl font-black text-black mb-2 leading-tight group-hover:text-gray-800 transition-colors">
+            {trainer.trainerName}
+          </h2>
+          <p className="text-gray-600 line-clamp-2 leading-relaxed text-sm">
+            {specialtyText}
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <InfoCard 
+            icon={Mail} 
+            title="Email" 
+            value={trainer.email || "N/A"} 
+          />
+          
+          <InfoCard 
+            icon={Briefcase} 
+            title="Experience" 
+            value={trainer.experience || "N/A"} 
+            bgColor="blue"
+          />
+
+          {trainer.qualifications && (
+            <InfoCard 
+              icon={Award} 
+              title="Qualifications" 
+              value={trainer.qualifications} 
+              bgColor="green"
+            />
+          )}
+
+          {trainer?.contactInfo?.phone && trainer.contactInfo.phone !== "N/A" && (
+            <InfoCard 
+              icon={Phone} 
+              title="Phone" 
+              value={trainer.contactInfo.phone} 
+              bgColor="purple"
+            />
+          )}
+        </div>
 
         {/* Bio */}
         {trainer.bio && (
-          <div className="bg-gray-50 p-3">
-            <div className="flex items-start">
-              <FileText className="w-4 h-4 mr-2 mt-0.5 text-black flex-shrink-0" />
-              <div>
-                <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">About</span>
-                <p className="text-sm text-black mt-1 leading-relaxed line-clamp-3">{trainer.bio}</p>
+          <div className="p-3 bg-gray-50 border border-gray-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-black text-white p-2 rounded-full">
+                <FileText className="w-4 h-4" />
               </div>
+              <div className="text-xs font-bold uppercase tracking-wide text-gray-500">About Trainer</div>
+            </div>
+            <div className="ml-12">
+              <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">{trainer.bio}</p>
             </div>
           </div>
         )}
 
-        {/* Social Media Footer */}
-        <div className="border-t-2 border-black pt-4 mt-6">
+        {/* Social Links */}
+        <div className="border-t-2 border-black pt-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-black uppercase tracking-wide">Connect</span>
+            <span className="text-sm font-black uppercase tracking-wide text-black flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Connect
+            </span>
             <div className="flex space-x-2">
               {trainer?.socialLinks?.facebook && trainer.socialLinks.facebook !== "N/A" && (
                 <button
@@ -153,9 +182,6 @@ const TrainerCard = ({ trainer }) => {
           </div>
         </div>
       </div>
-
-      {/* Hover Effect Border */}
-      <div className="absolute inset-0 border-4 border-transparent group-hover:border-black/20 pointer-events-none transition-all duration-300"></div>
     </div>
   );
 };
