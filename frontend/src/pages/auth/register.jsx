@@ -41,35 +41,50 @@ const Register = () => {
 
   return (
     <AuthLayout>
-      <h1 className="text-2xl font-bold mb-4">Register</h1>
-      {(localError || authError) && (
-        <div className="alert alert-error mb-4">{localError || authError}</div>
-      )}
-      <form onSubmit={submit} className="max-w-md mx-auto space-y-4">
-        <TextInput
-          label="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-        <TextInput
-          label="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          type="email"
-        />
-        <TextInput
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button className="btn btn-primary w-full" type="submit">
-          Register
-        </button>
-      </form>
+      <div className="max-w-md mx-auto mt-8">
+        <h1 className="text-2xl font-bold mb-6 text-center text-black">Register</h1>
+        {(localError || authError) && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+            {localError || authError}
+          </div>
+        )}
+        <form onSubmit={submit} className="space-y-4">
+          <TextInput
+            label="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+          <TextInput
+            label="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            type="email"
+          />
+          <TextInput
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button 
+            className="w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 transition-colors" 
+            type="submit"
+          >
+            Register
+          </button>
+        </form>
+        <div className="mt-6 text-center">
+          <p className="text-black">
+            Already have an account?{" "}
+            <a href="/auth/login" className="text-black font-medium hover:underline">
+              Login here
+            </a>
+          </p>
+        </div>
+      </div>
     </AuthLayout>
   );
 };

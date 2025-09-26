@@ -11,13 +11,18 @@ import {
   UserPlus, 
   LogOut,
   Menu,
-  X
+  X,
+  User,
+  ChevronDown
 } from 'lucide-react';
+import AuthPopup from '../pages/auth/components/AuthPopup';
 
 const Navbar = () => {
   const { user, logout, error } = useContext(AuthContext);
   const [role, setRole] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState("");
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   // Only run on client to read role
   useEffect(() => {
@@ -34,6 +39,33 @@ const Navbar = () => {
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
   };
+
+  const closeAuthPopup = () => {
+    setCurrentPage("");
+  };
+
+  const handleLogout = () => {
+    logout();
+    setProfileMenuOpen(false);
+  };
+
+  const toggleProfileMenu = () => {
+    setProfileMenuOpen(!profileMenuOpen);
+  };
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuOpen && !event.target.closest('.profile-menu-container')) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [profileMenuOpen]);
 
   return (
     <>
@@ -102,29 +134,63 @@ const Navbar = () => {
                   </>
                 )}
 
-                {/* Auth navigation */}
+                {/* Auth navigation items as buttons */}
                 {!user && (
                   <div className="flex items-center space-x-2 ml-4">
-                    <Link href="/auth/login" className="flex items-center space-x-2 px-4 py-2 rounded-md bg-white text-black hover:bg-gray-200 transition-colors font-medium">
+                    <button 
+                      onClick={() => setCurrentPage("login")}
+                      className="flex items-center space-x-2 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors"
+                    >
                       <LogIn className="w-4 h-4" />
                       <span>Login</span>
-                    </Link>
-                    <Link href="/auth/register" className="flex items-center space-x-2 px-4 py-2 rounded-md border border-white text-white hover:bg-white hover:text-black transition-colors font-medium">
+                    </button>
+                    <button 
+                      onClick={() => setCurrentPage("signup")}
+                      className="flex items-center space-x-2 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors"
+                    >
                       <UserPlus className="w-4 h-4" />
                       <span>Register</span>
-                    </Link>
+                    </button>
                   </div>
                 )}
 
-                {/* Logout */}
+                {/* Profile Avatar */}
                 {user && (
-                  <button 
-                    onClick={logout}
-                    className="flex items-center space-x-2 px-4 py-2 rounded-md border border-white text-white hover:bg-white hover:text-black transition-colors font-medium ml-4"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Logout</span>
-                  </button>
+                  <div className="relative profile-menu-container">
+                    <button
+                      onClick={toggleProfileMenu}
+                      className="flex items-center space-x-2 ml-4 hover:opacity-80 transition-opacity"
+                    >
+                      <img
+                        src={user?.profileImageURL || "/images/default-profile.png"}
+                        alt="Profile"
+                        className="w-8 h-8 rounded-full border-2 border-white"
+                      />
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                    
+                    {profileMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                        <div className="py-1">
+                          <Link 
+                            href="/profile" 
+                            className="flex items-center px-4 py-2 text-black hover:bg-gray-100 transition-colors"
+                            onClick={() => setProfileMenuOpen(false)}
+                          >
+                            <User className="w-4 h-4 mr-2" />
+                            Profile
+                          </Link>
+                          <button 
+                            onClick={handleLogout}
+                            className="flex items-center w-full px-4 py-2 text-black hover:bg-gray-100 transition-colors"
+                          >
+                            <LogOut className="w-4 h-4 mr-2" />
+                            Logout
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -188,10 +254,6 @@ const Navbar = () => {
               {/* Admin navigation */}
               {user && role === "admin" && (
                 <>
-                  <Link href="/" onClick={closeMobileMenu} className="flex items-center space-x-3 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors">
-                    <Home className="w-5 h-5" />
-                    <span>Home</span>
-                  </Link>
                   <Link href="/admin" onClick={closeMobileMenu} className="flex items-center space-x-3 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors">
                     <Settings className="w-5 h-5" />
                     <span>Admin</span>
@@ -199,25 +261,39 @@ const Navbar = () => {
                 </>
               )}
 
-              {/* Auth navigation */}
+              {/* Auth navigation items as buttons for mobile */}
               {!user && (
-                <div className="border-t border-white/10 pt-3 mt-3">
-                  <Link href="/auth/login" onClick={closeMobileMenu} className="flex items-center space-x-3 px-3 py-2 rounded-md bg-white text-black hover:bg-gray-200 transition-colors font-medium mb-2">
+                <div className="border-t border-white/10 pt-3 mt-3 space-y-2">
+                  <button 
+                    onClick={() => { setCurrentPage("login"); closeMobileMenu(); }}
+                    className="flex items-center space-x-3 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors w-full"
+                  >
                     <LogIn className="w-5 h-5" />
                     <span>Login</span>
-                  </Link>
-                  <Link href="/auth/register" onClick={closeMobileMenu} className="flex items-center space-x-3 px-3 py-2 rounded-md border border-white text-white hover:bg-white hover:text-black transition-colors font-medium">
+                  </button>
+                  <button 
+                    onClick={() => { setCurrentPage("signup"); closeMobileMenu(); }}
+                    className="flex items-center space-x-3 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors w-full"
+                  >
                     <UserPlus className="w-5 h-5" />
                     <span>Register</span>
-                  </Link>
+                  </button>
                 </div>
               )}
 
-              {/* Logout */}
+              {/* Profile and Logout for mobile */}
               {user && (
-                <div className="border-t border-white/10 pt-3 mt-3">
+                <div className="border-t border-white/10 pt-3 mt-3 space-y-2">
+                  <Link 
+                    href="/profile" 
+                    onClick={closeMobileMenu}
+                    className="flex items-center space-x-3 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors w-full"
+                  >
+                    <User className="w-5 h-5" />
+                    <span>Profile</span>
+                  </Link>
                   <button 
-                    onClick={() => { logout(); closeMobileMenu(); }}
+                    onClick={() => { handleLogout(); closeMobileMenu(); }}
                     className="flex items-center space-x-3 px-3 py-2 rounded-md border border-white text-white hover:bg-white hover:text-black transition-colors font-medium w-full"
                   >
                     <LogOut className="w-5 h-5" />
@@ -229,6 +305,15 @@ const Navbar = () => {
           </div>
         )}
       </nav>
+
+      {/* Auth Popup */}
+      {(currentPage === "login" || currentPage === "signup") && (
+        <AuthPopup 
+          currentPage={currentPage} 
+          setCurrentPage={setCurrentPage} 
+          onClose={closeAuthPopup} 
+        />
+      )}
 
       {/* Error Display */}
       {error && (

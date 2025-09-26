@@ -37,28 +37,43 @@ const Login = () => {
 
   return (
     <AuthLayout>
-      <h1 className="text-2xl font-bold mb-4">Login</h1>
-      {(localError || authError) && (
-        <div className="alert alert-error mb-4">{localError || authError}</div>
-      )}
-      <form onSubmit={submit} className="max-w-md mx-auto space-y-4">
-        <TextInput
-          label="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <TextInput
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button className="btn btn-primary w-full" type="submit">
-          Login
-        </button>
-      </form>
+      <div className="max-w-md mx-auto mt-8">
+        <h1 className="text-2xl font-bold mb-6 text-center text-black">Login</h1>
+        {(localError || authError) && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+            {localError || authError}
+          </div>
+        )}
+        <form onSubmit={submit} className="space-y-4">
+          <TextInput
+            label="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <TextInput
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button 
+            className="w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 transition-colors" 
+            type="submit"
+          >
+            Login
+          </button>
+        </form>
+        <div className="mt-6 text-center">
+          <p className="text-black">
+            Don't have an account?{" "}
+            <a href="/auth/register" className="text-black font-medium hover:underline">
+              Register here
+            </a>
+          </p>
+        </div>
+      </div>
     </AuthLayout>
   );
 };
