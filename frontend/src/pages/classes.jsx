@@ -5,7 +5,7 @@ import MainLayout from "../components/Layouts/MainLayout";
 import AuthContext from "../context/AuthContext";
 import { formatTime } from "../utils/helpers";
 import { API_PATHS } from "../utils/apiPaths";
-import BlackSpinnerLoader from "../components/Loaders/BlackSpinnerLoader";
+import BookingLoader from "../components/Loaders/BookingLoader";
 
 const Classes = () => {
   const { user, error } = useContext(AuthContext);
@@ -24,7 +24,7 @@ const Classes = () => {
   const calendarRef = useRef(null);
 
   useEffect(() => {
-    if (date === null || date) fetchClasses();
+    fetchClasses();
   }, [date]);
 
   useEffect(() => {
@@ -82,23 +82,6 @@ const Classes = () => {
     } finally {
       setIsViewingDetails(false);
     }
-  };
-
-  const getTrainerName = (classData) => {
-    // Try all possible paths for trainer name
-    if (classData.trainer) {
-      if (typeof classData.trainer === 'string') return classData.trainer;
-      if (classData.trainer.trainerName) return classData.trainer.trainerName;
-      if (classData.trainer.name) return classData.trainer.name;
-      if (classData.trainer.firstName) return `${classData.trainer.firstName} ${classData.trainer.lastName || ''}`.trim();
-    }
-    if (classData.trainerName) return classData.trainerName;
-    if (classData.instructorName) return classData.instructorName;
-    if (classData.instructor) {
-      if (typeof classData.instructor === 'string') return classData.instructor;
-      if (classData.instructor.name) return classData.instructor.name;
-    }
-    return "N/A";
   };
 
   const filterClasses = () => {
@@ -166,6 +149,107 @@ const Classes = () => {
       return newMonth;
     });
   };
+
+  // Get class time display based on date selection and schedule structure
+  const getClassTimeDisplay = (classData) => {
+    if (date && classData.schedule) {
+      // For date-specific view, show time from schedule object or first schedule item
+      if (typeof classData.schedule === 'object' && classData.schedule.startTime && classData.schedule.endTime) {
+        return `${formatTime(classData.schedule.startTime)} - ${formatTime(classData.schedule.endTime)}`;
+      }
+      if (Array.isArray(classData.schedule) && classData.schedule.length > 0 && classData.schedule[0].startTime) {
+        return `${formatTime(classData.schedule[0].startTime)} - ${formatTime(classData.schedule[0].endTime)}`;
+      }
+      return "Time not available";
+    }
+    return null; // For general view, don't show time
+  };
+
+  // Unified ClassCard component
+  const ClassCard = ({ c }) => (
+    <div className="bg-white border-2 border-black rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+      <div className="relative">
+        <img
+          src={c.imageURLs?.[0] || "/images/default-class.png"}
+          alt={c.className}
+          className="w-full h-48 object-cover"
+        />
+        <button
+          onClick={() => fetchClassDetails(c._id)}
+          className="absolute top-2 right-2 bg-white text-black p-2 rounded-full hover:bg-gray-100 transition-colors shadow-lg"
+          disabled={isViewingDetails}
+        >
+          <Eye className="w-4 h-4" />
+        </button>
+      </div>
+      
+      <div className="p-4">
+        <h2 className="text-xl font-bold text-black mb-2">{c.className}</h2>
+        <p className="text-gray-700 mb-3 line-clamp-2">{c.description}</p>
+        
+        <div className="flex items-center gap-2 mb-3">
+          <User className="w-4 h-4 text-black" />
+          <span className="text-black">
+            <span className="font-medium">Trainer:</span> {c.trainer?.trainerName || "N/A"}
+          </span>
+        </div>
+        
+        {/* Conditional rendering based on date selection */}
+        {date ? (
+          <>
+            <div className="flex items-center gap-2 mb-3">
+              <Clock className="w-4 h-4 text-black" />
+              <span className="text-black">
+                <span className="font-medium">Time:</span> {getClassTimeDisplay(c)}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2 mb-3">
+              <Calendar className="w-4 h-4 text-black" />
+              <span className="text-black">
+                <span className="font-medium">Date:</span> {date}
+              </span>
+            </div>
+          </>
+        ) : (
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Calendar className="w-4 h-4 text-black" />
+              <span className="font-medium text-black">Schedule:</span>
+            </div>
+            <div className="ml-6 space-y-1">
+              {Array.isArray(c.schedule) ? c.schedule.map((sch, idx) => (
+                <div key={idx} className="flex items-center gap-2 text-sm">
+                  <span className="font-medium text-black">{sch.day}</span>
+                  <Clock className="w-3 h-3" />
+                  <span className="text-gray-700">{sch.startTime} - {sch.endTime}</span>
+                </div>
+              )) : (
+                <div className="text-sm text-gray-700">No schedule available</div>
+              )}
+            </div>
+          </div>
+        )}
+        
+        <div className="mb-4">
+          <span className="font-medium text-black">Status: </span>
+          <span className={c.cancelled ? "text-red-600" : "text-green-600"}>
+            {c.cancelled ? "Cancelled" : "Available"}
+          </span>
+        </div>
+        
+        {!c.cancelled && (
+          <button
+            className="w-full bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => bookClass(c._id)}
+            disabled={isBooking[c._id]}
+          >
+            {isBooking[c._id] ? <BookingLoader text="Booking..." /> : "Join Class"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
 
   const CalendarPopup = () => {
     if (!showCalendar) return null;
@@ -339,7 +423,6 @@ const Classes = () => {
     );
   };
 
-
   return (
     <MainLayout>
       <div className="bg-white min-h-screen">
@@ -396,145 +479,12 @@ const Classes = () => {
             </div>
           </div>
 
-          {date === null ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredClasses.map((c) => (
-                <div key={c._id} className="bg-white border-2 border-black rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-                  <div className="relative">
-                    <img
-                      src={c.imageURLs?.[0] || "/images/default-class.png"}
-                      alt={c.className}
-                      className="w-full h-48 object-cover"
-                    />
-                    <button
-                      onClick={() => fetchClassDetails(c._id)}
-                      className="absolute top-2 right-2 bg-white text-black p-2 rounded-full hover:bg-gray-100 transition-colors shadow-lg"
-                      disabled={isViewingDetails}
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                  </div>
-                  
-                  <div className="p-4">
-                    <h2 className="text-xl font-bold text-black mb-2">{c.className}</h2>
-                    <p className="text-gray-700 mb-3 line-clamp-2">{c.description}</p>
-                    
-                    <div className="flex items-center gap-2 mb-3">
-                      <User className="w-4 h-4 text-black" />
-                      <span className="text-black">
-                        <span className="font-medium">Trainer:</span> {c.trainer?.trainerName || "N/A"}
-                      </span>
-                    </div>
-                    
-                    <div className="mb-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="w-4 h-4 text-black" />
-                        <span className="font-medium text-black">Schedule:</span>
-                      </div>
-                      <div className="ml-6 space-y-1">
-                        {Array.isArray(c.schedule) ? c.schedule.map((sch, idx) => (
-                          <div key={idx} className="flex items-center gap-2 text-sm">
-                            <span className="font-medium text-black">{sch.day}</span>
-                            <Clock className="w-3 h-3" />
-                            <span className="text-gray-700">{sch.startTime} - {sch.endTime}</span>
-                          </div>
-                        )) : (
-                          <div className="text-sm text-gray-700">No schedule available</div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="mb-4">
-                      <span className="font-medium text-black">Status: </span>
-                      <span className={c.cancelled ? "text-red-600" : "text-green-600"}>
-                        {c.cancelled ? "Cancelled" : "Available"}
-                      </span>
-                    </div>
-                    
-                    {!c.cancelled && (
-                      <button
-                        className="w-full bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => bookClass(c._id)}
-                        disabled={isBooking[c._id]}
-                      >
-                        {isBooking[c._id] ? <BlackSpinnerLoader /> : "Join Class"}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredClasses.map((c) => (
-                <div key={c._id} className="bg-white border-2 border-black rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-                  <div className="relative">
-                    <img
-                      src={c.imageURLs?.[0] || "/images/default-class.png"}
-                      alt={c.className}
-                      className="w-full h-48 object-cover"
-                    />
-                    <button
-                      onClick={() => fetchClassDetails(c._id)}
-                      className="absolute top-2 right-2 bg-white text-black p-2 rounded-full hover:bg-gray-100 transition-colors shadow-lg"
-                      disabled={isViewingDetails}
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                  </div>
-                  
-                  <div className="p-4">
-                    <h2 className="text-xl font-bold text-black mb-2">{c.className}</h2>
-                    <p className="text-gray-700 mb-3 line-clamp-2">{c.description}</p>
-                    
-                    <div className="flex items-center gap-2 mb-3">
-                      <User className="w-4 h-4 text-black" />
-                      <span className="text-black">
-                        <span className="font-medium">Trainer:</span> {c.trainer?.trainerName || "N/A"}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 mb-3">
-                      <Clock className="w-4 h-4 text-black" />
-                      <span className="text-black">
-                        <span className="font-medium">Time:</span> {
-                          c.schedule && typeof c.schedule === 'object' && c.schedule.startTime && c.schedule.endTime
-                            ? `${formatTime(c.schedule.startTime)} - ${formatTime(c.schedule.endTime)}`
-                            : Array.isArray(c.schedule) && c.schedule.length > 0 && c.schedule[0].startTime
-                            ? `${formatTime(c.schedule[0].startTime)} - ${formatTime(c.schedule[0].endTime)}`
-                            : "Time not available"
-                        }
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 mb-3">
-                      <Calendar className="w-4 h-4 text-black" />
-                      <span className="text-black">
-                        <span className="font-medium">Date:</span> {date}
-                      </span>
-                    </div>
-                    
-                    <div className="mb-4">
-                      <span className="font-medium text-black">Status: </span>
-                      <span className={c.cancelled ? "text-red-600" : "text-green-600"}>
-                        {c.cancelled ? "Cancelled" : "Available"}
-                      </span>
-                    </div>
-                    
-                    {!c.cancelled && (
-                      <button
-                        className="w-full bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => bookClass(c._id)}
-                        disabled={isBooking[c._id]}
-                      >
-                        {isBooking[c._id] ? <BlackSpinnerLoader /> : "Join Class"}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Single unified class grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredClasses.map((c) => (
+              <ClassCard key={c._id} c={c} />
+            ))}
+          </div>
 
           {filteredClasses.length === 0 && !isLoading && (
             <div className="text-center py-12">
