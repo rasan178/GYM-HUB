@@ -13,6 +13,17 @@ exports.getUsers = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// Get total user count
+exports.getUserCount = async (req, res) => {
+  try {
+    // Count only users with role 'member', excluding 'admin'
+    const count = await User.countDocuments({ role: 'user' });
+    res.json({ count });
+  } catch (error) {
+    console.error('Error getting user count:', error);
+    res.status(500).json({ message: 'Error getting user count' });
+  }
+};
 
 // Delete a user (admin)
 exports.deleteUser = async (req, res) => {
