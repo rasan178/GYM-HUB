@@ -3,11 +3,15 @@ const express = require('express');
 const router = express.Router();
 const {
   updateProfile,
+  getUserCount,
 } = require('../controllers/userController');
 const { protect } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
 // -------------------- User Routes -------------------- //
+// Get user count (public)
+router.get('/count', getUserCount);
+
 // Update profile (single image)
 router.put('/profile', protect, upload.single('image'), updateProfile);
 

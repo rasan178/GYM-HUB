@@ -9,8 +9,9 @@ export const API_PATHS = {
   },
 
   USERS: {
-    UPDATE_PROFILE: "/api/users/profile",
-  },
+  UPDATE_PROFILE: "/api/users/profile",
+  GET_COUNT: "/api/users/count", // Add this line
+},
 
   TRAINERS: {
     GET_ALL: "/api/trainers",
