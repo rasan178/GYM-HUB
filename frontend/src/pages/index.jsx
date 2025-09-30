@@ -176,7 +176,7 @@ export default function Home() {
   return (
     <MainLayout>
       {/* Hero Section */}
-      <section className="relative bg-black text-white overflow-hidden h-[400px] md:h-[550px] flex items-center pt-16">
+      <section className="relative bg-black text-white overflow-hidden h-[400px] md:h-[600px] flex items-center pt-16">
         <div className="absolute inset-0">
           {heroImages.map((image, index) => (
             <div
@@ -191,7 +191,7 @@ export default function Home() {
               }}
             />
           ))}
-          <div className="absolute inset-0 backdrop-blur-sm bg-black/60" />
+          <div className="absolute inset-0 bg-black/70" />
         </div>
 
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
@@ -206,7 +206,10 @@ export default function Home() {
         </div>
         
         <div className="relative z-20 w-full max-w-6xl mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-wider">
+          <div className="inline-block px-6 py-2 bg-white text-black font-black text-sm uppercase tracking-wider mb-6">
+            No. 1 Fitness Destination
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-wider drop-shadow-2xl">
             Transform Your Body,<br />
             Elevate Your Life
           </h1>
@@ -216,7 +219,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/register">
-              <button className="bg-white text-black px-8 py-4 font-black uppercase tracking-widest hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-2 border-2 border-white transform hover:scale-105">
+              <button className="bg-white text-black px-8 py-4 font-black uppercase tracking-widest hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-2 border-2 border-white transform hover:scale-105 shadow-lg">
                 Start Your Journey
                 <ArrowRight className="w-5 h-5" />
               </button>
@@ -236,35 +239,35 @@ export default function Home() {
       <section className="py-16 bg-white border-b-4 border-black">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group">
-              <Users className="w-12 h-12 mx-auto mb-4 text-black group-hover:text-white" />
+            <div className="text-center p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group shadow-lg">
+              <Users className="w-12 h-12 mx-auto mb-4 text-black group-hover:text-white transition-colors" />
               <div className="text-4xl font-black mb-2">
                 {statsLoading ? '...' : usersCount.toLocaleString()}
               </div>
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-gray-300">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-white">
                 Happy Members
               </div>
             </div>
-            <div className="text-center p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group">
-              <Award className="w-12 h-12 mx-auto mb-4 text-black group-hover:text-white" />
+            <div className="text-center p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group shadow-lg">
+              <Award className="w-12 h-12 mx-auto mb-4 text-black group-hover:text-white transition-colors" />
               <div className="text-4xl font-black mb-2">
                 {statsLoading ? '...' : trainersCount}
               </div>
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-gray-300">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-white">
                 Expert Trainers
               </div>
             </div>
-            <div className="text-center p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group">
-              <Dumbbell className="w-12 h-12 mx-auto mb-4 text-black group-hover:text-white" />
+            <div className="text-center p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group shadow-lg">
+              <Dumbbell className="w-12 h-12 mx-auto mb-4 text-black group-hover:text-white transition-colors" />
               <div className="text-4xl font-black mb-2">100+</div>
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-gray-300">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-white">
                 Modern Equipment
               </div>
             </div>
-            <div className="text-center p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group">
-              <Clock className="w-12 h-12 mx-auto mb-4 text-black group-hover:text-white" />
+            <div className="text-center p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group shadow-lg">
+              <Clock className="w-12 h-12 mx-auto mb-4 text-black group-hover:text-white transition-colors" />
               <div className="text-4xl font-black mb-2">24/7</div>
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-gray-300">
+              <div className="text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-white">
                 Access Hours
               </div>
             </div>
@@ -283,36 +286,36 @@ export default function Home() {
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center p-6 border-2 border-white hover:bg-white hover:text-black transition-all duration-300 group">
+            <div className="text-center p-8 border-2 border-white bg-transparent hover:bg-white hover:text-black hover:scale-105 transition-all duration-300 group">
               <div className="mb-6 flex justify-center">
-                <Dumbbell className="w-16 h-16" />
+                <Dumbbell className="w-16 h-16 text-white group-hover:text-black transition-colors" />
               </div>
               <h3 className="text-xl font-black mb-4 uppercase tracking-wide">Modern Equipment</h3>
               <p className="text-gray-300 group-hover:text-gray-700 font-medium">
                 State-of-the-art gym equipment for all your fitness needs
               </p>
             </div>
-            <div className="text-center p-6 border-2 border-white hover:bg-white hover:text-black transition-all duration-300 group">
+            <div className="text-center p-8 border-2 border-white bg-transparent hover:bg-white hover:text-black hover:scale-105 transition-all duration-300 group">
               <div className="mb-6 flex justify-center">
-                <Users className="w-16 h-16" />
+                <Users className="w-16 h-16 text-white group-hover:text-black transition-colors" />
               </div>
               <h3 className="text-xl font-black mb-4 uppercase tracking-wide">Expert Trainers</h3>
               <p className="text-gray-300 group-hover:text-gray-700 font-medium">
                 Certified personal trainers to guide your fitness journey
               </p>
             </div>
-            <div className="text-center p-6 border-2 border-white hover:bg-white hover:text-black transition-all duration-300 group">
+            <div className="text-center p-8 border-2 border-white bg-transparent hover:bg-white hover:text-black hover:scale-105 transition-all duration-300 group">
               <div className="mb-6 flex justify-center">
-                <Clock className="w-16 h-16" />
+                <Target className="w-16 h-16 text-white group-hover:text-black transition-colors" />
               </div>
-              <h3 className="text-xl font-black mb-4 uppercase tracking-wide">24/7 Access</h3>
+              <h3 className="text-xl font-black mb-4 uppercase tracking-wide">Custom Programs</h3>
               <p className="text-gray-300 group-hover:text-gray-700 font-medium">
-                Train whenever you want with round-the-clock access
+                Personalized workout plans tailored to your goals
               </p>
             </div>
-            <div className="text-center p-6 border-2 border-white hover:bg-white hover:text-black transition-all duration-300 group">
+            <div className="text-center p-8 border-2 border-white bg-transparent hover:bg-white hover:text-black hover:scale-105 transition-all duration-300 group">
               <div className="mb-6 flex justify-center">
-                <Heart className="w-16 h-16" />
+                <Heart className="w-16 h-16 text-white group-hover:text-black transition-colors" />
               </div>
               <h3 className="text-xl font-black mb-4 uppercase tracking-wide">Health Focused</h3>
               <p className="text-gray-300 group-hover:text-gray-700 font-medium">
@@ -333,9 +336,9 @@ export default function Home() {
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="border-2 border-black p-8 hover:bg-black hover:text-white transition-all duration-300 group transform hover:-translate-y-2">
+            <div className="border-2 border-black p-8 bg-white hover:bg-black hover:text-white transition-all duration-300 group transform hover:-translate-y-2 shadow-lg">
               <div className="mb-6">
-                <Zap className="w-12 h-12" />
+                <Zap className="w-12 h-12 text-black group-hover:text-white transition-colors" />
               </div>
               <h3 className="text-2xl font-black mb-4 uppercase tracking-wide">Strength Training</h3>
               <p className="text-gray-600 group-hover:text-gray-300 mb-6 font-medium">
@@ -348,9 +351,9 @@ export default function Home() {
                 </button>
               </Link>
             </div>
-            <div className="border-2 border-black p-8 hover:bg-black hover:text-white transition-all duration-300 group transform hover:-translate-y-2">
+            <div className="border-2 border-black p-8 bg-white hover:bg-black hover:text-white transition-all duration-300 group transform hover:-translate-y-2 shadow-lg">
               <div className="mb-6">
-                <Target className="w-12 h-12" />
+                <Target className="w-12 h-12 text-black group-hover:text-white transition-colors" />
               </div>
               <h3 className="text-2xl font-black mb-4 uppercase tracking-wide">Cardio Fitness</h3>
               <p className="text-gray-600 group-hover:text-gray-300 mb-6 font-medium">
@@ -363,9 +366,9 @@ export default function Home() {
                 </button>
               </Link>
             </div>
-            <div className="border-2 border-black p-8 hover:bg-black hover:text-white transition-all duration-300 group transform hover:-translate-y-2">
+            <div className="border-2 border-black p-8 bg-white hover:bg-black hover:text-white transition-all duration-300 group transform hover:-translate-y-2 shadow-lg">
               <div className="mb-6">
-                <Award className="w-12 h-12" />
+                <Award className="w-12 h-12 text-black group-hover:text-white transition-colors" />
               </div>
               <h3 className="text-2xl font-black mb-4 uppercase tracking-wide">Group Classes</h3>
               <p className="text-gray-600 group-hover:text-gray-300 mb-6 font-medium">
@@ -415,12 +418,12 @@ export default function Home() {
           ) : (
             <div className="grid md:grid-cols-3 gap-8">
               {testimonials.slice(0, 6).map((testimonial) => (
-                <div key={testimonial._id} className="bg-white text-black p-8 border-2 border-white hover:transform hover:-translate-y-2 transition-all duration-300">
+                <div key={testimonial._id} className="bg-white text-black p-8 border-2 border-white hover:transform hover:-translate-y-2 transition-all duration-300 shadow-lg">
                   {testimonial.imageURL && (
                     <img 
                       src={testimonial.imageURL} 
                       alt={testimonial.userName}
-                      className="w-20 h-20 border-4 border-black mx-auto mb-4 object-cover"
+                      className="w-20 h-20 border-4 border-black mx-auto mb-4 object-cover rounded-full"
                     />
                   )}
                   <div className="flex mb-4 justify-center">
@@ -439,8 +442,8 @@ export default function Home() {
 
         {/* Create Testimonial Modal */}
         {showCreateForm && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white text-black p-8 border-4 border-black max-w-md w-full">
+          <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white text-black p-8 border-4 border-black max-w-md w-full shadow-2xl">
               <div className="flex justify-between items-start mb-6 pb-6 border-b-4 border-black">
                 <h3 className="text-3xl font-black uppercase tracking-wider">Share Your Experience</h3>
                 <button
@@ -479,7 +482,7 @@ export default function Home() {
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
                         key={star}
-                        className={`w-8 h-8 cursor-pointer transition-all ${star <= testimonialForm.rating ? 'fill-current text-yellow-500' : 'text-gray-300'}`}
+                        className={`w-8 h-8 cursor-pointer transition-all ${star <= testimonialForm.rating ? 'fill-current text-black' : 'text-gray-300'}`}
                         onClick={() => setTestimonialForm({...testimonialForm, rating: star})}
                       />
                     ))}
@@ -527,7 +530,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link href="/auth/register">
-              <button className="border-2 border-black bg-black text-white px-8 py-4 font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all duration-300 transform hover:scale-105">
+              <button className="border-2 border-black bg-black text-white px-8 py-4 font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all duration-300 transform hover:scale-105 shadow-lg">
                 Join Now
               </button>
             </Link>
@@ -539,15 +542,15 @@ export default function Home() {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="flex items-center justify-center gap-3 p-4 border-2 border-black hover:bg-black hover:text-white transition-all group">
+            <div className="flex items-center justify-center gap-3 p-4 border-2 border-black hover:bg-black hover:text-white transition-all group shadow-lg">
               <Phone className="w-5 h-5" />
               <span className="font-bold">+1 (555) 123-4567</span>
             </div>
-            <div className="flex items-center justify-center gap-3 p-4 border-2 border-black hover:bg-black hover:text-white transition-all group">
+            <div className="flex items-center justify-center gap-3 p-4 border-2 border-black hover:bg-black hover:text-white transition-all group shadow-lg">
               <Mail className="w-5 h-5" />
               <span className="font-bold">info@gymhub.com</span>
             </div>
-            <div className="flex items-center justify-center gap-3 p-4 border-2 border-black hover:bg-black hover:text-white transition-all group">
+            <div className="flex items-center justify-center gap-3 p-4 border-2 border-black hover:bg-black hover:text-white transition-all group shadow-lg">
               <MapPin className="w-5 h-5" />
               <span className="font-bold">123 Fitness Street</span>
             </div>
@@ -563,33 +566,33 @@ export default function Home() {
               <h2 className="text-5xl font-black mb-8 uppercase tracking-wider border-b-4 border-white pb-6">Membership Benefits</h2>
               <div className="space-y-4">
                 <div className="flex items-center gap-4 p-4 border-2 border-white hover:bg-white hover:text-black transition-all group">
-                  <CheckCircle className="w-6 h-6 flex-shrink-0" />
+                  <CheckCircle className="w-6 h-6 flex-shrink-0 text-white group-hover:text-black transition-colors" />
                   <span className="font-bold">Unlimited access to all equipment</span>
                 </div>
                 <div className="flex items-center gap-4 p-4 border-2 border-white hover:bg-white hover:text-black transition-all group">
-                  <CheckCircle className="w-6 h-6 flex-shrink-0" />
+                  <CheckCircle className="w-6 h-6 flex-shrink-0 text-white group-hover:text-black transition-colors" />
                   <span className="font-bold">Free personal training consultation</span>
                 </div>
                 <div className="flex items-center gap-4 p-4 border-2 border-white hover:bg-white hover:text-black transition-all group">
-                  <CheckCircle className="w-6 h-6 flex-shrink-0" />
+                  <CheckCircle className="w-6 h-6 flex-shrink-0 text-white group-hover:text-black transition-colors" />
                   <span className="font-bold">Access to group fitness classes</span>
                 </div>
                 <div className="flex items-center gap-4 p-4 border-2 border-white hover:bg-white hover:text-black transition-all group">
-                  <CheckCircle className="w-6 h-6 flex-shrink-0" />
+                  <CheckCircle className="w-6 h-6 flex-shrink-0 text-white group-hover:text-black transition-colors" />
                   <span className="font-bold">Locker room and shower facilities</span>
                 </div>
                 <div className="flex items-center gap-4 p-4 border-2 border-white hover:bg-white hover:text-black transition-all group">
-                  <CheckCircle className="w-6 h-6 flex-shrink-0" />
+                  <CheckCircle className="w-6 h-6 flex-shrink-0 text-white group-hover:text-black transition-colors" />
                   <span className="font-bold">Nutritional guidance and meal plans</span>
                 </div>
                 <div className="flex items-center gap-4 p-4 border-2 border-white hover:bg-white hover:text-black transition-all group">
-                  <CheckCircle className="w-6 h-6 flex-shrink-0" />
+                  <CheckCircle className="w-6 h-6 flex-shrink-0 text-white group-hover:text-black transition-colors" />
                   <span className="font-bold">Member-only events and challenges</span>
                 </div>
               </div>
             </div>
             <div className="text-center">
-              <div className="bg-white text-black p-12 border-4 border-white inline-block transform hover:scale-105 transition-all duration-300">
+              <div className="bg-white text-black p-12 border-4 border-white inline-block transform hover:scale-105 transition-all duration-300 shadow-2xl">
                 <h3 className="text-3xl font-black mb-6 uppercase tracking-widest">Premium Membership</h3>
                 <div className="text-6xl font-black mb-2">$49</div>
                 <div className="text-gray-600 mb-8 font-bold uppercase tracking-wide">per month</div>

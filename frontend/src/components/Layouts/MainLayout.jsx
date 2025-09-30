@@ -45,13 +45,13 @@ const MainLayout = ({ children }) => {
         <Footer />
       </div>
       
-      {/* Enhanced Scroll to Top Button */}
+      {/* Enhanced Scroll to Top Button
       <button 
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         className="fixed bottom-8 right-8 bg-white text-black w-12 h-12 rounded-full shadow-xl hover:bg-gray-200 border-2 border-white transition-all duration-300 transform hover:scale-110 z-40 flex items-center justify-center font-bold text-xl"
       >
         ↑
-      </button>
+      </button> */}
     </div>
   );
 };
