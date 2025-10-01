@@ -2,9 +2,9 @@ import { useContext, useEffect, useState } from 'react';
 import AuthContext from '../../context/AuthContext';
 import api from '../../utils/axiosInstance';
 import DashboardLayout from '../../components/Layouts/DashboardLayout';
-import { formatDate, formatTime } from '../../utils/helpers';
+import { formatDate, formatTime, getISODate } from '../../utils/helpers';
 import { API_PATHS } from '../../utils/apiPaths';
-import SkeletonLoader from '../../components/Loaders/SkeletonLoader';
+import BlackSkeletonLoader from '../../components/Loaders/BlackSkeletonLoader';
 import Modal from '../../components/Modal';
 import TextInput from '../../components/Inputs/TextInput';
 import SelectInput from '../../components/Inputs/SelectInput';
@@ -63,7 +63,7 @@ const Bookings = () => {
 
   const fetchClasses = async () => {
     try {
-      const res = await api.get(API_PATHS.CLASSES.GET_ALL_WITH_AVAILABILITY, { params: { date: formatDate(new Date()) } });
+      const res = await api.get(API_PATHS.CLASSES.GET_ALL_WITH_AVAILABILITY, { params: { date: getISODate(new Date()) } });
       setClasses(res.data.map(c => ({ value: c._id, label: c.className })));
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch classes');
@@ -116,7 +116,7 @@ const Bookings = () => {
     }
   };
 
-  if (loading || isLoading) return <SkeletonLoader />;
+  if (loading || isLoading) return <BlackSkeletonLoader lines={10} />;
 
   return (
     <DashboardLayout>

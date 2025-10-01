@@ -3,7 +3,7 @@ import api from '../../utils/axiosInstance';
 import DashboardLayout from '../../components/Layouts/DashboardLayout';
 import MembershipCard from '../../components/Cards/MembershipCard';
 import { API_PATHS } from '../../utils/apiPaths';
-import SkeletonLoader from '../../components/Loaders/SkeletonLoader';
+import BlackSkeletonLoader from '../../components/Loaders/BlackSkeletonLoader';
 
 const Memberships = () => {
   const [memberships, setMemberships] = useState([]);
@@ -26,7 +26,7 @@ const Memberships = () => {
     }
   };
 
-  if (isLoading) return <SkeletonLoader />;
+  if (isLoading) return <BlackSkeletonLoader lines={8} />;
 
   return (
     <DashboardLayout>

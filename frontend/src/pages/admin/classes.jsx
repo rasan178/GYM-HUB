@@ -10,7 +10,7 @@ import AuthContext from '../../context/AuthContext';
 import { formatDate } from '../../utils/helpers';
 import { API_PATHS } from '../../utils/apiPaths';
 import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
-import SkeletonLoader from '../../components/Loaders/SkeletonLoader';
+import BlackSkeletonLoader from '../../components/Loaders/BlackSkeletonLoader';
 
 const AdminClasses = () => {
   const { error } = useContext(AuthContext);
@@ -104,9 +104,9 @@ const AdminClasses = () => {
     }
     try {
       if (formData._id) {
-        await api.put(API_PATHS.CLASSES.UPDATE(formData._id), fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        await api.put(API_PATHS.ADMIN.CLASSES.UPDATE(formData._id), fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       } else {
-        await api.post(API_PATHS.CLASSES.CREATE, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        await api.post(API_PATHS.ADMIN.CLASSES.CREATE, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       }
       setIsModalOpen(false);
       setFormData({ className: '', description: '', trainerID: '', schedule: [{ day: '', startTime: '', endTime: '' }], capacity: '', location: '', price: '', category: '', level: 'Beginner' });
@@ -124,7 +124,7 @@ const AdminClasses = () => {
   const deleteClass = async id => {
     setIsSubmitting(true);
     try {
-      await api.delete(API_PATHS.CLASSES.DELETE(id));
+      await api.delete(API_PATHS.ADMIN.CLASSES.DELETE(id));
       fetchClasses();
       setLocalError(null);
     } catch (err) {
@@ -137,7 +137,7 @@ const AdminClasses = () => {
   const cancelClass = async () => {
     setIsSubmitting(true);
     try {
-      await api.post(API_PATHS.CLASSES.CANCEL_DATE(cancelClassId), { date: cancelDate });
+      await api.post(API_PATHS.ADMIN.CLASSES.CANCEL_DATE(cancelClassId), { date: cancelDate });
       setIsCancelModalOpen(false);
       setCancelDate('');
       setCancelClassId('');
@@ -154,7 +154,7 @@ const AdminClasses = () => {
   const activateClass = async (id, date) => {
     setIsSubmitting(true);
     try {
-      await api.post(API_PATHS.CLASSES.ACTIVATE_DATE(id), { date });
+      await api.post(API_PATHS.ADMIN.CLASSES.ACTIVATE_DATE(id), { date });
       fetchClasses();
       setLocalError(null);
       alert('Class activated successfully!');
@@ -182,7 +182,7 @@ const AdminClasses = () => {
     setIsModalOpen(true);
   };
 
-  if (isLoading) return <SkeletonLoader />;
+  if (isLoading) return <BlackSkeletonLoader lines={12} />;
 
   return (
     <AdminLayout>

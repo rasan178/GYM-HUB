@@ -1,6 +1,6 @@
 import { Upload } from "lucide-react";
 
-const FileInput = ({ label, name, onChange, multiple = false }) => {
+const FileInput = ({ label, name, onChange, multiple = false, icon }) => {
   return (
     <div className="form-control mb-4">
       <label className="label">
@@ -11,11 +11,17 @@ const FileInput = ({ label, name, onChange, multiple = false }) => {
           type="file"
           name={name}
           onChange={onChange}
-          className="file-input file-input-bordered border-black bg-white text-black hover:bg-gray-50 focus:border-black focus:ring-0"
+          className={`file-input file-input-bordered border-black bg-white text-black hover:bg-gray-50 focus:border-black focus:ring-0 w-full ${icon ? 'pl-10' : 'pl-4'}`}
           accept="image/jpeg,image/png,image/jpg"
           multiple={multiple}
         />
-        <Upload className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black pointer-events-none" />
+        {icon ? (
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black pointer-events-none">
+            {icon}
+          </div>
+        ) : (
+          <Upload className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black pointer-events-none" />
+        )}
       </div>
     </div>
   );

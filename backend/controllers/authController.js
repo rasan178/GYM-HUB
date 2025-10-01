@@ -31,7 +31,16 @@ exports.logout = (req, res) => res.json({ message: 'Logout successful' });
 exports.getProfile = async (req, res) => {
   const user = await User.findById(req.user._id);
   if (user) {
-    res.json({ userID: user.userID, name: user.name, email: user.email, role: user.role, profileImageURL: user.profileImageURL, status: user.status });
+    res.json({ 
+      userID: user.userID, 
+      name: user.name, 
+      email: user.email, 
+      role: user.role, 
+      profileImageURL: user.profileImageURL, 
+      status: user.status,
+      createdDate: user.createdDate,
+      updatedDate: user.updatedDate
+    });
   } else {
     res.status(404).json({ message: 'User not found' });
   }

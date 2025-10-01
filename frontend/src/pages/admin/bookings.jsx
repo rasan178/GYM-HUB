@@ -3,7 +3,7 @@ import api from '../../utils/axiosInstance';
 import AdminLayout from '../../components/Layouts/AdminLayout';
 import { formatDate, formatTime } from '../../utils/helpers';
 import { API_PATHS } from '../../utils/apiPaths';
-import SkeletonLoader from '../../components/Loaders/SkeletonLoader';
+import BlackSkeletonLoader from '../../components/Loaders/BlackSkeletonLoader';
 import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
 import SelectInput from '../../components/Inputs/SelectInput';
 
@@ -32,7 +32,7 @@ const AdminBookings = () => {
   const updateStatus = async (id, status) => {
     setIsAction(prev => ({ ...prev, [id]: 'update' }));
     try {
-      await api.put(API_PATHS.BOOKINGS.UPDATE_STATUS(id), { bookingStatus: status });
+      await api.put(API_PATHS.ADMIN.BOOKINGS.UPDATE_STATUS(id), { bookingStatus: status });
       fetchBookings();
       setLocalError(null);
     } catch (err) {
@@ -45,7 +45,7 @@ const AdminBookings = () => {
   const deleteBooking = async (id) => {
     setIsAction(prev => ({ ...prev, [id]: 'delete' }));
     try {
-      await api.delete(API_PATHS.BOOKINGS.DELETE(id));
+      await api.delete(API_PATHS.ADMIN.BOOKINGS.DELETE(id));
       fetchBookings();
       setLocalError(null);
     } catch (err) {
@@ -55,7 +55,7 @@ const AdminBookings = () => {
     }
   };
 
-  if (isLoading) return <SkeletonLoader />;
+  if (isLoading) return <BlackSkeletonLoader lines={12} />;
 
   return (
     <AdminLayout>
@@ -66,11 +66,14 @@ const AdminBookings = () => {
         <tbody>
           {bookings.map(b => (
             <tr key={b._id}>
-              <td>{b.userID.name}</td>
+              <td>{b.userID?.name || 'N/A'}</td>
               <td>{b.bookingType}</td>
-              <td>{b.bookingType === 'class' ? b.classID.className : b.trainerID.trainerName}</td>
-              <td>{formatDate(b.date)}</td>
-              <td>{formatTime(b.startTime)} - {formatTime(b.endTime)}</td>
+              <td>{b.bookingType === 'class' 
+                ? (b.classID?.className || b.classID?.name || 'N/A') 
+                : (b.trainerID?.trainerName || b.trainerID?.name || 'N/A')}
+              </td>
+              <td>{b.date ? formatDate(b.date) : 'N/A'}</td>
+              <td>{[b.startTime, b.endTime].some(Boolean) ? `${formatTime(b.startTime)} - ${formatTime(b.endTime)}` : 'N/A'}</td>
               <td>
                 <SelectInput
                   label="Status"

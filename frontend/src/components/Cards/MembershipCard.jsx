@@ -3,17 +3,27 @@ import { formatDate } from '../../utils/helpers';
 const MembershipCard = ({ membership }) => {
   const remainingDays = Math.ceil((new Date(membership.endDate) - new Date()) / (1000 * 60 * 60 * 24));
   return (
-    <div className="card w-full md:w-96 bg-base-100 shadow-xl">
-      <div className="card-body">
-        <h2 className="card-title">{membership.planName}</h2>
-        <p>User: {membership.userName}</p>
-        <p>Start: {formatDate(membership.startDate)}</p>
-        <p>End: {formatDate(membership.endDate)}</p>
-        <p>Remaining Days: {remainingDays > 0 ? remainingDays : 'Expired'}</p>
-        <p>Status: {membership.status}</p>
-        <p>Facilities: {membership.facilitiesIncluded}</p>
-        <p>Renewal: {membership.renewalOption ? 'Yes' : 'No'}</p>
-        <p>Active: {membership.active ? 'Yes' : 'No'}</p>
+    <div className="border-2 border-black bg-white text-black shadow-lg hover:shadow-2xl transition-all">
+      <div className="p-6 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-black uppercase tracking-wide">{membership.planName}</h2>
+          <span className={`px-3 py-1 text-xs font-black border-2 ${membership.active ? 'bg-black text-white border-black' : 'bg-white text-black border-black'}`}>
+            {membership.active ? 'Active' : 'Inactive'}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-3 text-sm font-bold">
+          <div className="border-2 border-black px-3 py-2 bg-white">User: {membership.userName}</div>
+          <div className="border-2 border-black px-3 py-2 bg-white">Status: {membership.status}</div>
+          <div className="border-2 border-black px-3 py-2 bg-white">Start: {formatDate(membership.startDate)}</div>
+          <div className="border-2 border-black px-3 py-2 bg-white">End: {formatDate(membership.endDate)}</div>
+          <div className="border-2 border-black px-3 py-2 bg-white">Renewal: {membership.renewalOption ? 'Yes' : 'No'}</div>
+          <div className="border-2 border-black px-3 py-2 bg-white">Remaining: {remainingDays > 0 ? `${remainingDays} days` : 'Expired'}</div>
+        </div>
+        {membership.facilitiesIncluded && (
+          <div className="border-2 border-black px-3 py-2 bg-white text-sm font-bold">
+            Facilities: {membership.facilitiesIncluded}
+          </div>
+        )}
       </div>
     </div>
   );

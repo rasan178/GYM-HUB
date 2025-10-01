@@ -21,10 +21,6 @@ import {
   X
 } from 'lucide-react';
 
-const apiPathsLocal = {
-  GET_APPROVED: "http://localhost:8000/api/testimonials",
-  CREATE: "http://localhost:8000/api/testimonials"
-};
 
 export default function Home() {
   const [testimonials, setTestimonials] = useState([]);
@@ -73,7 +69,7 @@ export default function Home() {
       
       // Fetch users count
       try {
-        const usersResponse = await api.get('/api/users/count');
+        const usersResponse = await api.get(API_PATHS.USERS.GET_COUNT);
         console.log('Users response:', usersResponse);
         console.log('Users data:', usersResponse.data);
         
@@ -110,12 +106,8 @@ export default function Home() {
 
   const fetchTestimonials = async () => {
     try {
-      const response = await fetch(apiPathsLocal.GET_APPROVED);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setTestimonials(data);
-      }
+      const { data } = await api.get(API_PATHS.TESTIMONIALS.GET_APPROVED);
+      setTestimonials(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching testimonials:', error);
     } finally {
@@ -138,24 +130,22 @@ export default function Home() {
         formData.append('image', testimonialForm.image);
       }
 
-      const response = await fetch(apiPathsLocal.CREATE, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
+      await api.post(
+        API_PATHS.TESTIMONIALS.CREATE,
+        formData,
+        {
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : undefined,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
 
-      if (response.ok) {
-        alert('Testimonial submitted successfully! It will be reviewed before appearing.');
-        setShowCreateForm(false);
-        setTestimonialForm({ message: '', rating: 5, userRole: '', image: null });
-        const fileInput = document.querySelector('input[type="file"]');
-        if (fileInput) fileInput.value = '';
-      } else {
-        const error = await response.json();
-        alert(error.message || 'Failed to submit testimonial');
-      }
+      alert('Testimonial submitted successfully! It will be reviewed before appearing.');
+      setShowCreateForm(false);
+      setTestimonialForm({ message: '', rating: 5, userRole: '', image: null });
+      const fileInput = document.querySelector('input[type="file"]');
+      if (fileInput) fileInput.value = '';
     } catch (error) {
       console.error('Error creating testimonial:', error);
       alert('Failed to submit testimonial');
@@ -175,8 +165,8 @@ export default function Home() {
 
   return (
     <MainLayout>
-      {/* Hero Section */}
-      <section className="relative bg-black text-white overflow-hidden h-[400px] md:h-[600px] flex items-center pt-16">
+      {/* Enhanced Hero Section */}
+      <section className="relative bg-black text-white overflow-hidden min-h-[500px] sm:min-h-[600px] lg:min-h-[700px] flex items-center pt-16">
         <div className="absolute inset-0">
           {heroImages.map((image, index) => (
             <div
@@ -191,44 +181,92 @@ export default function Home() {
               }}
             />
           ))}
-          <div className="absolute inset-0 bg-black/70" />
+          <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/80" />
         </div>
 
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+        {/* Enhanced Image Indicators */}
+        <div className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 sm:space-x-3 z-20">
           {heroImages.map((_, index) => (
-            <div
+            <button
               key={index}
-              className={`w-3 h-3 border-2 border-white transition-all duration-300 ${
-                index === currentImageIndex ? 'bg-white' : 'bg-transparent'
+              onClick={() => setCurrentImageIndex(index)}
+              className={`w-3 h-3 sm:w-4 sm:h-4 border-2 border-white transition-all duration-300 rounded-full ${
+                index === currentImageIndex ? 'bg-white scale-125' : 'bg-transparent hover:bg-white/50'
               }`}
             />
           ))}
         </div>
         
-        <div className="relative z-20 w-full max-w-6xl mx-auto px-4 text-center">
-          <div className="inline-block px-6 py-2 bg-white text-black font-black text-sm uppercase tracking-wider mb-6">
-            No. 1 Fitness Destination
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 text-center">
+          {/* Enhanced Branding */}
+          <div className="inline-flex items-center justify-center bg-white text-black px-4 sm:px-6 py-2 sm:py-3 font-black text-lg sm:text-xl mb-6 sm:mb-8 rounded-lg shadow-lg">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-black text-white rounded-full flex items-center justify-center mr-2 sm:mr-3 font-bold text-sm sm:text-base">
+              G
+            </div>
+            GYM-HUB
           </div>
-          <h1 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-wider drop-shadow-2xl">
+
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black mb-4 sm:mb-6 uppercase tracking-wider drop-shadow-2xl leading-tight">
             Transform Your Body,<br />
-            Elevate Your Life
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
+              Elevate Your Life
+            </span>
           </h1>
-          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-gray-200 font-medium">
-            Join GYM-HUB, the ultimate fitness destination with modern equipment, 
+          
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 max-w-3xl mx-auto text-gray-200 font-medium px-4 leading-relaxed">
+            Join GYM-HUB, the ultimate fitness destination with modern equipment,
             expert trainers, and a community dedicated to your success.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+          {/* Enhanced CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-4 mb-8 sm:mb-12">
             <Link href="/auth/register">
-              <button className="bg-white text-black px-8 py-4 font-black uppercase tracking-widest hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-2 border-2 border-white transform hover:scale-105 shadow-lg">
+              <button className="w-full sm:w-auto bg-white text-black px-8 sm:px-10 py-4 sm:py-5 font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all duration-300 flex items-center justify-center gap-3 border-2 border-white transform hover:scale-105 shadow-2xl hover:shadow-3xl text-sm sm:text-base lg:text-lg rounded-lg">
                 Start Your Journey
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </Link>
             <Link href="/trainers">
-              <button className="border-2 border-white text-white px-8 py-4 font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all duration-300 transform hover:scale-105">
+              <button className="w-full sm:w-auto border-2 border-white text-white px-8 sm:px-10 py-4 sm:py-5 font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all duration-300 transform hover:scale-105 text-sm sm:text-base lg:text-lg rounded-lg shadow-lg hover:shadow-xl">
                 Meet Our Trainers
               </button>
             </Link>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 max-w-2xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/20">
+              <div className="text-2xl sm:text-3xl font-black text-white mb-1">
+                {statsLoading ? '...' : usersCount}+
+              </div>
+              <div className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wide">
+                Members
+              </div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/20">
+              <div className="text-2xl sm:text-3xl font-black text-white mb-1">
+                {statsLoading ? '...' : trainersCount}+
+              </div>
+              <div className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wide">
+                Trainers
+              </div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/20">
+              <div className="text-2xl sm:text-3xl font-black text-white mb-1">
+                50+
+              </div>
+              <div className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wide">
+                Classes
+              </div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/20">
+              <div className="text-2xl sm:text-3xl font-black text-white mb-1">
+                24/7
+              </div>
+              <div className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wide">
+                Access
+              </div>
+            </div>
           </div>
         </div>
         
@@ -236,38 +274,38 @@ export default function Home() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-white border-b-4 border-black">
+      <section className="py-8 sm:py-16 bg-white border-b-2 sm:border-b-4 border-black">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group shadow-lg">
-              <Users className="w-12 h-12 mx-auto mb-4 text-black group-hover:text-white transition-colors" />
-              <div className="text-4xl font-black mb-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8">
+            <div className="text-center p-3 sm:p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group shadow-lg">
+              <Users className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-4 text-black group-hover:text-white transition-colors" />
+              <div className="text-2xl sm:text-4xl font-black mb-1 sm:mb-2">
                 {statsLoading ? '...' : usersCount.toLocaleString()}
               </div>
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-white">
+              <div className="text-xs sm:text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-white">
                 Happy Members
               </div>
             </div>
-            <div className="text-center p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group shadow-lg">
-              <Award className="w-12 h-12 mx-auto mb-4 text-black group-hover:text-white transition-colors" />
-              <div className="text-4xl font-black mb-2">
+            <div className="text-center p-3 sm:p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group shadow-lg">
+              <Award className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-4 text-black group-hover:text-white transition-colors" />
+              <div className="text-2xl sm:text-4xl font-black mb-1 sm:mb-2">
                 {statsLoading ? '...' : trainersCount}
               </div>
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-white">
+              <div className="text-xs sm:text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-white">
                 Expert Trainers
               </div>
             </div>
-            <div className="text-center p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group shadow-lg">
-              <Dumbbell className="w-12 h-12 mx-auto mb-4 text-black group-hover:text-white transition-colors" />
-              <div className="text-4xl font-black mb-2">100+</div>
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-white">
+            <div className="text-center p-3 sm:p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group shadow-lg">
+              <Dumbbell className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-4 text-black group-hover:text-white transition-colors" />
+              <div className="text-2xl sm:text-4xl font-black mb-1 sm:mb-2">100+</div>
+              <div className="text-xs sm:text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-white">
                 Modern Equipment
               </div>
             </div>
-            <div className="text-center p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group shadow-lg">
-              <Clock className="w-12 h-12 mx-auto mb-4 text-black group-hover:text-white transition-colors" />
-              <div className="text-4xl font-black mb-2">24/7</div>
-              <div className="text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-white">
+            <div className="text-center p-3 sm:p-6 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-300 group shadow-lg">
+              <Clock className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-4 text-black group-hover:text-white transition-colors" />
+              <div className="text-2xl sm:text-4xl font-black mb-1 sm:mb-2">24/7</div>
+              <div className="text-xs sm:text-sm font-bold uppercase tracking-widest text-gray-600 group-hover:text-white">
                 Access Hours
               </div>
             </div>
@@ -276,49 +314,49 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-black text-white">
+      <section className="py-12 sm:py-20 bg-black text-white">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-16 border-b-4 border-white pb-8">
-            <h2 className="text-5xl font-black mb-4 uppercase tracking-wider">Why Choose GYM-HUB?</h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto font-medium">
+          <div className="text-center mb-8 sm:mb-16 border-b-2 sm:border-b-4 border-white pb-6 sm:pb-8">
+            <h2 className="text-3xl sm:text-5xl font-black mb-3 sm:mb-4 uppercase tracking-wider">Why Choose GYM-HUB?</h2>
+            <p className="text-sm sm:text-xl text-gray-300 max-w-2xl mx-auto font-medium">
               We provide everything you need to achieve your fitness goals in a modern, 
               supportive environment.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center p-8 border-2 border-white bg-transparent hover:bg-white hover:text-black hover:scale-105 transition-all duration-300 group">
-              <div className="mb-6 flex justify-center">
-                <Dumbbell className="w-16 h-16 text-white group-hover:text-black transition-colors" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+            <div className="text-center p-4 sm:p-8 border-2 border-white bg-transparent hover:bg-white hover:text-black hover:scale-105 transition-all duration-300 group">
+              <div className="mb-4 sm:mb-6 flex justify-center">
+                <Dumbbell className="w-12 h-12 sm:w-16 sm:h-16 text-white group-hover:text-black transition-colors" />
               </div>
-              <h3 className="text-xl font-black mb-4 uppercase tracking-wide">Modern Equipment</h3>
-              <p className="text-gray-300 group-hover:text-gray-700 font-medium">
+              <h3 className="text-lg sm:text-xl font-black mb-3 sm:mb-4 uppercase tracking-wide">Modern Equipment</h3>
+              <p className="text-sm sm:text-base text-gray-300 group-hover:text-gray-700 font-medium">
                 State-of-the-art gym equipment for all your fitness needs
               </p>
             </div>
-            <div className="text-center p-8 border-2 border-white bg-transparent hover:bg-white hover:text-black hover:scale-105 transition-all duration-300 group">
-              <div className="mb-6 flex justify-center">
-                <Users className="w-16 h-16 text-white group-hover:text-black transition-colors" />
+            <div className="text-center p-4 sm:p-8 border-2 border-white bg-transparent hover:bg-white hover:text-black hover:scale-105 transition-all duration-300 group">
+              <div className="mb-4 sm:mb-6 flex justify-center">
+                <Users className="w-12 h-12 sm:w-16 sm:h-16 text-white group-hover:text-black transition-colors" />
               </div>
-              <h3 className="text-xl font-black mb-4 uppercase tracking-wide">Expert Trainers</h3>
-              <p className="text-gray-300 group-hover:text-gray-700 font-medium">
+              <h3 className="text-lg sm:text-xl font-black mb-3 sm:mb-4 uppercase tracking-wide">Expert Trainers</h3>
+              <p className="text-sm sm:text-base text-gray-300 group-hover:text-gray-700 font-medium">
                 Certified personal trainers to guide your fitness journey
               </p>
             </div>
-            <div className="text-center p-8 border-2 border-white bg-transparent hover:bg-white hover:text-black hover:scale-105 transition-all duration-300 group">
-              <div className="mb-6 flex justify-center">
-                <Target className="w-16 h-16 text-white group-hover:text-black transition-colors" />
+            <div className="text-center p-4 sm:p-8 border-2 border-white bg-transparent hover:bg-white hover:text-black hover:scale-105 transition-all duration-300 group">
+              <div className="mb-4 sm:mb-6 flex justify-center">
+                <Target className="w-12 h-12 sm:w-16 sm:h-16 text-white group-hover:text-black transition-colors" />
               </div>
-              <h3 className="text-xl font-black mb-4 uppercase tracking-wide">Custom Programs</h3>
-              <p className="text-gray-300 group-hover:text-gray-700 font-medium">
+              <h3 className="text-lg sm:text-xl font-black mb-3 sm:mb-4 uppercase tracking-wide">Custom Programs</h3>
+              <p className="text-sm sm:text-base text-gray-300 group-hover:text-gray-700 font-medium">
                 Personalized workout plans tailored to your goals
               </p>
             </div>
-            <div className="text-center p-8 border-2 border-white bg-transparent hover:bg-white hover:text-black hover:scale-105 transition-all duration-300 group">
-              <div className="mb-6 flex justify-center">
-                <Heart className="w-16 h-16 text-white group-hover:text-black transition-colors" />
+            <div className="text-center p-4 sm:p-8 border-2 border-white bg-transparent hover:bg-white hover:text-black hover:scale-105 transition-all duration-300 group">
+              <div className="mb-4 sm:mb-6 flex justify-center">
+                <Heart className="w-12 h-12 sm:w-16 sm:h-16 text-white group-hover:text-black transition-colors" />
               </div>
-              <h3 className="text-xl font-black mb-4 uppercase tracking-wide">Health Focused</h3>
-              <p className="text-gray-300 group-hover:text-gray-700 font-medium">
+              <h3 className="text-lg sm:text-xl font-black mb-3 sm:mb-4 uppercase tracking-wide">Health Focused</h3>
+              <p className="text-sm sm:text-base text-gray-300 group-hover:text-gray-700 font-medium">
                 Comprehensive health and wellness programs
               </p>
             </div>

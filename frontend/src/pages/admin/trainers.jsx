@@ -92,9 +92,9 @@ const AdminTrainers = () => {
     if (file) fd.append('image', file);
     try {
       if (formData._id) {
-        await api.put(API_PATHS.TRAINERS.UPDATE(formData._id), fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        await api.put(API_PATHS.ADMIN.TRAINERS.UPDATE(formData._id), fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       } else {
-        await api.post(API_PATHS.TRAINERS.CREATE, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        await api.post(API_PATHS.ADMIN.TRAINERS.CREATE, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       }
       setIsModalOpen(false);
       setFormData({
@@ -122,7 +122,7 @@ const AdminTrainers = () => {
   const deleteTrainer = async (id) => {
     setIsSubmitting(true);
     try {
-      await api.delete(API_PATHS.TRAINERS.DELETE(id));
+      await api.delete(API_PATHS.ADMIN.TRAINERS.DELETE(id));
       fetchTrainers();
       setLocalError(null);
     } catch (err) {
