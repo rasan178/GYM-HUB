@@ -17,7 +17,7 @@ const AdminUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await api.get(API_PATHS.USERS.GET_ALL);
+      const res = await api.get(API_PATHS.ADMIN.USERS.GET_ALL);
       setUsers(res.data);
       setLocalError(null);
     } catch (err) {
@@ -30,7 +30,7 @@ const AdminUsers = () => {
   const deleteUser = async (id) => {
     setIsDeleting(prev => ({ ...prev, [id]: true }));
     try {
-      await api.delete(API_PATHS.USERS.DELETE(id));
+      await api.delete(API_PATHS.ADMIN.USERS.DELETE(id));
       fetchUsers();
       setLocalError(null);
     } catch (err) {

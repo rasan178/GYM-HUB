@@ -9,7 +9,7 @@ import AuthContext from '../../context/AuthContext';
 import { formatDate } from '../../utils/helpers';
 import { API_PATHS } from '../../utils/apiPaths';
 import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
-import SkeletonLoader from '../../components/Loaders/SkeletonLoader';
+import BlackSkeletonLoader from '../../components/Loaders/BlackSkeletonLoader';
 
 const AdminMemberships = () => {
   const { error } = useContext(AuthContext);
@@ -42,7 +42,7 @@ const AdminMemberships = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await api.get(API_PATHS.USERS.GET_ALL);
+      const res = await api.get(API_PATHS.ADMIN.USERS.GET_ALL);
       setUsers(res.data.map(u => ({ value: u._id, label: u.name })));
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch users');
@@ -51,7 +51,7 @@ const AdminMemberships = () => {
 
   const fetchPlans = async () => {
     try {
-      const res = await api.get('/api/plans');
+      const res = await api.get(API_PATHS.PLANS.GET_ALL);
       setPlans(res.data.map(p => ({ value: p._id, label: p.planName })));
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch plans');
@@ -70,9 +70,9 @@ const AdminMemberships = () => {
     setIsSubmitting(true);
     try {
       if (formData._id) {
-        await api.put(API_PATHS.MEMBERSHIPS.UPDATE(formData._id), formData);
+        await api.put(API_PATHS.ADMIN.MEMBERSHIPS.UPDATE(formData._id), formData);
       } else {
-        await api.post(API_PATHS.MEMBERSHIPS.CREATE, formData);
+        await api.post(API_PATHS.ADMIN.MEMBERSHIPS.CREATE, formData);
       }
       setIsModalOpen(false);
       setFormData({ userID: '', planID: '', startDate: '', renewalOption: true });
@@ -89,7 +89,7 @@ const AdminMemberships = () => {
   const deactivateMembership = async (id) => {
     setIsSubmitting(true);
     try {
-      await api.patch(API_PATHS.MEMBERSHIPS.DEACTIVATE(id));
+      await api.patch(API_PATHS.ADMIN.MEMBERSHIPS.DEACTIVATE(id));
       fetchMemberships();
       setLocalError(null);
     } catch (err) {
@@ -102,7 +102,7 @@ const AdminMemberships = () => {
   const reactivateMembership = async (id) => {
     setIsSubmitting(true);
     try {
-      await api.patch(API_PATHS.MEMBERSHIPS.REACTIVATE(id));
+      await api.patch(API_PATHS.ADMIN.MEMBERSHIPS.REACTIVATE(id));
       fetchMemberships();
       setLocalError(null);
     } catch (err) {
@@ -115,7 +115,7 @@ const AdminMemberships = () => {
   const deleteMembership = async (id) => {
     setIsSubmitting(true);
     try {
-      await api.delete(API_PATHS.MEMBERSHIPS.DELETE(id));
+      await api.delete(API_PATHS.ADMIN.MEMBERSHIPS.DELETE(id));
       fetchMemberships();
       setLocalError(null);
     } catch (err) {
@@ -136,7 +136,7 @@ const AdminMemberships = () => {
     setIsModalOpen(true);
   };
 
-  if (isLoading) return <SkeletonLoader />;
+  if (isLoading) return <BlackSkeletonLoader lines={10} />;
 
   return (
     <AdminLayout>

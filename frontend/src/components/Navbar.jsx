@@ -74,7 +74,7 @@ const Navbar = () => {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex-shrink-0">
-              <Link href="/" className="flex items-center space-x-2 text-white hover:text-gray-300 transition-colors">
+              <Link href="/" className="flex items-center space-x-2 text-white hover:text-white transition-colors">
                 <div className="bg-white text-black px-3 py-1 font-bold text-xl">
                   GYM-HUB
                 </div>
@@ -154,8 +154,19 @@ const Navbar = () => {
                   </div>
                 )}
 
-                {/* Profile Avatar */}
-                {user && (
+                {/* Admin Logout Button */}
+                {user && role === "admin" && (
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center space-x-2 ml-4 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
+                  </button>
+                )}
+
+                {/* User Profile Avatar */}
+                {user && role === "user" && (
                   <div className="relative profile-menu-container">
                     <button
                       onClick={toggleProfileMenu}
@@ -164,17 +175,17 @@ const Navbar = () => {
                       <img
                         src={user?.profileImageURL || "/images/default-profile.png"}
                         alt="Profile"
-                        className="w-8 h-8 rounded-full border-2 border-white"
+                        className="w-8 h-8 rounded-full border-2 border-white object-cover"
                       />
                       <ChevronDown className="w-4 h-4" />
                     </button>
                     
                     {profileMenuOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-black z-50">
                         <div className="py-1">
                           <Link 
                             href="/profile" 
-                            className="flex items-center px-4 py-2 text-black hover:bg-gray-100 transition-colors"
+                            className="flex items-center px-4 py-2 text-black hover:bg-black hover:text-white transition-colors"
                             onClick={() => setProfileMenuOpen(false)}
                           >
                             <User className="w-4 h-4 mr-2" />
@@ -182,7 +193,7 @@ const Navbar = () => {
                           </Link>
                           <button 
                             onClick={handleLogout}
-                            className="flex items-center w-full px-4 py-2 text-black hover:bg-gray-100 transition-colors"
+                            className="flex items-center w-full px-4 py-2 text-black hover:bg-black hover:text-white transition-colors"
                           >
                             <LogOut className="w-4 h-4 mr-2" />
                             Logout
@@ -199,7 +210,7 @@ const Navbar = () => {
             <div className="md:hidden">
               <button
                 onClick={toggleMobileMenu}
-                className="bg-white text-black p-2 rounded-md hover:bg-gray-200 transition-colors"
+                className="bg-white text-black p-2 rounded-md hover:bg-black hover:text-white transition-colors"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -281,8 +292,21 @@ const Navbar = () => {
                 </div>
               )}
 
-              {/* Profile and Logout for mobile */}
-              {user && (
+              {/* Admin Logout for mobile */}
+              {user && role === "admin" && (
+                <div className="border-t border-white/10 pt-3 mt-3">
+                  <button 
+                    onClick={() => { handleLogout(); closeMobileMenu(); }}
+                    className="flex items-center space-x-3 px-3 py-2 rounded-md border border-white text-white hover:bg-white hover:text-black transition-colors font-medium w-full"
+                  >
+                    <LogOut className="w-5 h-5" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              )}
+
+              {/* User Profile and Logout for mobile */}
+              {user && role === "user" && (
                 <div className="border-t border-white/10 pt-3 mt-3 space-y-2">
                   <Link 
                     href="/profile" 

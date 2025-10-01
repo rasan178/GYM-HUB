@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import AuthContext from "../../context/AuthContext";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import Link from "next/link";
-import SpinnerLoader from "../../components/Loaders/SpinnerLoader";
+import BlackSkeletonLoader from "../../components/Loaders/BlackSkeletonLoader";
 
 const Dashboard = () => {
   const { user, loading } = useContext(AuthContext);
@@ -18,7 +18,7 @@ const Dashboard = () => {
     }
   }, [user, loading, router]);
 
-  if (loading) return <SpinnerLoader />;
+  if (loading) return <BlackSkeletonLoader lines={6} />;
 
   return (
     <DashboardLayout>

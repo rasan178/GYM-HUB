@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../../utils/axiosInstance';
 import AdminLayout from '../../components/Layouts/AdminLayout';
 import { API_PATHS } from '../../utils/apiPaths';
-import SkeletonLoader from '../../components/Loaders/SkeletonLoader';
+import BlackSkeletonLoader from '../../components/Loaders/BlackSkeletonLoader';
 import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
 
 const AdminTestimonials = () => {
@@ -17,7 +17,7 @@ const AdminTestimonials = () => {
 
   const fetchTestimonials = async () => {
     try {
-      const res = await api.get(API_PATHS.TESTIMONIALS.GET_ALL_ADMIN);
+      const res = await api.get(API_PATHS.ADMIN.TESTIMONIALS.GET_ALL);
       setTestimonials(res.data);
       setLocalError(null);
     } catch (err) {
@@ -30,7 +30,7 @@ const AdminTestimonials = () => {
   const approve = async (id) => {
     setIsAction(prev => ({ ...prev, [id]: 'approve' }));
     try {
-      await api.put(API_PATHS.TESTIMONIALS.APPROVE(id));
+      await api.put(API_PATHS.ADMIN.TESTIMONIALS.APPROVE(id));
       fetchTestimonials();
       setLocalError(null);
     } catch (err) {
@@ -43,7 +43,7 @@ const AdminTestimonials = () => {
   const reject = async (id) => {
     setIsAction(prev => ({ ...prev, [id]: 'reject' }));
     try {
-      await api.put(API_PATHS.TESTIMONIALS.REJECT(id));
+      await api.put(API_PATHS.ADMIN.TESTIMONIALS.REJECT(id));
       fetchTestimonials();
       setLocalError(null);
     } catch (err) {
@@ -56,7 +56,7 @@ const AdminTestimonials = () => {
   const deleteTestimonial = async (id) => {
     setIsAction(prev => ({ ...prev, [id]: 'delete' }));
     try {
-      await api.delete(API_PATHS.TESTIMONIALS.DELETE(id));
+      await api.delete(API_PATHS.ADMIN.TESTIMONIALS.DELETE(id));
       fetchTestimonials();
       setLocalError(null);
     } catch (err) {
@@ -66,7 +66,7 @@ const AdminTestimonials = () => {
     }
   };
 
-  if (isLoading) return <SkeletonLoader />;
+  if (isLoading) return <BlackSkeletonLoader lines={10} />;
 
   return (
     <AdminLayout>

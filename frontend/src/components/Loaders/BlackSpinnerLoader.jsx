@@ -1,3 +1,16 @@
+const BlackSpinnerLoader = ({ size = 24 }) => {
+  const dim = typeof size === 'number' ? `${size}px` : size;
+  return (
+    <div role="status" className="inline-block" aria-label="Loading">
+      <div
+        className="animate-spin rounded-full border-2 border-black border-t-transparent"
+        style={{ width: dim, height: dim }}
+      />
+    </div>
+  );
+};
+
+export default BlackSpinnerLoader;
 // frontend/src/components/Loaders/BlackSkeletonLoader.jsx
 
 import React from 'react';

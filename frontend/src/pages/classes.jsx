@@ -163,15 +163,15 @@ const Classes = () => {
     const colors = colorClasses[bgColor];
 
     return (
-      <div className={`flex items-center gap-3 p-3 border ${colors.bg}`}>
-        <div className={`p-2 rounded-full ${colors.icon}`}>
-          <Icon className="w-4 h-4" />
+      <div className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 border ${colors.bg}`}>
+        <div className={`p-1.5 sm:p-2 rounded-full ${colors.icon}`}>
+          <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <div className={`text-xs font-bold uppercase tracking-wide ${colors.bg.split(' ')[2]} mb-1`}>
             {title}
           </div>
-          <span className="text-black font-bold">{value}</span>
+          <span className="text-black font-bold text-xs sm:text-sm truncate">{value}</span>
         </div>
       </div>
     );
@@ -182,7 +182,7 @@ const Classes = () => {
     
     return (
       <button
-        className="w-full bg-black text-white py-4 px-6 hover:bg-gray-800 border-2 border-black hover:border-gray-800 transition-all duration-300 font-black uppercase tracking-widest text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-black disabled:hover:text-white transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+        className="w-full bg-black text-white py-2 sm:py-4 px-4 sm:px-6 hover:bg-gray-800 border-2 border-black hover:border-gray-800 transition-all duration-300 font-black uppercase tracking-widest text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-black disabled:hover:text-white transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-1 sm:gap-2"
         onClick={() => bookClass(classId)}
         disabled={isBooking[classId]}
       >
@@ -190,8 +190,9 @@ const Classes = () => {
           <BookingLoader text="Booking..." size="sm" />
         ) : (
           <>
-            <Zap className="w-4 h-4" />
-            {isModal ? 'Book This Class' : 'Join Class'}
+            <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">{isModal ? 'Book This Class' : 'Join Class'}</span>
+            <span className="sm:hidden">{isModal ? 'Book' : 'Join'}</span>
           </>
         )}
       </button>
@@ -226,41 +227,41 @@ const Classes = () => {
   );
 
   const ClassCard = ({ c }) => (
-    <div className="group bg-white border-2 border-black shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden">
+    <div className="group bg-white border-2 border-black shadow-lg hover:shadow-2xl transform hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-300 overflow-hidden">
       <div className="relative overflow-hidden">
         <img
           src={c.imageURLs?.[0] || "/images/default-class.png"}
           alt={c.className}
-          className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+          className="w-full h-48 sm:h-64 object-cover transition-transform duration-500 group-hover:scale-110"
         />
         
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         
-        <div className="absolute top-4 right-4">
+        <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
           <button
             onClick={() => fetchClassDetails(c._id)}
-            className="bg-white/90 backdrop-blur-sm text-black p-3 rounded-full hover:bg-white hover:shadow-lg transform hover:scale-110 transition-all duration-300"
+            className="bg-white/90 backdrop-blur-sm text-black p-2 sm:p-3 rounded-full hover:bg-white hover:shadow-lg transform hover:scale-110 transition-all duration-300"
           >
-            <Eye className="w-5 h-5" />
+            <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
         
-        <StatusBadge cancelled={c.cancelled} className="absolute top-4 left-4" />
+        <StatusBadge cancelled={c.cancelled} className="absolute top-2 sm:top-4 left-2 sm:left-4" />
         
         {c.featured && (
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-black px-3 py-1 text-xs font-black uppercase tracking-wide border-2 border-yellow-300">
+          <div className="absolute top-2 sm:top-4 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-black px-2 sm:px-3 py-1 text-xs font-black uppercase tracking-wide border-2 border-yellow-300">
             <Star className="w-3 h-3 inline mr-1" />
             Featured
           </div>
         )}
       </div>
       
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
         <div>
-          <h2 className="text-2xl font-black text-black mb-2 leading-tight group-hover:text-gray-800 transition-colors">
+          <h2 className="text-lg sm:text-2xl font-black text-black mb-2 leading-tight group-hover:text-gray-800 transition-colors">
             {c.className}
           </h2>
-          <p className="text-gray-600 line-clamp-2 leading-relaxed text-sm">
+          <p className="text-gray-600 line-clamp-2 leading-relaxed text-xs sm:text-sm">
             {c.description}
           </p>
         </div>
@@ -360,44 +361,44 @@ const Classes = () => {
     }
 
     return (
-      <div className="absolute top-full left-0 mt-2 bg-white border-2 border-black shadow-2xl z-50 p-6 w-96" ref={calendarRef}>
-        <div className="flex items-center justify-between mb-6">
+      <div className="absolute top-full left-0 mt-2 bg-white border-2 border-black shadow-2xl z-50 p-3 sm:p-6 w-80 sm:w-96" ref={calendarRef}>
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
           <button
             onClick={() => navigateMonth(-1)}
-            className="p-3 hover:bg-black hover:text-white border-2 border-black transition-all duration-200 font-bold"
+            className="p-2 sm:p-3 hover:bg-black hover:text-white border-2 border-black transition-all duration-200 font-bold"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
-          <h3 className="font-black text-xl uppercase tracking-widest">
+          <h3 className="font-black text-sm sm:text-xl uppercase tracking-widest text-center">
             {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
           </h3>
           <button
             onClick={() => navigateMonth(1)}
-            className="p-3 hover:bg-black hover:text-white border-2 border-black transition-all duration-200 font-bold"
+            className="p-2 sm:p-3 hover:bg-black hover:text-white border-2 border-black transition-all duration-200 font-bold"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 mb-4">
+        <div className="grid grid-cols-7 gap-1 mb-3 sm:mb-4">
           {dayNames.map(dayName => (
-            <div key={dayName} className="text-center text-xs font-black text-black py-3 uppercase tracking-widest bg-gray-100 border border-gray-200">
+            <div key={dayName} className="text-center text-xs font-black text-black py-2 sm:py-3 uppercase tracking-widest bg-gray-100 border border-gray-200">
               {dayName}
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-1 mb-6">
+        <div className="grid grid-cols-7 gap-1 mb-4 sm:mb-6">
           {days}
         </div>
 
-        <div className="pt-4 border-t-2 border-black space-y-2">
+        <div className="pt-3 sm:pt-4 border-t-2 border-black space-y-2">
           <button
             onClick={() => {
               setDate(formatDateForInput(new Date()));
               setShowCalendar(false);
             }}
-            className="w-full py-3 px-4 text-sm transition-all duration-200 font-bold uppercase tracking-wide text-white bg-black hover:bg-gray-800 border-2 border-black"
+            className="w-full py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm transition-all duration-200 font-bold uppercase tracking-wide text-white bg-black hover:bg-gray-800 border-2 border-black"
           >
             Today
           </button>
@@ -406,7 +407,7 @@ const Classes = () => {
               setDate(null);
               setShowCalendar(false);
             }}
-            className="w-full py-3 px-4 text-sm transition-all duration-200 font-bold uppercase tracking-wide text-black bg-white hover:bg-black hover:text-white border-2 border-black"
+            className="w-full py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm transition-all duration-200 font-bold uppercase tracking-wide text-black bg-white hover:bg-black hover:text-white border-2 border-black"
           >
             Clear Date
           </button>
@@ -421,48 +422,48 @@ const Classes = () => {
     const trainerName = selectedClass.trainer?.trainerName || "N/A";
 
     return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white border-4 border-black max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-          <div className="p-8">
-            <div className="flex justify-between items-start mb-8 pb-6 border-b-4 border-black">
-              <div>
-                <h2 className="text-4xl font-black text-black uppercase tracking-wider mb-2">
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+        <div className="bg-white border-2 sm:border-4 border-black max-w-6xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="p-4 sm:p-8">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6 sm:mb-8 pb-4 sm:pb-6 border-b-2 sm:border-b-4 border-black gap-4">
+              <div className="flex-1">
+                <h2 className="text-2xl sm:text-4xl font-black text-black uppercase tracking-wider mb-2">
                   {selectedClass.className}
                 </h2>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                   <StatusBadge cancelled={selectedClass.cancelled} />
                   <div className="flex items-center gap-2">
                     <Award className="w-4 h-4 text-yellow-600" />
-                    <span className="text-sm font-bold text-gray-600">Premium Class</span>
+                    <span className="text-xs sm:text-sm font-bold text-gray-600">Premium Class</span>
                   </div>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedClass(null)}
-                className="text-black hover:bg-black hover:text-white p-4 border-2 border-black transition-all duration-200 font-bold"
+                className="text-black hover:bg-black hover:text-white p-2 sm:p-4 border-2 border-black transition-all duration-200 font-bold self-start sm:self-auto"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
             
             {selectedClass.imageURLs?.[0] && (
-              <div className="mb-8 overflow-hidden border-4 border-black relative group">
+              <div className="mb-6 sm:mb-8 overflow-hidden border-2 sm:border-4 border-black relative group">
                 <img
                   src={selectedClass.imageURLs[0]}
                   alt={selectedClass.className}
-                  className="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-48 sm:h-96 object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
             )}
             
-            <div className="grid lg:grid-cols-3 gap-8 text-black">
-              <div className="lg:col-span-2 space-y-6">
+            <div className="grid lg:grid-cols-3 gap-4 sm:gap-8 text-black">
+              <div className="lg:col-span-2 space-y-4 sm:space-y-6">
                 <div>
-                  <h3 className="text-2xl font-black mb-4 uppercase tracking-wide border-b-2 border-black pb-2">
+                  <h3 className="text-lg sm:text-2xl font-black mb-3 sm:mb-4 uppercase tracking-wide border-b-2 border-black pb-2">
                     About This Class
                   </h3>
-                  <p className="text-gray-700 text-lg leading-relaxed">{selectedClass.description}</p>
+                  <p className="text-gray-700 text-sm sm:text-lg leading-relaxed">{selectedClass.description}</p>
                 </div>
               </div>
               
@@ -527,24 +528,35 @@ const Classes = () => {
   return (
     <MainLayout>
       <div className="bg-white min-h-screen pt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="border-b-4 border-black pb-8 mb-8">
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-              <div>
-                <h1 className="text-6xl font-black text-black uppercase tracking-wider mb-2">
-                  Fitness Classes
-                </h1>
-                <p className="text-xl text-gray-600 font-medium">
-                  Transform your fitness journey with our expert-led classes
-                </p>
+        {/* Enhanced Hero Section */}
+        <div className="bg-gradient-to-br from-black via-gray-900 to-black text-white py-12 sm:py-16 lg:py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8 sm:mb-12">
+              <div className="inline-flex items-center justify-center bg-white text-black px-4 sm:px-6 py-2 sm:py-3 font-black text-lg sm:text-xl mb-4 sm:mb-6 rounded-lg shadow-lg">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-black text-white rounded-full flex items-center justify-center mr-2 sm:mr-3 font-bold text-sm sm:text-base">
+                  C
+                </div>
+                CLASSES
               </div>
-              <div className="flex items-center gap-4">
-                <div className="bg-black text-white px-4 py-2 font-bold uppercase tracking-wide text-sm">
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black uppercase tracking-wider mb-4 sm:mb-6">
+                Fitness Classes
+              </h1>
+              <p className="text-lg sm:text-xl lg:text-2xl text-gray-300 font-medium max-w-3xl mx-auto mb-6 sm:mb-8">
+                Transform your fitness journey with our expert-led classes designed for every level
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+                <div className="bg-white text-black px-4 sm:px-6 py-2 sm:py-3 font-bold uppercase tracking-wide text-sm sm:text-base rounded-lg shadow-lg">
                   {filteredClasses.length} Classes Available
+                </div>
+                <div className="bg-white/20 backdrop-blur-sm text-white px-4 sm:px-6 py-2 sm:py-3 font-bold uppercase tracking-wide text-sm sm:text-base rounded-lg border border-white/30">
+                  Expert Trainers
                 </div>
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           
           {(error || localError) && (
             <div className="bg-red-50 border-2 border-red-500 text-red-800 px-6 py-4 mb-8 font-bold flex items-center gap-3">
@@ -555,55 +567,99 @@ const Classes = () => {
             </div>
           )}
 
-          <div className="bg-gray-50 border-2 border-gray-200 p-6 mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <Filter className="w-6 h-6 text-black" />
-              <h2 className="text-xl font-black uppercase tracking-wide">Find Your Perfect Class</h2>
+          {/* Enhanced Search and Filter Section */}
+          <div className="bg-white border-2 sm:border-4 border-black p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 shadow-lg rounded-lg">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="bg-black text-white p-2 sm:p-3 rounded-lg">
+                  <Filter className="w-4 h-4 sm:w-6 sm:h-6" />
+                </div>
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-black uppercase tracking-wide text-black">
+                  Find Your Perfect Class
+                </h2>
+              </div>
+              <div className="bg-black text-white px-3 sm:px-4 py-1 sm:py-2 font-bold uppercase tracking-wide text-xs sm:text-sm rounded-lg">
+                {filteredClasses.length} Results
+              </div>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="relative">
-                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-2 rounded-full z-10">
-                  <Search className="w-5 h-5" />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              {/* Search Input */}
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-2 rounded-lg z-10 group-hover:bg-gray-800 transition-colors">
+                  <Search className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
                 <input
                   type="text"
-                  placeholder="Search classes, trainers, or keywords..."
+                  placeholder="Search classes, trainers, or activities..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-16 pr-6 py-4 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-black/20 font-medium text-lg"
+                  className="w-full pl-14 sm:pl-16 pr-4 sm:pr-6 py-3 sm:py-4 border-2 border-black bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-black/20 font-medium text-sm sm:text-base rounded-lg transition-all duration-300 hover:shadow-md"
                 />
               </div>
 
-              <div className="relative">
+              {/* Date Input */}
+              <div className="relative group">
                 <button
                   onClick={() => setShowCalendar(!showCalendar)}
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-2 rounded-full cursor-pointer hover:bg-gray-800 transition-colors z-10"
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-2 rounded-lg cursor-pointer hover:bg-gray-800 transition-colors z-10"
                 >
-                  <Calendar className="w-5 h-5" />
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
                 <input
                   type="date"
                   name="date"
                   value={date || ""}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full pl-16 pr-16 py-4 border-2 border-black bg-white text-black focus:outline-none focus:ring-4 focus:ring-black/20 font-medium text-lg"
+                  className="w-full pl-14 sm:pl-16 pr-12 sm:pr-16 py-3 sm:py-4 border-2 border-black bg-white text-black focus:outline-none focus:ring-4 focus:ring-black/20 font-medium text-sm sm:text-base rounded-lg transition-all duration-300 hover:shadow-md"
                 />
                 {date && (
                   <button
                     onClick={() => setDate(null)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors z-10"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 transition-colors z-10"
                     title="Clear date"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 )}
                 <CalendarPopup />
               </div>
             </div>
+            
+            {/* Quick Filter Tags */}
+            <div className="mt-4 sm:mt-6">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
+                <span className="text-sm sm:text-base font-semibold text-gray-700">Quick filters:</span>
+                <button
+                  onClick={() => setSearchQuery("yoga")}
+                  className="px-3 sm:px-4 py-1 sm:py-2 bg-gray-100 hover:bg-black hover:text-white text-gray-700 text-xs sm:text-sm font-medium rounded-full transition-all duration-300 border border-gray-300 hover:border-black"
+                >
+                  Yoga
+                </button>
+                <button
+                  onClick={() => setSearchQuery("cardio")}
+                  className="px-3 sm:px-4 py-1 sm:py-2 bg-gray-100 hover:bg-black hover:text-white text-gray-700 text-xs sm:text-sm font-medium rounded-full transition-all duration-300 border border-gray-300 hover:border-black"
+                >
+                  Cardio
+                </button>
+                <button
+                  onClick={() => setSearchQuery("strength")}
+                  className="px-3 sm:px-4 py-1 sm:py-2 bg-gray-100 hover:bg-black hover:text-white text-gray-700 text-xs sm:text-sm font-medium rounded-full transition-all duration-300 border border-gray-300 hover:border-black"
+                >
+                  Strength
+                </button>
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="px-3 sm:px-4 py-1 sm:py-2 bg-black text-white text-xs sm:text-sm font-medium rounded-full transition-all duration-300"
+                >
+                  Clear All
+                </button>
+              </div>
+            </div>
           </div>
 
           {filteredClasses.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {filteredClasses.map((c) => (
                 <ClassCard key={c._id} c={c} />
               ))}

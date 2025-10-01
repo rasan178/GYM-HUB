@@ -24,3 +24,21 @@ export const getInitials = (title) => {
 
   return initials.toUpperCase();
 };
+
+// Returns YYYY-MM-DD in local time (no timezone shift)
+export const getISODate = (date) => {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Allow editing within 10 days of creation
+export const canEditTestimonial = (createdAt) => {
+  if (!createdAt) return false;
+  const created = new Date(createdAt).getTime();
+  const now = Date.now();
+  const tenDaysMs = 10 * 24 * 60 * 60 * 1000;
+  return now - created <= tenDaysMs;
+};

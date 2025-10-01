@@ -9,9 +9,9 @@ export const API_PATHS = {
   },
 
   USERS: {
-  UPDATE_PROFILE: "/api/users/profile",
-  GET_COUNT: "/api/users/count", // Add this line
-},
+    UPDATE_PROFILE: "/api/users/profile",
+    GET_COUNT: "/api/users/count",
+  },
 
   TRAINERS: {
     GET_ALL: "/api/trainers",
@@ -27,6 +27,11 @@ export const API_PATHS = {
   MEMBERSHIPS: {
     GET_ALL: "/api/memberships",
     GET_ONE: (id) => `/api/memberships/${id}`,
+  },
+
+  PLANS: {
+    GET_ALL: "/api/plans",
+    GET_ONE: (id) => `/api/plans/${id}`,
   },
 
   BOOKINGS: {
