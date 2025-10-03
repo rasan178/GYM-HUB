@@ -4,7 +4,7 @@ import AuthContext from "../context/AuthContext";
 import {  
   Users, 
   Calendar, 
-  Phone, 
+  CreditCard, 
   LayoutDashboard, 
   Settings, 
   LogIn, 
@@ -95,9 +95,9 @@ const Navbar = () => {
                       <Calendar className="w-4 h-4" />
                       <span>Classes</span>
                     </Link>
-                    <Link href="/contact" className="flex items-center space-x-2 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors">
-                      <Phone className="w-4 h-4" />
-                      <span>Contact</span>
+                    <Link href="/memberships" className="flex items-center space-x-2 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors">
+                      <CreditCard className="w-4 h-4" />
+                      <span>Memberships</span>
                     </Link>
                   </>
                 )}
@@ -113,9 +113,9 @@ const Navbar = () => {
                       <Calendar className="w-4 h-4" />
                       <span>Classes</span>
                     </Link>
-                    <Link href="/contact" className="flex items-center space-x-2 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors">
-                      <Phone className="w-4 h-4" />
-                      <span>Contact</span>
+                    <Link href="/memberships" className="flex items-center space-x-2 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors">
+                      <CreditCard className="w-4 h-4" />
+                      <span>Memberships</span>
                     </Link>
                     <Link href="/dashboard" className="flex items-center space-x-2 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors">
                       <LayoutDashboard className="w-4 h-4" />
@@ -233,9 +233,9 @@ const Navbar = () => {
                     <Calendar className="w-5 h-5" />
                     <span>Classes</span>
                   </Link>
-                  <Link href="/contact" onClick={closeMobileMenu} className="flex items-center space-x-3 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors">
-                    <Phone className="w-5 h-5" />
-                    <span>Contact</span>
+                  <Link href="/memberships" onClick={closeMobileMenu} className="flex items-center space-x-3 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors">
+                    <CreditCard className="w-5 h-5" />
+                    <span>Memberships</span>
                   </Link>
                 </>
               )}
@@ -251,9 +251,9 @@ const Navbar = () => {
                     <Calendar className="w-5 h-5" />
                     <span>Classes</span>
                   </Link>
-                  <Link href="/contact" onClick={closeMobileMenu} className="flex items-center space-x-3 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors">
-                    <Phone className="w-5 h-5" />
-                    <span>Contact</span>
+                  <Link href="/memberships" onClick={closeMobileMenu} className="flex items-center space-x-3 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors">
+                    <CreditCard className="w-5 h-5" />
+                    <span>Memberships</span>
                   </Link>
                   <Link href="/dashboard" onClick={closeMobileMenu} className="flex items-center space-x-3 px-3 py-2 rounded-md text-white hover:bg-white hover:text-black transition-colors">
                     <LayoutDashboard className="w-5 h-5" />

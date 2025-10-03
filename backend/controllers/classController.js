@@ -406,6 +406,16 @@ const activateClassDate = async (req, res) => {
   }
 };
 
+// ========================= GET CLASS COUNT =========================
+const getClassCount = async (req, res) => {
+  try {
+    const count = await Class.countDocuments();
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createClass,
   getAllClassesWithAvailability,
@@ -415,5 +425,6 @@ module.exports = {
   deleteClass,
   cancelClassDate,
   activateClassDate,
+  getClassCount,
 };
 

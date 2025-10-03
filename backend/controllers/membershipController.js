@@ -71,7 +71,7 @@ const createMembership = async (req, res) => {
       userName: user.name,
       planID: plan._id,
       planName: plan.planName,
-      facilitiesIncluded: plan.description,
+      facilitiesIncluded: plan.benifits,
       price: plan.price,
       duration: `${plan.durationMonths} month(s)`,
       renewalOption: renewalOption !== undefined ? renewalOption : true,
@@ -161,7 +161,7 @@ const updateMembership = async (req, res) => {
 
       membership.planID = plan._id;
       membership.planName = plan.planName;
-      membership.facilitiesIncluded = plan.description;
+      membership.facilitiesIncluded = plan.benifits;
       membership.price = plan.price;
       membership.duration = `${plan.durationMonths} month(s)`;
 

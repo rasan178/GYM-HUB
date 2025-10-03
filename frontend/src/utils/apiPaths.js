@@ -22,11 +22,23 @@ export const API_PATHS = {
     GET_ALL: "/api/classes",
     GET_ALL_WITH_AVAILABILITY: "/api/classes/all-with-availability",
     GET_ONE: (id) => `/api/classes/${id}`,
+    GET_COUNT: "/api/classes/count",
   },
 
   MEMBERSHIPS: {
     GET_ALL: "/api/memberships",
     GET_ONE: (id) => `/api/memberships/${id}`,
+  },
+
+  MEMBERSHIP_REQUESTS: {
+    CREATE: "/api/membership-requests",
+    GET_MY: "/api/membership-requests/my-requests",
+    GET_ONE: (id) => `/api/membership-requests/${id}`,
+    ADMIN: {
+      GET_ALL: "/api/membership-requests/admin/all",
+      APPROVE: (id) => `/api/membership-requests/${id}/approve`,
+      REJECT: (id) => `/api/membership-requests/${id}/reject`,
+    },
   },
 
   PLANS: {
@@ -85,6 +97,16 @@ export const API_PATHS = {
       DEACTIVATE: (id) => `/api/admin/memberships/deactivate/${id}`,
       REACTIVATE: (id) => `/api/admin/memberships/reactivate/${id}`,
       DELETE: (id) => `/api/admin/memberships/${id}`,
+    },
+    PLANS: {
+      CREATE: "/api/admin/plans",
+      UPDATE: (id) => `/api/admin/plans/${id}`,
+      DELETE: (id) => `/api/admin/plans/${id}`,
+    },
+    MEMBERSHIP_REQUESTS: {
+      GET_ALL: "/api/admin/membership-requests",
+      APPROVE: (id) => `/api/admin/membership-requests/approve/${id}`,
+      REJECT: (id) => `/api/admin/membership-requests/reject/${id}`,
     },
     TESTIMONIALS: {
       GET_ALL: "/api/admin/testimonials/all",

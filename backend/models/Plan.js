@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const planSchema = new mongoose.Schema({
   planID: { type: String, unique: true },           // Auto-generated
   planName: { type: String, required: true, trim: true, unique: true },
-  description: { type: String, trim: true },
+  description: { type: String, trim: true },        // Short description
+  benifits: { type: String, trim: true },           // Comma-separated benefits list
   price: { type: Number, required: true, min: 0 },
   durationMonths: { type: Number, required: true, min: 1 }
 }, { timestamps: true });

@@ -34,6 +34,16 @@ router.post("/trainers", protect, admin, upload.single("image"), adminController
 router.put("/trainers/:id", protect, admin, upload.single("image"), adminController.updateTrainer);
 router.delete("/trainers/:id", protect, admin, adminController.deleteTrainer);
 
+// ========================= PLAN ADMIN =========================
+router.post("/plans", protect, admin, adminController.createPlan);
+router.put("/plans/:id", protect, admin, adminController.updatePlan);
+router.delete("/plans/:id", protect, admin, adminController.deletePlan);
+
+// ========================= MEMBERSHIP REQUESTS ADMIN =========================
+router.get("/membership-requests", protect, admin, adminController.getAllMembershipRequests);
+router.put("/membership-requests/approve/:id", protect, admin, adminController.approveMembershipRequest);
+router.put("/membership-requests/reject/:id", protect, admin, adminController.rejectMembershipRequest);
+
 // ========================= USER ADMIN =========================
 router.get("/users", protect, admin, adminController.getUsers);
 router.delete("/users/:id", protect, admin, adminController.deleteUser);

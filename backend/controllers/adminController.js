@@ -4,6 +4,8 @@
 const bookingController = require("./bookingController");
 const classController = require("./classController");
 const membershipController = require("./membershipController");
+const membershipRequestController = require("./membershipRequestController");
+const planController = require("./planController");
 const testimonialController = require("./testimonialController");
 const trainerController = require("./trainerController");
 const userController = require("./userController");
@@ -25,6 +27,16 @@ exports.updateMembership = membershipController.updateMembership;
 exports.deactivateMembership = membershipController.deactivateMembership;
 exports.reactivateMembership = membershipController.reactivateMembership;
 exports.deleteMembership = membershipController.deleteMembership;
+
+// ========================= PLAN ADMIN =========================
+exports.createPlan = planController.createPlan;
+exports.updatePlan = planController.updatePlan;
+exports.deletePlan = planController.deletePlan;
+
+// ========================= MEMBERSHIP REQUESTS ADMIN =========================
+exports.getAllMembershipRequests = membershipRequestController.getAllMembershipRequests;
+exports.approveMembershipRequest = membershipRequestController.approveMembershipRequest;
+exports.rejectMembershipRequest = membershipRequestController.rejectMembershipRequest;
 
 // ========================= TESTIMONIAL ADMIN =========================
 exports.getAllTestimonials = testimonialController.getAllTestimonials;

@@ -10,7 +10,9 @@ import {
   LayoutDashboard,
   Settings,
   Brain,
-  MessageSquare
+  MessageSquare,
+  FileText,
+  ClipboardList
 } from 'lucide-react';
 
 const Sidebar = ({ role }) => {
@@ -20,6 +22,8 @@ const Sidebar = ({ role }) => {
     { name: "Users", path: "/admin/users", icon: Users },
     { name: "Trainers", path: "/admin/trainers", icon: UserCheck },
     { name: "Classes", path: "/admin/classes", icon: Calendar },
+    { name: "Plans", path: "/admin/plans", icon: FileText },
+    { name: "Membership Requests", path: "/admin/membership-requests", icon: ClipboardList },
     { name: "Memberships", path: "/admin/memberships", icon: CreditCard },
     { name: "Bookings", path: "/admin/bookings", icon: BookOpen },
     { name: "Testimonials", path: "/admin/testimonials", icon: Star },
