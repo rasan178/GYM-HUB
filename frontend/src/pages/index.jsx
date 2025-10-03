@@ -30,6 +30,7 @@ export default function Home() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [usersCount, setUsersCount] = useState(0);
   const [trainersCount, setTrainersCount] = useState(0);
+  const [classesCount, setClassesCount] = useState(0);
   const [statsLoading, setStatsLoading] = useState(true);
 
   // Hero background images
@@ -96,6 +97,20 @@ export default function Home() {
         }
       } catch (trainerError) {
         console.error('Error fetching trainers:', trainerError.response?.data || trainerError.message);
+      }
+
+      // Fetch classes count
+      try {
+        const classesResponse = await api.get(API_PATHS.CLASSES.GET_COUNT);
+        console.log('Classes response:', classesResponse);
+        console.log('Classes data:', classesResponse.data);
+        
+        if (classesResponse.data && classesResponse.data.count !== undefined) {
+          console.log('Setting classes count to:', classesResponse.data.count);
+          setClassesCount(classesResponse.data.count);
+        }
+      } catch (classError) {
+        console.error('Error fetching classes count:', classError.response?.data || classError.message);
       }
     } catch (error) {
       console.error('Error in fetchStats:', error);
@@ -253,7 +268,7 @@ export default function Home() {
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/20">
               <div className="text-2xl sm:text-3xl font-black text-white mb-1">
-                50+
+                {statsLoading ? '...' : classesCount}+
               </div>
               <div className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wide">
                 Classes
@@ -634,11 +649,18 @@ export default function Home() {
                 <h3 className="text-3xl font-black mb-6 uppercase tracking-widest">Premium Membership</h3>
                 <div className="text-6xl font-black mb-2">$49</div>
                 <div className="text-gray-600 mb-8 font-bold uppercase tracking-wide">per month</div>
-                <Link href="/auth/register">
-                  <button className="bg-black text-white px-8 py-4 font-black uppercase tracking-widest w-full hover:bg-gray-800 transition-all border-2 border-black">
-                    Get Started
-                  </button>
-                </Link>
+                <div className="space-y-3">
+                  <Link href="/memberships">
+                    <button className="bg-black text-white px-8 py-4 font-black uppercase tracking-widest w-full hover:bg-gray-800 transition-all border-2 border-black">
+                      View All Plans
+                    </button>
+                  </Link>
+                  <Link href="/auth/register">
+                    <button className="border-2 border-black text-black px-8 py-4 font-black uppercase tracking-widest w-full hover:bg-black hover:text-white transition-all">
+                      Get Started
+                    </button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

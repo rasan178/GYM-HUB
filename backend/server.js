@@ -11,6 +11,7 @@ require('./models/Testimonial');
 require('./models/Booking');
 require('./models/Trainer');
 require('./models/Membership');
+require('./models/MembershipRequest');
 require('./models/Class');
 require('./models/Plan');
 require('./models/Session');
@@ -23,9 +24,9 @@ const app = express(); // ✅ initialize app first
 
 // ✅ CORS middleware must come after app is created
 app.use(cors({
-  origin: 'http://localhost:3000',  // your Next.js frontend
+  origin: ['http://localhost:3000'],  // your Next.js frontend
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   credentials: true, // if you send cookies/auth headers
 }));
 
@@ -38,6 +39,8 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/trainers', require('./routes/trainerRoutes'));
 app.use('/api/classes', require('./routes/classRoutes'));
 app.use('/api/memberships', require('./routes/membershipRoutes'));
+app.use('/api/membership-requests', require('./routes/membershipRequestRoutes'));
+app.use('/api/plans', require('./routes/planRoutes'));
 app.use('/api/bookings', require('./routes/bookingRoutes'));
 app.use('/api/testimonials', require('./routes/testimonialRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
@@ -53,5 +56,5 @@ app.use(errorMiddleware);
 require('./scheduler/bookingScheduler')();
 require('./scheduler/emailScheduler')();
 
-const port = process.env.PORT; // read only from .env
+const port = process.env.PORT || 5000; // use 5000 as default if no .env
 app.listen(port, () => console.log(`Server running on port ${port}`));
