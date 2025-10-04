@@ -30,6 +30,7 @@ export const API_PATHS = {
   MEMBERSHIPS: {
     GET_ALL: "/api/memberships",
     GET_ONE: (id) => `/api/memberships/${id}`,
+    GET_STATS: "/api/memberships/stats",
   },
 
   MEMBERSHIP_REQUESTS: {

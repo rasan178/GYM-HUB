@@ -249,6 +249,38 @@ const deleteMembership = async (req, res) => {
   }
 };
 
+// ========================= GET MEMBERSHIP STATISTICS =========================
+const getMembershipStats = async (req, res) => {
+  try {
+    const memberships = await Membership.find();
+    
+    let totalMemberships = memberships.length;
+    let activeMemberships = 0;
+    let inactiveMemberships = 0;
+    let expiredMemberships = 0;
+
+    memberships.forEach(membership => {
+      if (membership.status === 'Active' && membership.active) {
+        activeMemberships++;
+      } else if (membership.status === 'Inactive' && !membership.active) {
+        inactiveMemberships++;
+      } else if (membership.status === 'Expired') {
+        expiredMemberships++;
+        inactiveMemberships++; // Expired is also considered inactive
+      }
+    });
+
+    res.json({
+      totalMemberships,
+      activeMemberships,
+      inactiveMemberships,
+      expiredMemberships
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createMembership,
   getAllMemberships,
@@ -256,5 +288,6 @@ module.exports = {
   updateMembership,
   deactivateMembership,
   reactivateMembership,
-  deleteMembership
+  deleteMembership,
+  getMembershipStats
 };

@@ -14,11 +14,21 @@ import {
   XCircle,
   Users,
   X,
-  Info
+  Info,
+  AlertTriangle,
+  Power,
+  PowerOff,
+  Clock
 } from 'lucide-react';
 
 const AdminMemberships = () => {
   const [memberships, setMemberships] = useState([]);
+  const [membershipStats, setMembershipStats] = useState({
+    totalMemberships: 0,
+    activeMemberships: 0,
+    inactiveMemberships: 0,
+    expiredMemberships: 0
+  });
   const [users, setUsers] = useState([]);
   const [plans, setPlans] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,6 +40,7 @@ const AdminMemberships = () => {
     fetchMemberships();
     fetchUsers();
     fetchPlans();
+    fetchMembershipStats();
   }, []);
 
   const fetchMemberships = async () => {
@@ -60,6 +71,15 @@ const AdminMemberships = () => {
     }
   };
 
+  const fetchMembershipStats = async () => {
+    try {
+      const res = await api.get(API_PATHS.MEMBERSHIPS.GET_STATS);
+      setMembershipStats(res.data);
+    } catch (err) {
+      console.error('Failed to fetch membership statistics:', err);
+    }
+  };
+
   const handleChange = e => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -79,6 +99,7 @@ const AdminMemberships = () => {
       setIsModalOpen(false);
       setFormData({ userID: '', planID: '', startDate: '', renewalOption: true });
       fetchMemberships();
+      fetchMembershipStats();
       setLocalError(null);
       alert('Membership saved successfully!');
     } catch (err) {
@@ -93,6 +114,7 @@ const AdminMemberships = () => {
     try {
       await api.patch(API_PATHS.ADMIN.MEMBERSHIPS.DEACTIVATE(id));
       fetchMemberships();
+      fetchMembershipStats();
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to deactivate membership');
@@ -106,6 +128,7 @@ const AdminMemberships = () => {
     try {
       await api.patch(API_PATHS.ADMIN.MEMBERSHIPS.REACTIVATE(id));
       fetchMemberships();
+      fetchMembershipStats();
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to reactivate membership');
@@ -119,6 +142,7 @@ const AdminMemberships = () => {
     try {
       await api.delete(API_PATHS.ADMIN.MEMBERSHIPS.DELETE(id));
       fetchMemberships();
+      fetchMembershipStats();
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to delete membership');
@@ -174,6 +198,65 @@ const AdminMemberships = () => {
             <Plus className="w-5 h-5" />
             Create Membership
           </button>
+        </div>
+
+        {/* Membership Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <CreditCard className="h-8 w-8 text-blue-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Total Memberships</dt>
+                  <dd className="text-lg font-medium text-gray-900">{membershipStats.totalMemberships}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Active Memberships</dt>
+                  <dd className="text-lg font-medium text-gray-900">{membershipStats.activeMemberships}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <XCircle className="h-8 w-8 text-gray-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Inactive Memberships</dt>
+                  <dd className="text-lg font-medium text-gray-900">{membershipStats.inactiveMemberships}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Clock className="h-8 w-8 text-red-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Expired Memberships</dt>
+                  <dd className="text-lg font-medium text-gray-900">{membershipStats.expiredMemberships}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
         </div>
 
         {localError && (
