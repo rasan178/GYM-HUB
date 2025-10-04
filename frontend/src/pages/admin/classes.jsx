@@ -1,19 +1,25 @@
 import { useEffect, useState } from 'react';
 import api from '../../utils/axiosInstance';
 import AdminLayout from '../../components/Layouts/AdminLayout';
-import Modal from '../../components/Modal';
-import TextInput from '../../components/Inputs/TextInput';
-import SelectInput from '../../components/Inputs/SelectInput';
-import FileInput from '../../components/Inputs/FileInput';
-import { useContext } from 'react';
-import AuthContext from '../../context/AuthContext';
 import { formatDate } from '../../utils/helpers';
 import { API_PATHS } from '../../utils/apiPaths';
 import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
 import BlackSkeletonLoader from '../../components/Loaders/BlackSkeletonLoader';
+import { 
+  Plus, 
+  Edit, 
+  Trash2, 
+  Calendar, 
+  Clock, 
+  User, 
+  MapPin, 
+  DollarSign,
+  Users,
+  X,
+  Info
+} from 'lucide-react';
 
 const AdminClasses = () => {
-  const { error } = useContext(AuthContext);
   const [classes, setClasses] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
@@ -186,103 +192,564 @@ const AdminClasses = () => {
 
   return (
     <AdminLayout>
-      <h1 className="text-2xl font-bold mb-4">Manage Classes</h1>
-      {error && <div className="alert alert-error mb-4">{error}</div>}
-      {localError && <div className="alert alert-error mb-4">{localError}</div>}
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Class Management</h1>
+            <p className="text-gray-600 mt-1">Manage gym classes and schedules</p>
+          </div>
       <button
-        className="btn btn-primary mb-4"
         onClick={() => { setFormData({ className: '', description: '', trainerID: '', schedule: [{ day: '', startTime: '', endTime: '' }], capacity: '', location: '', price: '', category: '', level: 'Beginner' }); setFiles([]); setIsModalOpen(true); }}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
       >
+            <Plus className="w-5 h-5" />
         Create Class
       </button>
-      <table className="table w-full">
-        <thead><tr><th>Name</th><th>Trainer</th><th>Actions</th></tr></thead>
-        <tbody>
+        </div>
+
+        {localError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+            {localError}
+          </div>
+        )}
+
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          {/* Mobile Card View */}
+          <div className="block md:hidden">
+            {classes.map(c => (
+              <div key={c._id} className="border-b border-gray-200 p-4 last:border-b-0">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{c.className}</h3>
+                    <p className="text-xs text-gray-500">{c.category}</p>
+                  </div>
+                  <div className="flex space-x-1">
+                    <button
+                      onClick={() => edit(c)}
+                      className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => deleteClass(c._id)}
+                      className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center text-sm">
+                    <User className="w-4 h-4 mr-2 text-gray-400" />
+                    <span>{c.trainer?.trainerName || 'N/A'}</span>
+                  </div>
+                  
+                  {c.capacity && (
+                    <div className="flex items-center text-sm">
+                      <Users className="w-4 h-4 mr-2 text-gray-400" />
+                      <span>Capacity: {c.capacity}</span>
+                    </div>
+                  )}
+                  
+                  {c.price && (
+                    <div className="flex items-center text-sm">
+                      <DollarSign className="w-4 h-4 mr-2 text-gray-400" />
+                      <span>${c.price}</span>
+                    </div>
+                  )}
+                  
+                  {c.location && (
+                    <div className="flex items-center text-sm">
+                      <MapPin className="w-4 h-4 mr-2 text-gray-400" />
+                      <span className="truncate">{c.location}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                    Class Name
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-64">
+                    Description
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                    Trainer
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                    Category
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                    Level
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                    Price
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
           {classes.map(c => (
-            <tr key={c._id}>
-              <td>{c.className}</td>
-              <td>{c.trainer.trainerName || 'N/A'}</td>
-              <td>
-                <button className="btn btn-sm btn-primary mr-2" onClick={() => edit(c)}>Edit</button>
-                <button className="btn btn-sm btn-error mr-2" onClick={() => deleteClass(c._id)}>Delete</button>
-                <button className="btn btn-sm btn-warning" onClick={() => { setCancelClassId(c._id); setIsCancelModalOpen(true); }}>Cancel Date</button>
+                  <tr key={c._id} className="hover:bg-gray-50">
+                    <td className="px-4 py-4">
+                      <div className="text-sm font-medium text-gray-900">{c.className}</div>
+                      {c.capacity && (
+                        <div className="text-xs text-gray-500">Capacity: {c.capacity}</div>
+                      )}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm text-gray-900 max-w-xs">
+                        {c.description ? (
+                          <span className="line-clamp-2">{c.description}</span>
+                        ) : (
+                          <span className="text-gray-500 italic">No description</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center text-sm text-gray-900">
+                        <User className="w-4 h-4 mr-2 text-gray-400" />
+                        {c.trainer?.trainerName || 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {c.category || 'General'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        c.level === 'Beginner' ? 'bg-green-100 text-green-800' :
+                        c.level === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {c.level || 'Beginner'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center text-sm text-gray-900">
+                        <DollarSign className="w-4 h-4 mr-1 text-gray-400" />
+                        {c.price ? `$${c.price}` : 'Free'}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-1">
+                        <button
+                          onClick={() => edit(c)}
+                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
+                          title="Edit class"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => deleteClass(c._id)}
+                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                          title="Delete class"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <TextInput label="Name" name="className" value={formData.className} onChange={handleChange} required />
-        <TextInput label="Description" name="description" value={formData.description} onChange={handleChange} />
-        <SelectInput label="Trainer" name="trainerID" options={trainers} value={formData.trainerID} onChange={handleChange} required />
-        <div className="form-control mb-4">
-          <label className="label"><span className="label-text">Schedule</span></label>
+          </div>
+          
+          {classes.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-gray-500">
+                <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No classes found</h3>
+                <p className="text-gray-500 mb-4">Get started by creating your first gym class.</p>
+                <button
+                  onClick={() => { setFormData({ className: '', description: '', trainerID: '', schedule: [{ day: '', startTime: '', endTime: '' }], capacity: '', location: '', price: '', category: '', level: 'Beginner' }); setFiles([]); setIsModalOpen(true); }}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 mx-auto"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Your First Class
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Enhanced Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden shadow-2xl transform transition-all">
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-white">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-2xl font-bold">
+                      {formData._id ? 'Edit Class' : 'Create New Class'}
+                    </h2>
+                    <p className="text-blue-100 mt-1">
+                      {formData._id ? 'Update class details and schedule' : 'Set up a new gym class'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="text-white hover:text-blue-200 transition-colors p-2 hover:bg-white hover:bg-opacity-20 rounded-full"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-8 overflow-y-auto max-h-[calc(95vh-140px)]">
+                {localError && (
+                  <div className="bg-red-50 border-l-4 border-red-400 text-red-700 px-4 py-3 rounded-r-md mb-6 flex items-center">
+                    <div className="w-4 h-4 bg-red-400 rounded-full mr-3"></div>
+                    <span>{localError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={(e) => { e.preventDefault(); createOrUpdate(); }} className="space-y-8">
+                  {/* Basic Information */}
+                  <div className="bg-gray-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                        <span className="text-blue-600 font-bold">1</span>
+                      </div>
+                      Basic Information
+                    </h3>
+                    
+                    <div className="space-y-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Class Name *
+                        </label>
+                        <input
+                          type="text"
+                          name="className"
+                          value={formData.className}
+                          onChange={handleChange}
+                          required
+                          className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-lg"
+                          placeholder="e.g., Yoga Flow"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Description
+                        </label>
+                        <textarea
+                          name="description"
+                          value={formData.description}
+                          onChange={handleChange}
+                          rows={3}
+                          className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                          placeholder="Describe what this class offers and who it's for..."
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Trainer *
+                          </label>
+                          <select
+                            name="trainerID"
+                            value={formData.trainerID}
+                            onChange={handleChange}
+                            required
+                            className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          >
+                            <option value="">Select a trainer</option>
+                            {trainers.map(trainer => (
+                              <option key={trainer.value} value={trainer.value}>
+                                {trainer.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Level
+                          </label>
+                          <select
+                            name="level"
+                            value={formData.level}
+                            onChange={handleChange}
+                            className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          >
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Class Details */}
+                  <div className="bg-green-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                        <span className="text-green-600 font-bold">2</span>
+                      </div>
+                      Class Details
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Capacity *
+                        </label>
+                        <input
+                          type="number"
+                          name="capacity"
+                          value={formData.capacity}
+                          onChange={handleChange}
+                          required
+                          min="1"
+                          className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          placeholder="20"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Price *
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-3 text-gray-500">$</span>
+                          <input
+                            type="number"
+                            name="price"
+                            value={formData.price}
+                            onChange={handleChange}
+                            required
+                            min="0"
+                            step="0.01"
+                            className="w-full border-2 border-gray-200 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            placeholder="25.00"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Category
+                        </label>
+                        <input
+                          type="text"
+                          name="category"
+                          value={formData.category}
+                          onChange={handleChange}
+                          className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          placeholder="e.g., Yoga, Cardio, Strength"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Location
+                      </label>
+                      <input
+                        type="text"
+                        name="location"
+                        value={formData.location}
+                        onChange={handleChange}
+                        className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="e.g., Studio A, Main Hall"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Schedule */}
+                  <div className="bg-purple-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                        <span className="text-purple-600 font-bold">3</span>
+                      </div>
+                      Schedule
+                    </h3>
+                    
+                    <div className="space-y-4">
           {formData.schedule.map((slot, index) => (
-            <div key={index} className="flex gap-2 mb-2">
-              <TextInput
-                label="Day"
-                name={`day-${index}`}
+                        <div key={index} className="bg-white rounded-lg p-4 border-2 border-gray-100">
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Day
+                              </label>
+                              <input
+                                type="text"
                 value={slot.day}
                 onChange={e => handleScheduleChange(index, 'day', e.target.value)}
-              />
-              <TextInput
-                label="Start Time"
+                                className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                placeholder="Monday"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Start Time
+                              </label>
+                              <input
                 type="time"
-                name={`startTime-${index}`}
                 value={slot.startTime}
                 onChange={e => handleScheduleChange(index, 'startTime', e.target.value)}
-              />
-              <TextInput
-                label="End Time"
+                                className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                End Time
+                              </label>
+                              <input
                 type="time"
-                name={`endTime-${index}`}
                 value={slot.endTime}
                 onChange={e => handleScheduleChange(index, 'endTime', e.target.value)}
+                                className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
+                            </div>
+                            <div>
               {formData.schedule.length > 1 && (
-                <button className="btn btn-sm btn-error mt-8" onClick={() => removeScheduleSlot(index)}>Remove</button>
-              )}
+                                <button
+                                  type="button"
+                                  onClick={() => removeScheduleSlot(index)}
+                                  className="w-full bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm"
+                                >
+                                  Remove
+                                </button>
+                              )}
+                            </div>
+                          </div>
             </div>
           ))}
-          <button className="btn btn-sm btn-secondary mt-2" onClick={addScheduleSlot}>Add Schedule</button>
+                      <button
+                        type="button"
+                        onClick={addScheduleSlot}
+                        className="w-full bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors border-2 border-dashed border-blue-300"
+                      >
+                        + Add Schedule Slot
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Images */}
+                  <div className="bg-orange-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                        <span className="text-orange-600 font-bold">4</span>
         </div>
-        <TextInput label="Capacity" name="capacity" value={formData.capacity} onChange={handleChange} required />
-        <TextInput label="Location" name="location" value={formData.location} onChange={handleChange} />
-        <TextInput label="Price" name="price" value={formData.price} onChange={handleChange} required />
-        <TextInput label="Category" name="category" value={formData.category} onChange={handleChange} />
-        <SelectInput
-          label="Level"
-          name="level"
-          options={[{ value: 'Beginner', label: 'Beginner' }, { value: 'Intermediate', label: 'Intermediate' }, { value: 'Advanced', label: 'Advanced' }]}
-          value={formData.level}
-          onChange={handleChange}
-        />
-        <FileInput label="Images" name="images" onChange={e => setFiles(Array.from(e.target.files))} multiple />
+                      Class Images
+                    </h3>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Upload Images
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={e => setFiles(Array.from(e.target.files))}
+                        multiple
+                        className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      />
+                      <p className="text-xs text-gray-500 mt-2">
+                        Upload multiple images to showcase your class
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-end space-x-4 pt-6 border-t-2 border-gray-100">
+                    <button
+                      type="button"
+                      onClick={() => setIsModalOpen(false)}
+                      className="px-8 py-3 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors font-medium"
+                    >
+                      Cancel
+                    </button>
         <button
-          className="btn btn-primary mt-4"
-          onClick={createOrUpdate}
+                      type="submit"
           disabled={isSubmitting}
-        >
-          {isSubmitting ? <SpinnerLoader /> : 'Save'}
+                      className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 flex items-center gap-2 transition-all font-medium shadow-lg hover:shadow-xl"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <SpinnerLoader />
+                          {formData._id ? 'Updating...' : 'Creating...'}
+                        </>
+                      ) : (
+                        <>
+                          {formData._id ? (
+                            <>
+                              <Edit className="w-4 h-4" />
+                              Update Class
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="w-4 h-4" />
+                              Create Class
+                            </>
+                          )}
+                        </>
+                      )}
         </button>
-      </Modal>
-      <Modal isOpen={isCancelModalOpen} onClose={() => setIsCancelModalOpen(false)}>
-        <TextInput
-          label="Cancel Date"
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cancel Class Modal */}
+        {isCancelModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+              <div className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Cancel Class</h3>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cancel Date
+                  </label>
+                  <input
           type="date"
-          name="cancelDate"
           value={cancelDate}
           onChange={e => setCancelDate(e.target.value)}
           required
-        />
+                    className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  />
+                </div>
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => setIsCancelModalOpen(false)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
         <button
-          className="btn btn-warning mt-4"
           onClick={cancelClass}
           disabled={isSubmitting}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
         >
           {isSubmitting ? <SpinnerLoader /> : 'Cancel Class'}
         </button>
-      </Modal>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </AdminLayout>
   );
 };
