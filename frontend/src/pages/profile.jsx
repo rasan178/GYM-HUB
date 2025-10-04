@@ -7,11 +7,11 @@ import TextInput from "../components/Inputs/TextInput";
 import FileInput from "../components/Inputs/FileInput";
 import { API_PATHS } from "../utils/apiPaths";
 import SpinnerLoader from "../components/Loaders/SpinnerLoader";
-import { User, Mail, Lock, Camera, Calendar, Shield, Activity } from 'lucide-react';
+import { User, Mail, Lock, Camera, Calendar, Shield, Activity, Phone } from 'lucide-react';
 
 const Profile = () => {
   const { user, loading, error, refreshUser } = useContext(AuthContext);
-  const [formData, setFormData] = useState({ name: "", email: "", password: "", image: null, previewImage: null });
+  const [formData, setFormData] = useState({ name: "", email: "", phoneNumber: "", password: "", image: null, previewImage: null });
   const [localError, setLocalError] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const router = useRouter();
@@ -24,6 +24,7 @@ const Profile = () => {
         setFormData({
           name: user?.name || "",
           email: user?.email || "",
+          phoneNumber: user?.phoneNumber || "",
           password: "",
           image: null,
           previewImage: null,
@@ -63,6 +64,7 @@ const Profile = () => {
     const fd = new FormData();
     if (formData.name) fd.append("name", formData.name);
     if (formData.email) fd.append("email", formData.email);
+    if (formData.phoneNumber) fd.append("phoneNumber", formData.phoneNumber);
     if (formData.password) fd.append("password", formData.password);
     if (formData.image) fd.append("image", formData.image);
 
@@ -155,6 +157,12 @@ const Profile = () => {
                     <Mail className="w-4 h-4 mr-2" />
                     {user?.email}
                   </p>
+                  {user?.phoneNumber && (
+                    <p className="text-gray-600 flex items-center justify-center mt-1">
+                      <Phone className="w-4 h-4 mr-2" />
+                      {user.phoneNumber}
+                    </p>
+                  )}
                   <div className="mt-4 flex items-center justify-center text-sm text-gray-500">
                     <Calendar className="w-4 h-4 mr-1" />
                     Member since {new Date(user?.createdDate || Date.now()).toLocaleDateString()}
@@ -215,6 +223,17 @@ const Profile = () => {
                         icon={<Mail className="w-5 h-5" />}
                       />
                     </div>
+                  </div>
+                  
+                  <div>
+                    <TextInput 
+                      label="Phone Number" 
+                      name="phoneNumber" 
+                      value={formData.phoneNumber} 
+                      onChange={handleChange}
+                      icon={<Phone className="w-5 h-5" />}
+                      placeholder="Enter your phone number"
+                    />
                   </div>
                   
                   <div>
