@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import AdminLayout from '../../components/Layouts/AdminLayout';
 import { api } from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
-import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
 import { 
   Plus, 
   Edit, 
@@ -18,7 +17,6 @@ import {
 const AdminPlans = () => {
   const router = useRouter();
   const [plans, setPlans] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState(null);
@@ -42,8 +40,6 @@ const AdminPlans = () => {
       setPlans(res.data);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch plans');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -122,15 +118,6 @@ const AdminPlans = () => {
     setIsModalOpen(true);
   };
 
-  if (loading) {
-    return (
-      <AdminLayout>
-        <div className="flex justify-center items-center min-h-screen">
-          <SpinnerLoader />
-        </div>
-      </AdminLayout>
-    );
-  }
 
   return (
     <AdminLayout>
@@ -600,24 +587,15 @@ const AdminPlans = () => {
                       disabled={isSubmitting}
                       className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 flex items-center gap-2 transition-all font-medium shadow-lg hover:shadow-xl"
                     >
-                      {isSubmitting ? (
+                      {formData._id ? (
                         <>
-                          <SpinnerLoader />
-                          {formData._id ? 'Updating...' : 'Creating...'}
+                          <Edit className="w-4 h-4" />
+                          Update Plan
                         </>
                       ) : (
                         <>
-                          {formData._id ? (
-                            <>
-                              <Edit className="w-4 h-4" />
-                              Update Plan
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="w-4 h-4" />
-                              Create Plan
-                            </>
-                          )}
+                          <Plus className="w-4 h-4" />
+                          Create Plan
                         </>
                       )}
                     </button>

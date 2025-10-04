@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import api from '../../utils/axiosInstance';
 import AdminLayout from '../../components/Layouts/AdminLayout';
 import { API_PATHS } from '../../utils/apiPaths';
-import BlackSkeletonLoader from '../../components/Loaders/BlackSkeletonLoader';
-import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
 import { 
   CheckCircle, 
   XCircle, 
@@ -18,7 +16,6 @@ import {
 const AdminTestimonials = () => {
   const [testimonials, setTestimonials] = useState([]);
   const [localError, setLocalError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isAction, setIsAction] = useState({});
 
   useEffect(() => {
@@ -32,8 +29,6 @@ const AdminTestimonials = () => {
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch testimonials');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -94,7 +89,6 @@ const AdminTestimonials = () => {
     }
   };
 
-  if (isLoading) return <BlackSkeletonLoader lines={10} />;
 
   return (
     <AdminLayout>
@@ -149,7 +143,7 @@ const AdminTestimonials = () => {
                         disabled={isAction[t._id] === 'approve'}
                         className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 disabled:opacity-50 flex items-center gap-1"
                       >
-                        {isAction[t._id] === 'approve' ? <SpinnerLoader /> : <CheckCircle className="w-3 h-3" />}
+                        <CheckCircle className="w-3 h-3" />
                         Approve
                       </button>
                       <button
@@ -157,7 +151,7 @@ const AdminTestimonials = () => {
                         disabled={isAction[t._id] === 'reject'}
                         className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 disabled:opacity-50 flex items-center gap-1"
                       >
-                        {isAction[t._id] === 'reject' ? <SpinnerLoader /> : <XCircle className="w-3 h-3" />}
+                        <XCircle className="w-3 h-3" />
                         Reject
                       </button>
                     </div>
@@ -168,7 +162,7 @@ const AdminTestimonials = () => {
                     disabled={isAction[t._id] === 'delete'}
                     className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                   >
-                    {isAction[t._id] === 'delete' ? <SpinnerLoader /> : <Trash2 className="w-4 h-4" />}
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -223,7 +217,7 @@ const AdminTestimonials = () => {
                               disabled={isAction[t._id] === 'approve'}
                               className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 disabled:opacity-50 flex items-center gap-1"
                             >
-                              {isAction[t._id] === 'approve' ? <SpinnerLoader /> : <CheckCircle className="w-3 h-3" />}
+                              <CheckCircle className="w-3 h-3" />
                               Approve
                             </button>
                             <button
@@ -231,7 +225,7 @@ const AdminTestimonials = () => {
                               disabled={isAction[t._id] === 'reject'}
                               className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 disabled:opacity-50 flex items-center gap-1"
                             >
-                              {isAction[t._id] === 'reject' ? <SpinnerLoader /> : <XCircle className="w-3 h-3" />}
+                              <XCircle className="w-3 h-3" />
                               Reject
                             </button>
                           </>
@@ -242,7 +236,7 @@ const AdminTestimonials = () => {
                           className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                           title="Delete testimonial"
                         >
-                          {isAction[t._id] === 'delete' ? <SpinnerLoader /> : <Trash2 className="w-4 h-4" />}
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>

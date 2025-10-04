@@ -3,8 +3,6 @@ import api from '../../utils/axiosInstance';
 import AdminLayout from '../../components/Layouts/AdminLayout';
 import { formatDate } from '../../utils/helpers';
 import { API_PATHS } from '../../utils/apiPaths';
-import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
-import BlackSkeletonLoader from '../../components/Loaders/BlackSkeletonLoader';
 import { 
   Plus, 
   Edit, 
@@ -26,7 +24,6 @@ const AdminMemberships = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ userID: '', planID: '', startDate: '', renewalOption: true });
   const [localError, setLocalError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -42,8 +39,6 @@ const AdminMemberships = () => {
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch memberships');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -163,7 +158,6 @@ const AdminMemberships = () => {
     }
   };
 
-  if (isLoading) return <BlackSkeletonLoader lines={10} />;
 
   return (
     <AdminLayout>
@@ -511,24 +505,15 @@ const AdminMemberships = () => {
                       disabled={isSubmitting}
                       className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 flex items-center gap-2 transition-all font-medium shadow-lg hover:shadow-xl"
                     >
-                      {isSubmitting ? (
+                      {formData._id ? (
                         <>
-                          <SpinnerLoader />
-                          {formData._id ? 'Updating...' : 'Creating...'}
+                          <Edit className="w-4 h-4" />
+                          Update Membership
                         </>
                       ) : (
                         <>
-                          {formData._id ? (
-                            <>
-                              <Edit className="w-4 h-4" />
-                              Update Membership
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="w-4 h-4" />
-                              Create Membership
-                            </>
-                          )}
+                          <Plus className="w-4 h-4" />
+                          Create Membership
                         </>
                       )}
                     </button>

@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import api from '../../utils/axiosInstance';
 import AdminLayout from '../../components/Layouts/AdminLayout';
 import { API_PATHS } from '../../utils/apiPaths';
-import SkeletonLoader from '../../components/Loaders/SkeletonLoader';
-import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
 import { 
   Plus, 
   Edit, 
@@ -32,7 +30,6 @@ const AdminTrainers = () => {
   });
   const [file, setFile] = useState(null);
   const [localError, setLocalError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -46,8 +43,6 @@ const AdminTrainers = () => {
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch trainers');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -157,7 +152,6 @@ const AdminTrainers = () => {
     setIsModalOpen(true);
   };
 
-  if (isLoading) return <SkeletonLoader />;
 
   return (
     <AdminLayout>
@@ -223,7 +217,7 @@ const AdminTrainers = () => {
                       disabled={isSubmitting}
                       className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                     >
-                      {isSubmitting ? <SpinnerLoader /> : <Trash2 className="w-4 h-4" />}
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -332,7 +326,7 @@ const AdminTrainers = () => {
                           className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                           title="Delete trainer"
                 >
-                          {isSubmitting ? <SpinnerLoader /> : <Trash2 className="w-4 h-4" />}
+                          <Trash2 className="w-4 h-4" />
                 </button>
                       </div>
               </td>
@@ -635,24 +629,15 @@ const AdminTrainers = () => {
           disabled={isSubmitting}
                       className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 flex items-center gap-2 transition-all font-medium shadow-lg hover:shadow-xl"
                     >
-                      {isSubmitting ? (
+                      {formData._id ? (
                         <>
-                          <SpinnerLoader />
-                          {formData._id ? 'Updating...' : 'Creating...'}
+                          <Edit className="w-4 h-4" />
+                          Update Trainer
                         </>
                       ) : (
                         <>
-                          {formData._id ? (
-                            <>
-                              <Edit className="w-4 h-4" />
-                              Update Trainer
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="w-4 h-4" />
-                              Create Trainer
-                            </>
-                          )}
+                          <Plus className="w-4 h-4" />
+                          Create Trainer
                         </>
                       )}
         </button>

@@ -3,8 +3,6 @@ import api from '../../utils/axiosInstance';
 import AdminLayout from '../../components/Layouts/AdminLayout';
 import { formatDate } from '../../utils/helpers';
 import { API_PATHS } from '../../utils/apiPaths';
-import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
-import BlackSkeletonLoader from '../../components/Loaders/BlackSkeletonLoader';
 import { 
   Plus, 
   Edit, 
@@ -39,7 +37,6 @@ const AdminClasses = () => {
   const [files, setFiles] = useState([]);
   const [trainers, setTrainers] = useState([]);
   const [localError, setLocalError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -54,8 +51,6 @@ const AdminClasses = () => {
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch classes');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -188,7 +183,6 @@ const AdminClasses = () => {
     setIsModalOpen(true);
   };
 
-  if (isLoading) return <BlackSkeletonLoader lines={12} />;
 
   return (
     <AdminLayout>
@@ -684,24 +678,15 @@ const AdminClasses = () => {
           disabled={isSubmitting}
                       className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 flex items-center gap-2 transition-all font-medium shadow-lg hover:shadow-xl"
                     >
-                      {isSubmitting ? (
+                      {formData._id ? (
                         <>
-                          <SpinnerLoader />
-                          {formData._id ? 'Updating...' : 'Creating...'}
+                          <Edit className="w-4 h-4" />
+                          Update Class
                         </>
                       ) : (
                         <>
-                          {formData._id ? (
-                            <>
-                              <Edit className="w-4 h-4" />
-                              Update Class
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="w-4 h-4" />
-                              Create Class
-                            </>
-                          )}
+                          <Plus className="w-4 h-4" />
+                          Create Class
                         </>
                       )}
         </button>
@@ -742,7 +727,7 @@ const AdminClasses = () => {
           disabled={isSubmitting}
                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
         >
-          {isSubmitting ? <SpinnerLoader /> : 'Cancel Class'}
+                    Cancel Class
         </button>
                 </div>
               </div>
