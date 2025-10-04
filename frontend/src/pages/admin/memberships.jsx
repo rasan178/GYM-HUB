@@ -151,6 +151,21 @@ const AdminMemberships = () => {
     }
   };
 
+  const toggleRenewalOption = async (id, newRenewalOption) => {
+    setIsSubmitting(true);
+    try {
+      await api.put(API_PATHS.ADMIN.MEMBERSHIPS.UPDATE(id), { renewalOption: newRenewalOption });
+      fetchMemberships();
+      fetchMembershipStats();
+      setLocalError(null);
+      alert(`Renewal option ${newRenewalOption ? 'enabled' : 'disabled'} successfully!`);
+    } catch (err) {
+      setLocalError(err.response?.data?.message || 'Failed to update renewal option');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const edit = m => {
     setFormData({
       _id: m._id,
@@ -296,6 +311,16 @@ const AdminMemberships = () => {
                     <Calendar className="w-4 h-4 mr-2 text-gray-400" />
                     <span>Start: {m.startDate ? formatDate(m.startDate) : 'N/A'}</span>
                   </div>
+                  
+                  <div className="flex items-center text-sm">
+                    <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                    <span>End: {m.endDate ? formatDate(m.endDate) : 'N/A'}</span>
+                  </div>
+
+                  <div className="flex items-center text-sm">
+                    <Info className="w-4 h-4 mr-2 text-gray-400" />
+                    <span>Renewal: {m.renewalOption ? 'Enabled' : 'Disabled'}</span>
+                  </div>
                 </div>
 
                 <div className="flex justify-between items-center mt-4">
@@ -309,21 +334,39 @@ const AdminMemberships = () => {
                     {m.active ? (
                       <button
                         onClick={() => deactivateMembership(m._id)}
-                        className="text-yellow-600 hover:text-yellow-900 p-1 rounded hover:bg-yellow-50 transition-colors"
+                        disabled={isSubmitting}
+                        className="text-orange-600 hover:text-orange-900 p-1 rounded hover:bg-orange-50 transition-colors"
+                        title="Deactivate membership"
                       >
-                        <XCircle className="w-4 h-4" />
+                        <PowerOff className="w-4 h-4" />
                       </button>
                     ) : (
                       <button
                         onClick={() => reactivateMembership(m._id)}
+                        disabled={isSubmitting}
                         className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                        title="Reactivate membership"
                       >
-                        <CheckCircle className="w-4 h-4" />
+                        <Power className="w-4 h-4" />
                       </button>
                     )}
                     <button
+                      onClick={() => toggleRenewalOption(m._id, !m.renewalOption)}
+                      disabled={isSubmitting}
+                      className={`p-1 rounded transition-colors ${
+                        m.renewalOption 
+                          ? 'text-green-600 hover:text-green-900 hover:bg-green-50' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                      title={m.renewalOption ? 'Disable renewal' : 'Enable renewal'}
+                    >
+                      {m.renewalOption ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                    </button>
+                    <button
                       onClick={() => deleteMembership(m._id)}
+                      disabled={isSubmitting}
                       className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                      title="Delete membership"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -348,9 +391,15 @@ const AdminMemberships = () => {
                     Start Date
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                    Status
+                    End Date
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                    Renewal
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                     Actions
                   </th>
                 </tr>
@@ -374,6 +423,22 @@ const AdminMemberships = () => {
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center text-sm text-gray-900">
+                        <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                        {m.endDate ? formatDate(m.endDate) : 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${
+                        m.renewalOption 
+                          ? 'bg-green-100 text-green-800 border-green-200' 
+                          : 'bg-gray-100 text-gray-800 border-gray-200'
+                      }`}>
+                        {m.renewalOption ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                        {m.renewalOption ? 'Enabled' : 'Disabled'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${getStatusColor(m.status, m.active)}`}>
                         {getStatusIcon(m.status, m.active)}
                         {m.active ? m.status : 'Inactive'}
@@ -391,22 +456,37 @@ const AdminMemberships = () => {
                         {m.active ? (
                           <button
                             onClick={() => deactivateMembership(m._id)}
-                            className="text-yellow-600 hover:text-yellow-900 p-1 rounded hover:bg-yellow-50 transition-colors"
+                            disabled={isSubmitting}
+                            className="text-orange-600 hover:text-orange-900 p-1 rounded hover:bg-orange-50 transition-colors"
                             title="Deactivate membership"
                           >
-                            <XCircle className="w-4 h-4" />
+                            <PowerOff className="w-4 h-4" />
                           </button>
                         ) : (
                           <button
                             onClick={() => reactivateMembership(m._id)}
+                            disabled={isSubmitting}
                             className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
                             title="Reactivate membership"
                           >
-                            <CheckCircle className="w-4 h-4" />
+                            <Power className="w-4 h-4" />
                           </button>
                         )}
                         <button
+                          onClick={() => toggleRenewalOption(m._id, !m.renewalOption)}
+                          disabled={isSubmitting}
+                          className={`p-1 rounded transition-colors ${
+                            m.renewalOption 
+                              ? 'text-green-600 hover:text-green-900 hover:bg-green-50' 
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                          }`}
+                          title={m.renewalOption ? 'Disable renewal' : 'Enable renewal'}
+                        >
+                          {m.renewalOption ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                        </button>
+                        <button
                           onClick={() => deleteMembership(m._id)}
+                          disabled={isSubmitting}
                           className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                           title="Delete membership"
                         >
