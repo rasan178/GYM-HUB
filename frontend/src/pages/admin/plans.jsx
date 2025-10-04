@@ -399,136 +399,227 @@ const AdminPlans = () => {
           )}
         </div>
 
-        {/* Modal */}
+        {/* Enhanced Modal */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {formData._id ? 'Edit Plan' : 'Create New Plan'}
-                  </h2>
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden shadow-2xl transform transition-all">
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-white">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-2xl font-bold">
+                      {formData._id ? 'Edit Membership Plan' : 'Create New Plan'}
+                    </h2>
+                    <p className="text-blue-100 mt-1">
+                      {formData._id ? 'Update plan details and pricing' : 'Set up a new membership plan for your gym'}
+                    </p>
+                  </div>
                   <button
                     onClick={() => setIsModalOpen(false)}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    className="text-white hover:text-blue-200 transition-colors p-2 hover:bg-white hover:bg-opacity-20 rounded-full"
                   >
                     <X className="w-6 h-6" />
                   </button>
                 </div>
+              </div>
 
+              {/* Modal Body */}
+              <div className="p-8 overflow-y-auto max-h-[calc(95vh-140px)]">
                 {localError && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-                    {localError}
+                  <div className="bg-red-50 border-l-4 border-red-400 text-red-700 px-4 py-3 rounded-r-md mb-6 flex items-center">
+                    <div className="w-4 h-4 bg-red-400 rounded-full mr-3"></div>
+                    <span>{localError}</span>
                   </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Plan Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="planName"
-                      value={formData.planName}
-                      onChange={handleChange}
-                      required
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="e.g., Premium Membership"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleChange}
-                      rows={3}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Brief description of the plan features and target audience..."
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Optional: Provide a short description of what this plan offers
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Benefits *
-                    </label>
-                    <textarea
-                      name="benifits"
-                      value={formData.benifits}
-                      onChange={handleChange}
-                      required
-                      rows={5}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Gym equipment access, Locker & showers, Swimming pool access, Personal training sessions, Group classes, Nutrition consultation..."
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Separate each benefit with a comma. Be specific and clear about what members get.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Total Price (for entire duration) *
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-2 text-gray-500">$</span>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                  {/* Plan Basic Information */}
+                  <div className="bg-gray-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                        <span className="text-blue-600 font-bold">1</span>
+                      </div>
+                      Basic Information
+                    </h3>
+                    
+                    <div className="space-y-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Plan Name *
+                        </label>
                         <input
-                          type="number"
-                          name="price"
-                          value={formData.price}
+                          type="text"
+                          name="planName"
+                          value={formData.planName}
                           onChange={handleChange}
                           required
-                          min="0"
-                          step="0.01"
-                          className="w-full border border-gray-300 rounded-md pl-8 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="599.99"
+                          className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-lg"
+                          placeholder="e.g., Premium Membership"
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Total amount for the entire membership duration
-                      </p>
-                    </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Duration (months) *
-                      </label>
-                      <input
-                        type="number"
-                        name="durationMonths"
-                        value={formData.durationMonths}
-                        onChange={handleChange}
-                        required
-                        min="1"
-                        max="24"
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="12"
-                      />
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Description
+                        </label>
+                        <textarea
+                          name="description"
+                          value={formData.description}
+                          onChange={handleChange}
+                          rows={3}
+                          className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                          placeholder="Brief description of the plan features and target audience..."
+                        />
+                        <p className="text-xs text-gray-500 mt-2 flex items-center">
+                          <Info className="w-3 h-3 mr-1" />
+                          Optional: Provide a short description of what this plan offers
+                        </p>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                  {/* Benefits Section */}
+                  <div className="bg-green-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                        <span className="text-green-600 font-bold">2</span>
+                      </div>
+                      Plan Benefits
+                    </h3>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Benefits *
+                      </label>
+                      <textarea
+                        name="benifits"
+                        value={formData.benifits}
+                        onChange={handleChange}
+                        required
+                        rows={5}
+                        className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                        placeholder="Gym equipment access, Locker & showers, Swimming pool access, Personal training sessions, Group classes, Nutrition consultation..."
+                      />
+                      <p className="text-xs text-gray-500 mt-2 flex items-center">
+                        <Info className="w-3 h-3 mr-1" />
+                        Separate each benefit with a comma. Be specific and clear about what members get.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Pricing & Duration */}
+                  <div className="bg-purple-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                        <span className="text-purple-600 font-bold">3</span>
+                      </div>
+                      Pricing & Duration
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Total Price (for entire duration) *
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-3 text-gray-500 text-lg">$</span>
+                          <input
+                            type="number"
+                            name="price"
+                            value={formData.price}
+                            onChange={handleChange}
+                            required
+                            min="0"
+                            step="0.01"
+                            className="w-full border-2 border-gray-200 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-lg"
+                            placeholder="599.99"
+                          />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2 flex items-center">
+                          <DollarSign className="w-3 h-3 mr-1" />
+                          Total amount for the entire membership duration
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Duration (months) *
+                        </label>
+                        <div className="relative">
+                          <Calendar className="absolute left-4 top-3 w-4 h-4 text-gray-400" />
+                          <input
+                            type="number"
+                            name="durationMonths"
+                            value={formData.durationMonths}
+                            onChange={handleChange}
+                            required
+                            min="1"
+                            max="24"
+                            className="w-full border-2 border-gray-200 rounded-lg pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-lg"
+                            placeholder="12"
+                          />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2 flex items-center">
+                          <Calendar className="w-3 h-3 mr-1" />
+                          Membership duration in months (1-24)
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Price Summary */}
+                    {formData.price && formData.durationMonths && (
+                      <div className="mt-6 p-4 bg-white rounded-lg border-2 border-gray-100">
+                        <h4 className="font-semibold text-gray-900 mb-2">Price Summary</h4>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-gray-600">Total Price:</span>
+                          <span className="font-bold text-lg text-green-600">${formData.price}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-gray-600">Duration:</span>
+                          <span className="font-medium">{formData.durationMonths} month{formData.durationMonths > 1 ? 's' : ''}</span>
+                        </div>
+                        <div className="border-t border-gray-200 mt-2 pt-2 flex justify-between items-center text-sm">
+                          <span className="text-gray-600">Average per month:</span>
+                          <span className="font-medium text-blue-600">${(formData.price / formData.durationMonths).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-end space-x-4 pt-6 border-t-2 border-gray-100">
                     <button
                       type="button"
                       onClick={() => setIsModalOpen(false)}
-                      className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="px-8 py-3 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors font-medium"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 transition-colors"
+                      className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 flex items-center gap-2 transition-all font-medium shadow-lg hover:shadow-xl"
                     >
-                      {isSubmitting ? <SpinnerLoader /> : (formData._id ? 'Update Plan' : 'Create Plan')}
+                      {isSubmitting ? (
+                        <>
+                          <SpinnerLoader />
+                          {formData._id ? 'Updating...' : 'Creating...'}
+                        </>
+                      ) : (
+                        <>
+                          {formData._id ? (
+                            <>
+                              <Edit className="w-4 h-4" />
+                              Update Plan
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="w-4 h-4" />
+                              Create Plan
+                            </>
+                          )}
+                        </>
+                      )}
                     </button>
                   </div>
                 </form>
