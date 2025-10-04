@@ -23,6 +23,7 @@ const AdminPlans = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState(null);
   const [hoveredBenefit, setHoveredBenefit] = useState(null);
+  const [hoveredDescription, setHoveredDescription] = useState(null);
   const [formData, setFormData] = useState({
     planName: '',
     description: '',
@@ -183,7 +184,7 @@ const AdminPlans = () => {
                   <div className="flex items-center text-sm">
                     <DollarSign className="w-4 h-4 mr-2 text-gray-400" />
                     <span className="font-medium">${plan.price}</span>
-                    <span className="text-gray-500 ml-1">/month</span>
+                    <span className="text-gray-500 ml-1">total</span>
                   </div>
                   
                   <div className="flex items-center text-sm">
@@ -195,7 +196,14 @@ const AdminPlans = () => {
                   {plan.description && (
                     <div className="text-sm text-gray-600">
                       <span className="font-medium">Description: </span>
-                      <span className="line-clamp-2">{plan.description}</span>
+                      <span className={`${plan.description.length > 80 ? 'line-clamp-2' : ''}`}>
+                        {plan.description}
+                      </span>
+                      {plan.description.length > 80 && (
+                        <div className="text-xs text-blue-600 mt-1">
+                          +{plan.description.length - 80} more characters
+                        </div>
+                      )}
                     </div>
                   )}
                   
@@ -255,10 +263,34 @@ const AdminPlans = () => {
                       <div className="text-xs text-gray-500">ID: {plan.planID}</div>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 relative">
                         {plan.description ? (
                           <div className="max-w-xs">
-                            <p className="line-clamp-3">{plan.description}</p>
+                            {plan.description.length > 100 ? (
+                              <div className="relative">
+                                <p className="line-clamp-3 cursor-pointer" 
+                                   onMouseEnter={() => setHoveredDescription(plan._id)}
+                                   onMouseLeave={() => setHoveredDescription(null)}>
+                                  {plan.description}
+                                </p>
+                                
+                                {/* Description Tooltip */}
+                                {hoveredDescription === plan._id && (
+                                  <div className="absolute z-10 bottom-full left-0 mb-2 w-80 bg-gray-900 text-white text-xs rounded-lg shadow-lg p-3">
+                                    <div className="font-semibold text-white mb-2">Full Description:</div>
+                                    <p className="leading-relaxed">{plan.description}</p>
+                                    <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                                  </div>
+                                )}
+                                
+                                <div className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+                                  <Info className="w-3 h-3" />
+                                  +{plan.description.length - 100} more characters
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="line-clamp-3">{plan.description}</p>
+                            )}
                           </div>
                         ) : (
                           <span className="text-gray-500 italic">No description</span>
@@ -269,7 +301,7 @@ const AdminPlans = () => {
                       <div className="flex items-center text-sm text-gray-900">
                         <DollarSign className="w-4 h-4 mr-1 flex-shrink-0" />
                         <span className="font-medium">${plan.price}</span>
-                        <span className="text-gray-500 ml-1">/month</span>
+                        <span className="text-gray-500 ml-1">total</span>
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
@@ -444,7 +476,7 @@ const AdminPlans = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Price (per month) *
+                        Total Price (for entire duration) *
                       </label>
                       <div className="relative">
                         <span className="absolute left-3 top-2 text-gray-500">$</span>
@@ -457,9 +489,12 @@ const AdminPlans = () => {
                           min="0"
                           step="0.01"
                           className="w-full border border-gray-300 rounded-md pl-8 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="49.99"
+                          placeholder="599.99"
                         />
                       </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Total amount for the entire membership duration
+                      </p>
                     </div>
 
                     <div>
