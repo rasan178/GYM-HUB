@@ -280,3 +280,36 @@ exports.reactivateTrainer = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// ========================= GET TRAINER STATISTICS =========================
+exports.getTrainerStats = async (req, res) => {
+  try {
+    const trainers = await Trainer.find();
+    
+    let totalTrainers = trainers.length;
+    let activeTrainers = 0;
+    let inactiveTrainers = 0;
+    let adminDeactivatedTrainers = 0;
+
+    trainers.forEach(trainer => {
+      const status = getTrainerStatus(trainer);
+      if (trainer.adminDeactivated) {
+        adminDeactivatedTrainers++;
+        inactiveTrainers++;
+      } else if (status === "Active") {
+        activeTrainers++;
+      } else {
+        inactiveTrainers++;
+      }
+    });
+
+    res.json({
+      totalTrainers,
+      activeTrainers,
+      inactiveTrainers,
+      adminDeactivatedTrainers
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

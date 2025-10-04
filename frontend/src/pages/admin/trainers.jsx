@@ -13,11 +13,20 @@ import {
   X,
   Info,
   Power,
-  PowerOff
+  PowerOff,
+  CheckCircle,
+  XCircle,
+  AlertTriangle
 } from 'lucide-react';
 
 const AdminTrainers = () => {
   const [trainers, setTrainers] = useState([]);
+  const [trainerStats, setTrainerStats] = useState({
+    totalTrainers: 0,
+    activeTrainers: 0,
+    inactiveTrainers: 0,
+    adminDeactivatedTrainers: 0
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     trainerName: '',
@@ -36,6 +45,7 @@ const AdminTrainers = () => {
 
   useEffect(() => {
     fetchTrainers();
+    fetchTrainerStats();
   }, []);
 
   const fetchTrainers = async () => {
@@ -45,6 +55,15 @@ const AdminTrainers = () => {
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch trainers');
+    }
+  };
+
+  const fetchTrainerStats = async () => {
+    try {
+      const res = await api.get(API_PATHS.TRAINERS.GET_STATS);
+      setTrainerStats(res.data);
+    } catch (err) {
+      console.error('Failed to fetch trainer statistics:', err);
     }
   };
 
@@ -115,6 +134,7 @@ const AdminTrainers = () => {
       });
       setFile(null);
       fetchTrainers();
+      fetchTrainerStats();
       setLocalError(null);
       alert('Trainer saved successfully!');
     } catch (err) {
@@ -129,6 +149,7 @@ const AdminTrainers = () => {
     try {
       await api.delete(API_PATHS.ADMIN.TRAINERS.DELETE(id));
       fetchTrainers();
+      fetchTrainerStats();
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to delete trainer');
@@ -142,6 +163,7 @@ const AdminTrainers = () => {
     try {
       await api.patch(API_PATHS.ADMIN.TRAINERS.DEACTIVATE(id));
       fetchTrainers();
+      fetchTrainerStats();
       setLocalError(null);
       alert('Trainer deactivated successfully!');
     } catch (err) {
@@ -156,6 +178,7 @@ const AdminTrainers = () => {
     try {
       await api.patch(API_PATHS.ADMIN.TRAINERS.REACTIVATE(id));
       fetchTrainers();
+      fetchTrainerStats();
       setLocalError(null);
       alert('Trainer reactivated successfully!');
     } catch (err) {
@@ -214,6 +237,65 @@ const AdminTrainers = () => {
       </button>
         </div>
 
+        {/* Trainer Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Users className="h-8 w-8 text-blue-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Total Trainers</dt>
+                  <dd className="text-lg font-medium text-gray-900">{trainerStats.totalTrainers}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Active Trainers</dt>
+                  <dd className="text-lg font-medium text-gray-900">{trainerStats.activeTrainers}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <XCircle className="h-8 w-8 text-gray-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Inactive Trainers</dt>
+                  <dd className="text-lg font-medium text-gray-900">{trainerStats.inactiveTrainers}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <AlertTriangle className="h-8 w-8 text-orange-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Admin Deactivated</dt>
+                  <dd className="text-lg font-medium text-gray-900">{trainerStats.adminDeactivatedTrainers}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {localError && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
             {localError}
@@ -234,16 +316,20 @@ const AdminTrainers = () => {
                     <p className="text-xs text-gray-500">
                       {Array.isArray(t.specialty) ? t.specialty.join(', ') : (t.specialty || 'General Training')}
                     </p>
-                    <div className="flex items-center mt-2">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                        t.status === 'Active' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {t.status}
-                      </span>
+                    <div className="flex flex-col gap-1 mt-2">
+                      <div className="flex items-center">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          t.status === 'Active' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {t.status === 'Active' ? <CheckCircle className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
+                          {t.status}
+                        </span>
+                      </div>
                       {t.adminDeactivated && (
-                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                          <AlertTriangle className="w-3 h-3 mr-1" />
                           Admin Deactivated
                         </span>
                       )}
@@ -376,16 +462,20 @@ const AdminTrainers = () => {
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          t.status === 'Active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {t.status}
-                        </span>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            t.status === 'Active' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {t.status === 'Active' ? <CheckCircle className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
+                            {t.status}
+                          </span>
+                        </div>
                         {t.adminDeactivated && (
-                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                            <AlertTriangle className="w-3 h-3 mr-1" />
                             Admin Deactivated
                           </span>
                         )}

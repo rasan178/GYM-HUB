@@ -16,6 +16,7 @@ export const API_PATHS = {
   TRAINERS: {
     GET_ALL: "/api/trainers",
     GET_ONE: (id) => `/api/trainers/${id}`,
+    GET_STATS: "/api/trainers/stats",
   },
 
   CLASSES: {

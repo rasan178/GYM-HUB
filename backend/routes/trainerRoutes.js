@@ -3,7 +3,7 @@ const router = express.Router();
 const {
   getTrainers,
   getTrainerById,
-
+  getTrainerStats
 } = require('../controllers/trainerController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -11,6 +11,9 @@ const { protect } = require('../middleware/authMiddleware');
 
 // ✅ Get all trainers (with dynamic status)
 router.get('/', protect, getTrainers);
+
+// ✅ Get trainer statistics
+router.get('/stats', protect, getTrainerStats);
 
 // ✅ Get a single trainer by Mongo _id (with dynamic status)
 router.get('/:id', protect, getTrainerById);
