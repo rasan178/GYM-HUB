@@ -122,6 +122,65 @@ const AdminMembershipRequests = () => {
           </div>
         )}
 
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-lg shadow">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <User className="w-8 h-8 text-blue-500" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Total Requests</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {requests.length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Clock className="w-8 h-8 text-yellow-500" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Pending Requests</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {requests.filter(r => r.status === 'Pending').length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <CheckCircle className="w-8 h-8 text-green-500" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Approved Requests</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {requests.filter(r => r.status === 'Approved').length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <XCircle className="w-8 h-8 text-red-500" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Rejected Requests</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {requests.filter(r => r.status === 'Rejected').length}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {filteredRequests.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow">
             <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -253,51 +312,6 @@ const AdminMembershipRequests = () => {
             </div>
           </div>
         )}
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Clock className="w-8 h-8 text-yellow-500" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Pending Requests</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {requests.filter(r => r.status === 'Pending').length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <CheckCircle className="w-8 h-8 text-green-500" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Approved Requests</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {requests.filter(r => r.status === 'Approved').length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <XCircle className="w-8 h-8 text-red-500" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Rejected Requests</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {requests.filter(r => r.status === 'Rejected').length}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </AdminLayout>
   );

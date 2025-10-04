@@ -148,7 +148,7 @@ const getAllMembershipRequests = async (req, res) => {
 const approveMembershipRequest = async (req, res) => {
   try {
     const { id } = req.params;
-    const { adminNotes } = req.body;
+    const { adminNotes } = req.body || {};
 
     const request = await MembershipRequest.findById(id)
       .populate('userID', 'name')
@@ -215,7 +215,7 @@ const approveMembershipRequest = async (req, res) => {
 const rejectMembershipRequest = async (req, res) => {
   try {
     const { id } = req.params;
-    const { adminNotes } = req.body;
+    const { adminNotes } = req.body || {};
 
     const request = await MembershipRequest.findById(id);
     if (!request) return res.status(404).json({ message: 'Membership request not found' });
