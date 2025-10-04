@@ -25,6 +25,35 @@ exports.getUserCount = async (req, res) => {
   }
 };
 
+// Get user statistics (admin)
+exports.getUserStats = async (req, res) => {
+  try {
+    // Get total users (excluding admin role)
+    const totalUsers = await User.countDocuments({ role: { $ne: 'admin' } });
+    
+    // Get active users (excluding admin role)
+    const activeUsers = await User.countDocuments({ 
+      role: { $ne: 'admin' }, 
+      status: 'active' 
+    });
+    
+    // Get inactive users (excluding admin role)
+    const inactiveUsers = await User.countDocuments({ 
+      role: { $ne: 'admin' }, 
+      status: { $in: ['inactive', 'suspended'] } 
+    });
+
+    res.json({
+      totalUsers,
+      activeUsers,
+      inactiveUsers
+    });
+  } catch (error) {
+    console.error('Error getting user statistics:', error);
+    res.status(500).json({ message: 'Error getting user statistics' });
+  }
+};
+
 // Delete a user (admin)
 exports.deleteUser = async (req, res) => {
   try {
@@ -37,6 +66,39 @@ exports.deleteUser = async (req, res) => {
     await user.deleteOne();
 
     res.json({ message: 'User removed' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Update user status (admin)
+exports.updateUserStatus = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const { status } = req.body;
+    
+    // Validate status
+    if (!['active', 'inactive', 'suspended'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status. Must be active, inactive, or suspended' });
+    }
+
+    user.status = status;
+    user.updatedDate = Date.now();
+    await user.save();
+
+    res.json({ 
+      message: `User ${status === 'active' ? 'activated' : status === 'inactive' ? 'deactivated' : 'suspended'} successfully`,
+      user: {
+        userID: user.userID,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        updatedDate: user.updatedDate
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

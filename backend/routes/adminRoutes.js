@@ -46,6 +46,8 @@ router.put("/membership-requests/reject/:id", protect, admin, adminController.re
 
 // ========================= USER ADMIN =========================
 router.get("/users", protect, admin, adminController.getUsers);
+router.get("/users/stats", protect, admin, adminController.getUserStats);
 router.delete("/users/:id", protect, admin, adminController.deleteUser);
+router.patch("/users/:id/status", protect, admin, adminController.updateUserStatus);
 
 module.exports = router;
