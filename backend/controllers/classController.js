@@ -16,6 +16,39 @@ const calculateDuration = (startTime, endTime) => {
   return endMinutes > startMinutes ? endMinutes - startMinutes : 0;
 };
 
+// ========================= Helper: Determine Class Status =========================
+const getClassStatus = (classObj) => {
+  // If admin has manually deactivated the class, it cannot be auto-activated
+  // This overrides the schedule-based activation/deactivation
+  if (classObj.adminDeactivated) {
+    return "Inactive";
+  }
+
+  const schedule = classObj.schedule;
+  if (!schedule || schedule.length === 0) return "Inactive";
+
+  const now = new Date();
+  const day = now.toLocaleString("en-US", { weekday: "short" });
+  const currentTime = now.getHours() * 60 + now.getMinutes();
+
+  for (const slot of schedule) {
+    if (slot.day && slot.startTime && slot.endTime) {
+      const days = slot.day.split(",").map(d => d.trim());
+      if (days.includes(day)) {
+        const [startH, startM] = slot.startTime.split(":").map(Number);
+        const [endH, endM] = slot.endTime.split(":").map(Number);
+        const startMinutes = startH * 60 + startM;
+        const endMinutes = endH * 60 + endM;
+        if (currentTime >= startMinutes && currentTime <= endMinutes) {
+          return "Active";
+        }
+      }
+    }
+  }
+
+  return "Inactive";
+};
+
 // Validate schedule format
 const validateSchedule = (schedule) => {
   if (!Array.isArray(schedule) || schedule.length === 0) return false;
@@ -131,7 +164,14 @@ const getAllClassesWithAvailability = async (req, res) => {
     const { date } = req.query;
 
     // Fetch classes with trainer data first
-    const classes = await Class.find().populate("trainerID");
+    let classes;
+    
+    // If user is not admin, filter out admin-deactivated classes
+    if (req.user && !req.user.isAdmin) {
+      classes = await Class.find({ adminDeactivated: { $ne: true } }).populate("trainerID");
+    } else {
+      classes = await Class.find().populate("trainerID");
+    }
 
     // Case 1: If no date provided or date=null, return all classes
     if (!date || date === "null") {
@@ -198,7 +238,14 @@ const getAllClassesWithAvailability = async (req, res) => {
 // ========================= GET ALL CLASSES =========================
 const getAllClasses = async (req, res) => {
   try {
-    const classes = await Class.find().populate('trainerID');
+    let classes;
+    
+    // If user is not admin, filter out admin-deactivated classes
+    if (req.user && !req.user.isAdmin) {
+      classes = await Class.find({ adminDeactivated: { $ne: true } }).populate('trainerID');
+    } else {
+      classes = await Class.find().populate('trainerID');
+    }
 
     if (classes.length === 0) {
       return res.status(404).json({ message: 'No classes found' });
@@ -214,7 +261,9 @@ const getAllClasses = async (req, res) => {
       capacity: cls.capacity,
       location: cls.location,
       price: cls.price,
-      status: cls.status,
+      status: getClassStatus(cls), // Use calculated status
+      adminDeactivated: cls.adminDeactivated, // Include admin deactivation status
+      adminDeactivatedAt: cls.adminDeactivatedAt,
       category: cls.category,
       level: cls.level,
       imageURLs: cls.imageURLs,
@@ -234,6 +283,11 @@ const getClassById = async (req, res) => {
   try {
     const cls = await Class.findById(req.params.id).populate('trainerID');
     if (!cls) return res.status(404).json({ message: 'Class not found' });
+
+    // If user is not admin and class is admin deactivated, return not found
+    if (req.user && !req.user.isAdmin && cls.adminDeactivated) {
+      return res.status(404).json({ message: 'Class not found' });
+    }
 
     res.json({
       ...cls.toObject(),
@@ -406,6 +460,97 @@ const activateClassDate = async (req, res) => {
   }
 };
 
+// ========================= DEACTIVATE CLASS (Admin Only) =========================
+const deactivateClass = async (req, res) => {
+  try {
+    const classObj = await Class.findById(req.params.id);
+    if (!classObj) return res.status(404).json({ message: "Class not found" });
+
+    if (classObj.adminDeactivated) {
+      return res.status(400).json({ message: "Class is already deactivated by admin" });
+    }
+
+    classObj.adminDeactivated = true;
+    classObj.adminDeactivatedAt = new Date();
+    await classObj.save();
+
+    // Refresh the class object to ensure we have the latest data
+    const updatedClass = await Class.findById(req.params.id);
+
+    res.json({ 
+      message: "Class deactivated successfully", 
+      class: {
+        ...updatedClass.toObject(),
+        status: getClassStatus(updatedClass)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ========================= REACTIVATE CLASS (Admin Only) =========================
+const reactivateClass = async (req, res) => {
+  try {
+    const classObj = await Class.findById(req.params.id);
+    if (!classObj) return res.status(404).json({ message: "Class not found" });
+
+    if (!classObj.adminDeactivated) {
+      return res.status(400).json({ message: "Class is not deactivated by admin" });
+    }
+
+    classObj.adminDeactivated = false;
+    classObj.adminDeactivatedAt = null;
+    await classObj.save();
+
+    // Refresh the class object to ensure we have the latest data
+    const updatedClass = await Class.findById(req.params.id);
+
+    res.json({ 
+      message: "Class reactivated successfully", 
+      class: {
+        ...updatedClass.toObject(),
+        status: getClassStatus(updatedClass)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ========================= GET CLASS STATISTICS =========================
+const getClassStats = async (req, res) => {
+  try {
+    const classes = await Class.find();
+    
+    let totalClasses = classes.length;
+    let activeClasses = 0;
+    let inactiveClasses = 0;
+    let adminDeactivatedClasses = 0;
+
+    classes.forEach(classObj => {
+      const status = getClassStatus(classObj);
+      if (classObj.adminDeactivated) {
+        adminDeactivatedClasses++;
+        inactiveClasses++;
+      } else if (status === "Active") {
+        activeClasses++;
+      } else {
+        inactiveClasses++;
+      }
+    });
+
+    res.json({
+      totalClasses,
+      activeClasses,
+      inactiveClasses,
+      adminDeactivatedClasses
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // ========================= GET CLASS COUNT =========================
 const getClassCount = async (req, res) => {
   try {
@@ -425,6 +570,9 @@ module.exports = {
   deleteClass,
   cancelClassDate,
   activateClassDate,
+  deactivateClass,
+  reactivateClass,
+  getClassStats,
   getClassCount,
 };
 

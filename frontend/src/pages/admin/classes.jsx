@@ -14,11 +14,22 @@ import {
   DollarSign,
   Users,
   X,
-  Info
+  Info,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Power,
+  PowerOff
 } from 'lucide-react';
 
 const AdminClasses = () => {
   const [classes, setClasses] = useState([]);
+  const [classStats, setClassStats] = useState({
+    totalClasses: 0,
+    activeClasses: 0,
+    inactiveClasses: 0,
+    adminDeactivatedClasses: 0
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelDate, setCancelDate] = useState('');
@@ -42,6 +53,7 @@ const AdminClasses = () => {
   useEffect(() => {
     fetchClasses();
     fetchTrainers();
+    fetchClassStats();
   }, []);
 
   const fetchClasses = async () => {
@@ -60,6 +72,15 @@ const AdminClasses = () => {
       setTrainers(res.data.map(t => ({ value: t._id, label: t.trainerName })));
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch trainers');
+    }
+  };
+
+  const fetchClassStats = async () => {
+    try {
+      const res = await api.get(API_PATHS.CLASSES.GET_STATS);
+      setClassStats(res.data);
+    } catch (err) {
+      console.error('Failed to fetch class statistics:', err);
     }
   };
 
@@ -113,6 +134,7 @@ const AdminClasses = () => {
       setFormData({ className: '', description: '', trainerID: '', schedule: [{ day: '', startTime: '', endTime: '' }], capacity: '', location: '', price: '', category: '', level: 'Beginner' });
       setFiles([]);
       fetchClasses();
+      fetchClassStats();
       setLocalError(null);
       alert('Class saved successfully!');
     } catch (err) {
@@ -127,6 +149,7 @@ const AdminClasses = () => {
     try {
       await api.delete(API_PATHS.ADMIN.CLASSES.DELETE(id));
       fetchClasses();
+      fetchClassStats();
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to delete class');
@@ -143,6 +166,7 @@ const AdminClasses = () => {
       setCancelDate('');
       setCancelClassId('');
       fetchClasses();
+      fetchClassStats();
       setLocalError(null);
       alert('Class cancelled successfully!');
     } catch (err) {
@@ -157,10 +181,41 @@ const AdminClasses = () => {
     try {
       await api.post(API_PATHS.ADMIN.CLASSES.ACTIVATE_DATE(id), { date });
       fetchClasses();
+      fetchClassStats();
       setLocalError(null);
       alert('Class activated successfully!');
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to activate class');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const deactivateClass = async (id) => {
+    setIsSubmitting(true);
+    try {
+      await api.patch(API_PATHS.ADMIN.CLASSES.DEACTIVATE(id));
+      fetchClasses();
+      fetchClassStats();
+      setLocalError(null);
+      alert('Class deactivated successfully!');
+    } catch (err) {
+      setLocalError(err.response?.data?.message || 'Failed to deactivate class');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const reactivateClass = async (id) => {
+    setIsSubmitting(true);
+    try {
+      await api.patch(API_PATHS.ADMIN.CLASSES.REACTIVATE(id));
+      fetchClasses();
+      fetchClassStats();
+      setLocalError(null);
+      alert('Class reactivated successfully!');
+    } catch (err) {
+      setLocalError(err.response?.data?.message || 'Failed to reactivate class');
     } finally {
       setIsSubmitting(false);
     }
@@ -201,6 +256,65 @@ const AdminClasses = () => {
       </button>
         </div>
 
+        {/* Class Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Calendar className="h-8 w-8 text-blue-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Total Classes</dt>
+                  <dd className="text-lg font-medium text-gray-900">{classStats.totalClasses}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Active Classes</dt>
+                  <dd className="text-lg font-medium text-gray-900">{classStats.activeClasses}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <XCircle className="h-8 w-8 text-gray-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Inactive Classes</dt>
+                  <dd className="text-lg font-medium text-gray-900">{classStats.inactiveClasses}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <AlertTriangle className="h-8 w-8 text-orange-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Admin Deactivated</dt>
+                  <dd className="text-lg font-medium text-gray-900">{classStats.adminDeactivatedClasses}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {localError && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
             {localError}
@@ -216,6 +330,24 @@ const AdminClasses = () => {
                   <div>
                     <h3 className="font-semibold text-gray-900">{c.className}</h3>
                     <p className="text-xs text-gray-500">{c.category}</p>
+                    <div className="flex flex-col gap-1 mt-2">
+                      <div className="flex items-center">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          c.status === 'Active' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {c.status === 'Active' ? <CheckCircle className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
+                          {c.status}
+                        </span>
+                      </div>
+                      {c.adminDeactivated && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                          <AlertTriangle className="w-3 h-3 mr-1" />
+                          Admin Deactivated
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex space-x-1">
                     <button
@@ -224,8 +356,26 @@ const AdminClasses = () => {
                     >
                       <Edit className="w-4 h-4" />
                     </button>
+                    {c.adminDeactivated ? (
+                      <button
+                        onClick={() => reactivateClass(c._id)}
+                        disabled={isSubmitting}
+                        className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                      >
+                        <Power className="w-4 h-4" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => deactivateClass(c._id)}
+                        disabled={isSubmitting}
+                        className="text-orange-600 hover:text-orange-900 p-1 rounded hover:bg-orange-50 transition-colors"
+                      >
+                        <PowerOff className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
                       onClick={() => deleteClass(c._id)}
+                      disabled={isSubmitting}
                       className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -288,6 +438,9 @@ const AdminClasses = () => {
                     Price
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                     Actions
                   </th>
                 </tr>
@@ -336,6 +489,26 @@ const AdminClasses = () => {
                         {c.price ? `$${c.price}` : 'Free'}
                       </div>
                     </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            c.status === 'Active' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {c.status === 'Active' ? <CheckCircle className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
+                            {c.status}
+                          </span>
+                        </div>
+                        {c.adminDeactivated && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                            <AlertTriangle className="w-3 h-3 mr-1" />
+                            Admin Deactivated
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-1">
                         <button
@@ -345,15 +518,35 @@ const AdminClasses = () => {
                         >
                           <Edit className="w-4 h-4" />
                         </button>
+                        {c.adminDeactivated ? (
+                          <button
+                            onClick={() => reactivateClass(c._id)}
+                            disabled={isSubmitting}
+                            className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                            title="Reactivate class"
+                          >
+                            <Power className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => deactivateClass(c._id)}
+                            disabled={isSubmitting}
+                            className="text-orange-600 hover:text-orange-900 p-1 rounded hover:bg-orange-50 transition-colors"
+                            title="Deactivate class"
+                          >
+                            <PowerOff className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => deleteClass(c._id)}
+                          disabled={isSubmitting}
                           className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                           title="Delete class"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-              </td>
+                    </td>
             </tr>
           ))}
         </tbody>

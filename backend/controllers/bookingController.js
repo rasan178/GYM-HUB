@@ -39,6 +39,11 @@ exports.createBooking = async (req, res) => {
       const gymClass = await Class.findById(classID);
       if (!gymClass) return res.status(404).json({ message: 'Class not found' });
 
+      // Check if class is deactivated by admin
+      if (gymClass.adminDeactivated) {
+        return res.status(400).json({ message: 'This class is currently unavailable for booking' });
+      }
+
       // Get weekday from date
       const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
 
@@ -266,6 +271,12 @@ exports.updateBooking = async (req, res) => {
     if (booking.bookingType === 'class' && classID) {
       const cls = await Class.findById(classID);
       if (!cls) return res.status(404).json({ message: 'Class not found' });
+      
+      // Check if class is deactivated by admin
+      if (cls.adminDeactivated) {
+        return res.status(400).json({ message: 'This class is currently unavailable for booking' });
+      }
+      
       booking.classID = cls._id;
       booking.trainerID = cls.trainerID;
     }

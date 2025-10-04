@@ -20,6 +20,8 @@ exports.updateClass = classController.updateClass;
 exports.deleteClass = classController.deleteClass;
 exports.cancelClassDate = classController.cancelClassDate;
 exports.activateClassDate = classController.activateClassDate;
+exports.deactivateClass = classController.deactivateClass;
+exports.reactivateClass = classController.reactivateClass;
 
 // ========================= MEMBERSHIP ADMIN =========================
 exports.createMembership = membershipController.createMembership;
