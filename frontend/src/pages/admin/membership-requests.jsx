@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import AdminLayout from '../../components/Layouts/AdminLayout';
 import { api } from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
-import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
 import { 
   CheckCircle, 
   XCircle, 
@@ -16,7 +15,6 @@ import {
 
 const AdminMembershipRequests = () => {
   const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState(null);
   const [filter, setFilter] = useState('all');
@@ -33,8 +31,6 @@ const AdminMembershipRequests = () => {
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch membership requests');
       setRequests([]); // Set empty array on error
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -93,15 +89,6 @@ const AdminMembershipRequests = () => {
     return request.status === filter;
   });
 
-  if (loading) {
-    return (
-      <AdminLayout>
-        <div className="flex justify-center items-center min-h-screen">
-          <SpinnerLoader />
-        </div>
-      </AdminLayout>
-    );
-  }
 
   return (
     <AdminLayout>

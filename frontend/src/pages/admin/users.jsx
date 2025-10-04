@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import api from '../../utils/axiosInstance';
 import AdminLayout from '../../components/Layouts/AdminLayout';
 import { API_PATHS } from '../../utils/apiPaths';
-import SkeletonLoader from '../../components/Loaders/SkeletonLoader';
-import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
 import { 
   Trash2, 
   User, 
@@ -18,7 +16,6 @@ import {
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [localError, setLocalError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState({});
 
   useEffect(() => {
@@ -32,8 +29,6 @@ const AdminUsers = () => {
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch users');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -85,7 +80,6 @@ const AdminUsers = () => {
     }
   };
 
-  if (isLoading) return <SkeletonLoader />;
 
   return (
     <AdminLayout>
@@ -141,7 +135,7 @@ const AdminUsers = () => {
                     disabled={isDeleting[u._id]}
                     className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                   >
-                    {isDeleting[u._id] ? <SpinnerLoader /> : <Trash2 className="w-4 h-4" />}
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -204,7 +198,7 @@ const AdminUsers = () => {
                         className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                         title="Delete user"
                       >
-                        {isDeleting[u._id] ? <SpinnerLoader /> : <Trash2 className="w-4 h-4" />}
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>

@@ -3,8 +3,6 @@ import api from '../../utils/axiosInstance';
 import AdminLayout from '../../components/Layouts/AdminLayout';
 import { formatDate, formatTime } from '../../utils/helpers';
 import { API_PATHS } from '../../utils/apiPaths';
-import BlackSkeletonLoader from '../../components/Loaders/BlackSkeletonLoader';
-import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
 import { 
   Calendar, 
   Clock, 
@@ -20,7 +18,6 @@ import {
 const AdminBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [localError, setLocalError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isAction, setIsAction] = useState({});
 
   useEffect(() => {
@@ -34,8 +31,6 @@ const AdminBookings = () => {
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch bookings');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -83,7 +78,6 @@ const AdminBookings = () => {
     }
   };
 
-  if (isLoading) return <BlackSkeletonLoader lines={12} />;
 
   return (
     <AdminLayout>
@@ -167,7 +161,7 @@ const AdminBookings = () => {
                     disabled={isAction[booking._id] === 'delete'}
                     className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                   >
-                    {isAction[booking._id] === 'delete' ? <SpinnerLoader /> : <Trash2 className="w-4 h-4" />}
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -255,7 +249,7 @@ const AdminBookings = () => {
                         className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                         title="Delete booking"
                       >
-                        {isAction[booking._id] === 'delete' ? <SpinnerLoader /> : <Trash2 className="w-4 h-4" />}
+                        <Trash2 className="w-4 h-4" />
                 </button>
               </td>
             </tr>
