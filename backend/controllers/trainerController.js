@@ -15,7 +15,14 @@ async function generateTrainerID() {
 }
 
 // ========================= Helper: Determine Trainer Status =========================
-const getTrainerStatus = (schedule) => {
+const getTrainerStatus = (trainer) => {
+  // If admin has manually deactivated the trainer, it cannot be auto-activated
+  // This overrides the schedule-based activation/deactivation
+  if (trainer.adminDeactivated) {
+    return "Inactive";
+  }
+
+  const schedule = trainer.schedule;
   if (!schedule || schedule.length === 0) return "Inactive";
 
   const now = new Date();
@@ -93,7 +100,7 @@ exports.createTrainer = async (req, res) => {
       message: "Trainer created successfully",
       trainer: {
         ...trainer.toObject(),
-        status: getTrainerStatus(trainer.schedule),
+        status: getTrainerStatus(trainer),
         schedule: cleanSchedule(trainer.schedule)
       }
     });
@@ -147,7 +154,7 @@ exports.updateTrainer = async (req, res) => {
       message: "Trainer updated successfully",
       trainer: {
         ...trainer.toObject(),
-        status: getTrainerStatus(trainer.schedule),
+        status: getTrainerStatus(trainer),
         schedule: cleanSchedule(trainer.schedule)
       }
     });
@@ -160,10 +167,18 @@ exports.updateTrainer = async (req, res) => {
 // ========================= GET ALL TRAINERS =========================
 exports.getTrainers = async (req, res) => {
   try {
-    const trainers = await Trainer.find();
+    let trainers;
+    
+    // If user is not admin, filter out admin-deactivated trainers
+    if (req.user && !req.user.isAdmin) {
+      trainers = await Trainer.find({ adminDeactivated: { $ne: true } });
+    } else {
+      trainers = await Trainer.find();
+    }
+    
     const data = trainers.map(t => ({
       ...t.toObject(),
-      status: getTrainerStatus(t.schedule),
+      status: getTrainerStatus(t),
       specialty: Array.isArray(t.specialty) ? t.specialty.join(", ") : t.specialty,
       schedule: cleanSchedule(t.schedule)
     }));
@@ -179,9 +194,14 @@ exports.getTrainerById = async (req, res) => {
     const trainer = await Trainer.findById(req.params.id);
     if (!trainer) return res.status(404).json({ message: "Trainer not found" });
 
+    // If user is not admin and trainer is admin-deactivated, return not found
+    if (req.user && !req.user.isAdmin && trainer.adminDeactivated) {
+      return res.status(404).json({ message: "Trainer not found" });
+    }
+
     res.json({
       ...trainer.toObject(),
-      status: getTrainerStatus(trainer.schedule),
+      status: getTrainerStatus(trainer),
       specialty: Array.isArray(trainer.specialty) ? trainer.specialty.join(", ") : trainer.specialty,
       schedule: cleanSchedule(trainer.schedule)
     });
@@ -202,6 +222,60 @@ exports.deleteTrainer = async (req, res) => {
 
     await trainer.deleteOne();
     res.json({ message: "Trainer removed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ========================= DEACTIVATE TRAINER (Admin Only) =========================
+exports.deactivateTrainer = async (req, res) => {
+  try {
+    const trainer = await Trainer.findById(req.params.id);
+    if (!trainer) return res.status(404).json({ message: "Trainer not found" });
+
+    if (trainer.adminDeactivated) {
+      return res.status(400).json({ message: "Trainer is already deactivated by admin" });
+    }
+
+    trainer.adminDeactivated = true;
+    trainer.adminDeactivatedAt = new Date();
+    await trainer.save();
+
+    res.json({ 
+      message: "Trainer deactivated successfully", 
+      trainer: {
+        ...trainer.toObject(),
+        status: getTrainerStatus(trainer),
+        schedule: cleanSchedule(trainer.schedule)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ========================= REACTIVATE TRAINER (Admin Only) =========================
+exports.reactivateTrainer = async (req, res) => {
+  try {
+    const trainer = await Trainer.findById(req.params.id);
+    if (!trainer) return res.status(404).json({ message: "Trainer not found" });
+
+    if (!trainer.adminDeactivated) {
+      return res.status(400).json({ message: "Trainer is not deactivated by admin" });
+    }
+
+    trainer.adminDeactivated = false;
+    trainer.adminDeactivatedAt = null;
+    await trainer.save();
+
+    res.json({ 
+      message: "Trainer reactivated successfully", 
+      trainer: {
+        ...trainer.toObject(),
+        status: getTrainerStatus(trainer),
+        schedule: cleanSchedule(trainer.schedule)
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

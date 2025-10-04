@@ -5,14 +5,15 @@ const {
   getTrainerById,
 
 } = require('../controllers/trainerController');
+const { protect } = require('../middleware/authMiddleware');
 
 // ========================= TRAINER ROUTES =========================
 
 // ✅ Get all trainers (with dynamic status)
-router.get('/', getTrainers);
+router.get('/', protect, getTrainers);
 
 // ✅ Get a single trainer by Mongo _id (with dynamic status)
-router.get('/:id', getTrainerById);
+router.get('/:id', protect, getTrainerById);
 
 
 module.exports = router;

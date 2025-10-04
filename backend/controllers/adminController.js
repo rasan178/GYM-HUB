@@ -48,6 +48,8 @@ exports.deleteTestimonial = testimonialController.deleteTestimonial;
 exports.createTrainer = trainerController.createTrainer;
 exports.updateTrainer = trainerController.updateTrainer;
 exports.deleteTrainer = trainerController.deleteTrainer;
+exports.deactivateTrainer = trainerController.deactivateTrainer;
+exports.reactivateTrainer = trainerController.reactivateTrainer;
 
 // ========================= USER ADMIN =========================
 exports.getUsers = userController.getUsers;

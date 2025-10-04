@@ -11,7 +11,9 @@ import {
   Award,
   Users,
   X,
-  Info
+  Info,
+  Power,
+  PowerOff
 } from 'lucide-react';
 
 const AdminTrainers = () => {
@@ -135,6 +137,34 @@ const AdminTrainers = () => {
     }
   };
 
+  const deactivateTrainer = async (id) => {
+    setIsSubmitting(true);
+    try {
+      await api.patch(API_PATHS.ADMIN.TRAINERS.DEACTIVATE(id));
+      fetchTrainers();
+      setLocalError(null);
+      alert('Trainer deactivated successfully!');
+    } catch (err) {
+      setLocalError(err.response?.data?.message || 'Failed to deactivate trainer');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const reactivateTrainer = async (id) => {
+    setIsSubmitting(true);
+    try {
+      await api.patch(API_PATHS.ADMIN.TRAINERS.REACTIVATE(id));
+      fetchTrainers();
+      setLocalError(null);
+      alert('Trainer reactivated successfully!');
+    } catch (err) {
+      setLocalError(err.response?.data?.message || 'Failed to reactivate trainer');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const edit = t => {
     setFormData({
       _id: t._id,
@@ -204,6 +234,20 @@ const AdminTrainers = () => {
                     <p className="text-xs text-gray-500">
                       {Array.isArray(t.specialty) ? t.specialty.join(', ') : (t.specialty || 'General Training')}
                     </p>
+                    <div className="flex items-center mt-2">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                        t.status === 'Active' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {t.status}
+                      </span>
+                      {t.adminDeactivated && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                          Admin Deactivated
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex space-x-1">
                     <button
@@ -212,6 +256,23 @@ const AdminTrainers = () => {
                     >
                       <Edit className="w-4 h-4" />
                     </button>
+                    {t.adminDeactivated ? (
+                      <button
+                        onClick={() => reactivateTrainer(t._id)}
+                        disabled={isSubmitting}
+                        className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                      >
+                        <Power className="w-4 h-4" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => deactivateTrainer(t._id)}
+                        disabled={isSubmitting}
+                        className="text-orange-600 hover:text-orange-900 p-1 rounded hover:bg-orange-50 transition-colors"
+                      >
+                        <PowerOff className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
                       onClick={() => deleteTrainer(t._id)}
                       disabled={isSubmitting}
@@ -263,6 +324,9 @@ const AdminTrainers = () => {
                     Experience
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                     Actions
                   </th>
                 </tr>
@@ -311,6 +375,22 @@ const AdminTrainers = () => {
                         {t.experience ? `${t.experience} years` : 'N/A'}
                       </div>
                     </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          t.status === 'Active' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {t.status}
+                        </span>
+                        {t.adminDeactivated && (
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                            Admin Deactivated
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-1">
                         <button
@@ -320,16 +400,35 @@ const AdminTrainers = () => {
                         >
                           <Edit className="w-4 h-4" />
                         </button>
-                <button
-                  onClick={() => deleteTrainer(t._id)}
-                  disabled={isSubmitting}
+                        {t.adminDeactivated ? (
+                          <button
+                            onClick={() => reactivateTrainer(t._id)}
+                            disabled={isSubmitting}
+                            className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                            title="Reactivate trainer"
+                          >
+                            <Power className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => deactivateTrainer(t._id)}
+                            disabled={isSubmitting}
+                            className="text-orange-600 hover:text-orange-900 p-1 rounded hover:bg-orange-50 transition-colors"
+                            title="Deactivate trainer"
+                          >
+                            <PowerOff className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => deleteTrainer(t._id)}
+                          disabled={isSubmitting}
                           className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                           title="Delete trainer"
-                >
+                        >
                           <Trash2 className="w-4 h-4" />
-                </button>
+                        </button>
                       </div>
-              </td>
+                    </td>
             </tr>
           ))}
         </tbody>
@@ -539,11 +638,108 @@ const AdminTrainers = () => {
                     </div>
                   </div>
 
+                  {/* Schedule */}
+                  <div className="bg-indigo-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                        <span className="text-indigo-600 font-bold">3</span>
+                      </div>
+                      Working Schedule
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      {formData.schedule.map((slot, index) => (
+                        <div key={index} className="bg-white border-2 border-indigo-200 rounded-lg p-4">
+                          <div className="flex justify-between items-center mb-3">
+                            <h4 className="font-semibold text-gray-900">Schedule Slot {index + 1}</h4>
+                            {formData.schedule.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeScheduleSlot(index)}
+                                className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
+                                title="Remove this schedule slot"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Day(s) *
+                              </label>
+                              <select
+                                value={slot.day}
+                                onChange={e => handleScheduleChange(index, 'day', e.target.value)}
+                                required
+                                className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                              >
+                                <option value="">Select Day(s)</option>
+                                <option value="Mon">Monday</option>
+                                <option value="Tue">Tuesday</option>
+                                <option value="Wed">Wednesday</option>
+                                <option value="Thu">Thursday</option>
+                                <option value="Fri">Friday</option>
+                                <option value="Sat">Saturday</option>
+                                <option value="Sun">Sunday</option>
+                                <option value="Mon,Tue,Wed,Thu,Fri">Weekdays</option>
+                                <option value="Sat,Sun">Weekend</option>
+                                <option value="Mon,Tue,Wed,Thu,Fri,Sat,Sun">Every Day</option>
+                              </select>
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Start Time *
+                              </label>
+                              <input
+                                type="time"
+                                value={slot.startTime}
+                                onChange={e => handleScheduleChange(index, 'startTime', e.target.value)}
+                                required
+                                className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                End Time *
+                              </label>
+                              <input
+                                type="time"
+                                value={slot.endTime}
+                                onChange={e => handleScheduleChange(index, 'endTime', e.target.value)}
+                                required
+                                className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      <button
+                        type="button"
+                        onClick={addScheduleSlot}
+                        className="w-full border-2 border-dashed border-indigo-300 rounded-lg px-4 py-3 text-indigo-600 hover:border-indigo-400 hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Another Schedule Slot
+                      </button>
+                    </div>
+                    
+                    <div className="mt-4 p-3 bg-indigo-100 rounded-lg">
+                      <p className="text-sm text-indigo-700">
+                        <strong>Note:</strong> The trainer's status will automatically change to "Active" during scheduled hours and "Inactive" outside these hours.
+                      </p>
+                    </div>
+                  </div>
+
                   {/* Social Links */}
                   <div className="bg-purple-50 rounded-xl p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                       <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                        <span className="text-purple-600 font-bold">3</span>
+                        <span className="text-purple-600 font-bold">4</span>
                       </div>
                       Social Links
                     </h3>
@@ -594,7 +790,7 @@ const AdminTrainers = () => {
                   <div className="bg-orange-50 rounded-xl p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                       <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
-                        <span className="text-orange-600 font-bold">4</span>
+                        <span className="text-orange-600 font-bold">5</span>
                       </div>
                       Profile Image
                     </h3>
