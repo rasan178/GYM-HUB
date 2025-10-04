@@ -97,11 +97,11 @@ const AdminMembershipRequests = () => {
           <h1 className="text-3xl font-bold text-white">Membership Requests</h1>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-gray-700">Filter:</span>
+              <span className="text-sm font-medium text-white">Filter:</span>
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border border-white rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Requests</option>
                 <option value="Pending">Pending</option>
@@ -109,7 +109,7 @@ const AdminMembershipRequests = () => {
                 <option value="Rejected">Rejected</option>
               </select>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-white">
               Total: {requests.length} | Pending: {requests.filter(r => r.status === 'Pending').length}
             </div>
           </div>
