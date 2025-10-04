@@ -183,12 +183,26 @@ const AdminUsers = () => {
             {users.map(u => (
               <div key={u._id} className="border-b border-gray-200 p-4 last:border-b-0">
                 <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="font-semibold text-gray-900 flex items-center">
-                      <User className="w-4 h-4 mr-2 text-gray-400" />
-                      {u.name}
-                    </h3>
-                    <p className="text-xs text-gray-500">{u.email}</p>
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 mr-3">
+                      {u.profileImageURL ? (
+                        <img
+                          src={u.profileImageURL}
+                          alt={u.name}
+                          className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                          <User className="w-4 h-4 text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
+                        {u.name}
+                      </h3>
+                      <p className="text-xs text-gray-500">{u.email}</p>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${getStatusColor(u.status)}`}>
@@ -265,8 +279,22 @@ const AdminUsers = () => {
                   <tr key={u._id} className="hover:bg-gray-50">
                     <td className="px-4 py-4">
                       <div className="flex items-center text-sm font-medium text-gray-900">
-                        <User className="w-4 h-4 mr-2 text-gray-400" />
-                        {u.name}
+                        <div className="flex-shrink-0 mr-3">
+                          {u.profileImageURL ? (
+                            <img
+                              src={u.profileImageURL}
+                              alt={u.name}
+                              className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                              <User className="w-4 h-4 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">{u.name}</div>
+                        </div>
                       </div>
                     </td>
                     <td className="px-4 py-4">
