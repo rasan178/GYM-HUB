@@ -203,8 +203,8 @@ const AdminMemberships = () => {
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Membership Management</h1>
-            <p className="text-gray-600 mt-1">Manage gym memberships and subscriptions</p>
+            <h1 className="text-3xl font-bold text-white">Membership Management</h1>
+            <p className="text-white mt-1">Manage gym memberships and subscriptions</p>
           </div>
           <button
             onClick={() => { setFormData({ userID: '', planID: '', startDate: '', renewalOption: true }); setIsModalOpen(true); }}

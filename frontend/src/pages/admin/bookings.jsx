@@ -108,8 +108,8 @@ const AdminBookings = () => {
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Booking Management</h1>
-            <p className="text-gray-600 mt-1">Manage all gym bookings and appointments</p>
+            <h1 className="text-3xl font-bold text-white">Booking Management</h1>
+            <p className="text-white mt-1">Manage all gym bookings and appointments</p>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Users className="w-4 h-4" />
