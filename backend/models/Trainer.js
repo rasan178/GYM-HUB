@@ -23,7 +23,8 @@ const trainerSchema = new mongoose.Schema({
   trainerID: { type: String, unique: true },
   trainerName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  image: String,
+  image: String, // Keep for backward compatibility
+  images: [{ type: String }], // New field for multiple images (max 5)
   specialty: [{ type: String }],
   experience: String,
   qualifications: String,

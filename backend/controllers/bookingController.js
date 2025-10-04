@@ -362,3 +362,55 @@ exports.deleteBooking = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// ------------------ GET BOOKING STATISTICS ------------------
+exports.getBookingStats = async (req, res) => {
+  try {
+    const bookings = await Booking.find();
+    
+    let totalBookings = bookings.length;
+    let pendingBookings = 0;
+    let confirmedBookings = 0;
+    let cancelledBookings = 0;
+    let completedBookings = 0;
+    let classBookings = 0;
+    let personalBookings = 0;
+
+    bookings.forEach(booking => {
+      // Count by status
+      switch (booking.bookingStatus) {
+        case 'Pending':
+          pendingBookings++;
+          break;
+        case 'Confirmed':
+          confirmedBookings++;
+          break;
+        case 'Cancelled':
+          cancelledBookings++;
+          break;
+        case 'Completed':
+          completedBookings++;
+          break;
+      }
+
+      // Count by type
+      if (booking.bookingType === 'class') {
+        classBookings++;
+      } else if (booking.bookingType === 'personal') {
+        personalBookings++;
+      }
+    });
+
+    res.json({
+      totalBookings,
+      pendingBookings,
+      confirmedBookings,
+      cancelledBookings,
+      completedBookings,
+      classBookings,
+      personalBookings
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

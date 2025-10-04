@@ -16,8 +16,25 @@ exports.createTestimonial = async (req, res) => {
       status: 'Pending'
     };
 
-    if (req.file) {
+    // Handle multiple image uploads (up to 5 images)
+    if (req.files && req.files.length > 0) {
+      const imageURLs = req.files.map(file => `http://localhost:8000/uploads/testimonials/${file.filename}`);
+      
+      // Limit to maximum 5 images
+      if (imageURLs.length > 5) {
+        return res.status(400).json({ message: 'Maximum 5 images allowed per testimonial' });
+      }
+      
+      data.imageURLs = imageURLs;
+      
+      // For backward compatibility, set the first image as imageURL
+      if (imageURLs.length > 0) {
+        data.imageURL = imageURLs[0];
+      }
+    } else if (req.file) {
+      // Handle single image upload (backward compatibility)
       data.imageURL = `http://localhost:8000/uploads/testimonials/${req.file.filename}`;
+      data.imageURLs = [data.imageURL];
     }
 
     const testimonial = await Testimonial.create(data);
@@ -116,6 +133,58 @@ exports.deleteTestimonial = async (req, res) => {
 
     await testimonial.deleteOne();
     res.json({ message: 'Testimonial removed' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ========================= GET TESTIMONIAL STATISTICS =========================
+exports.getTestimonialStats = async (req, res) => {
+  try {
+    const testimonials = await Testimonial.find();
+    
+    let totalTestimonials = testimonials.length;
+    let pendingTestimonials = 0;
+    let approvedTestimonials = 0;
+    let rejectedTestimonials = 0;
+    let averageRating = 0;
+
+    let totalRating = 0;
+    let ratedTestimonials = 0;
+
+    testimonials.forEach(testimonial => {
+      // Count by status
+      switch (testimonial.status) {
+        case 'Pending':
+          pendingTestimonials++;
+          break;
+        case 'Approved':
+          approvedTestimonials++;
+          break;
+        case 'Rejected':
+          rejectedTestimonials++;
+          break;
+      }
+
+      // Calculate average rating
+      if (testimonial.rating) {
+        totalRating += testimonial.rating;
+        ratedTestimonials++;
+      }
+    });
+
+    if (ratedTestimonials > 0) {
+      averageRating = Math.round((totalRating / ratedTestimonials) * 10) / 10; // Round to 1 decimal
+    }
+
+    res.json({
+      totalTestimonials,
+      pendingTestimonials,
+      approvedTestimonials,
+      rejectedTestimonials,
+      averageRating,
+      ratedTestimonials
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

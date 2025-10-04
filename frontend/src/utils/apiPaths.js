@@ -55,12 +55,14 @@ export const API_PATHS = {
     GET_ONE: (id) => `/api/bookings/${id}`,
     UPDATE: (id) => `/api/bookings/${id}`,
     CANCEL: (id) => `/api/bookings/${id}/cancel`,
+    GET_STATS: "/api/bookings/stats",
   },
 
   TESTIMONIALS: {
     GET_APPROVED: "/api/testimonials",
     CREATE: "/api/testimonials",
     UPDATE: (id) => `/api/testimonials/${id}`,
+    GET_STATS: "/api/testimonials/stats",
   },
 
   AI: {
