@@ -10,7 +10,7 @@ exports.register = async (req, res) => {
   if (userExists) return res.status(400).json({ message: 'User exists' });
   const user = await User.create({ name, email, password });
   if (user) {
-    res.status(201).json({ _id: user._id, userID: user.userID, name: user.name, email: user.email, role: user.role, token: generateToken(user._id) });
+    res.status(201).json({ _id: user._id, userID: user.userID, name: user.name, email: user.email, phoneNumber: user.phoneNumber, role: user.role, token: generateToken(user._id) });
   } else {
     res.status(400).json({ message: 'Invalid data' });
   }
@@ -20,7 +20,7 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
   if (user && await user.matchPassword(password)) {
-    res.json({ _id: user._id, userID: user.userID, name: user.name, email: user.email, role: user.role, token: generateToken(user._id) });
+    res.json({ _id: user._id, userID: user.userID, name: user.name, email: user.email, phoneNumber: user.phoneNumber, role: user.role, token: generateToken(user._id) });
   } else {
     res.status(401).json({ message: 'Invalid email or password' });
   }
@@ -35,6 +35,7 @@ exports.getProfile = async (req, res) => {
       userID: user.userID, 
       name: user.name, 
       email: user.email, 
+      phoneNumber: user.phoneNumber,
       role: user.role, 
       profileImageURL: user.profileImageURL, 
       status: user.status,

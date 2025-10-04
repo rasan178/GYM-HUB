@@ -6,6 +6,7 @@ import {
   Trash2, 
   User, 
   Mail,
+  Phone,
   Shield,
   CheckCircle,
   XCircle,
@@ -202,6 +203,12 @@ const AdminUsers = () => {
                         {u.name}
                       </h3>
                       <p className="text-xs text-gray-500">{u.email}</p>
+                      {u.phoneNumber && (
+                        <p className="text-xs text-gray-500 flex items-center">
+                          <Phone className="w-3 h-3 mr-1" />
+                          {u.phoneNumber}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -263,6 +270,9 @@ const AdminUsers = () => {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-64">
                     Email
                   </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                    Phone
+                  </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                     Role
                   </th>
@@ -301,6 +311,12 @@ const AdminUsers = () => {
                       <div className="flex items-center text-sm text-gray-900">
                         <Mail className="w-4 h-4 mr-2 text-gray-400" />
                         {u.email}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center text-sm text-gray-900">
+                        <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                        {u.phoneNumber || 'Not provided'}
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">

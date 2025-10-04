@@ -112,6 +112,7 @@ exports.updateProfile = async (req, res) => {
 
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
+    user.phoneNumber = req.body.phoneNumber || user.phoneNumber;
     if (req.body.password) user.password = req.body.password;
 
     if (req.file) {
@@ -126,6 +127,7 @@ exports.updateProfile = async (req, res) => {
         userID: user.userID,
         name: user.name,
         email: user.email,
+        phoneNumber: user.phoneNumber,
         role: user.role,
         profileImageURL: user.profileImageURL,
         status: user.status,
