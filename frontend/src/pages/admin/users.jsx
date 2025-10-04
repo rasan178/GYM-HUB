@@ -10,25 +10,45 @@ import {
   CheckCircle,
   XCircle,
   Users,
-  Info
+  Info,
+  Play,
+  Pause
 } from 'lucide-react';
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
+  const [userStats, setUserStats] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    inactiveUsers: 0
+  });
   const [localError, setLocalError] = useState(null);
   const [isDeleting, setIsDeleting] = useState({});
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState({});
 
   useEffect(() => {
     fetchUsers();
+    fetchUserStats();
   }, []);
 
   const fetchUsers = async () => {
     try {
       const res = await api.get(API_PATHS.ADMIN.USERS.GET_ALL);
-      setUsers(res.data);
+      // Filter out admin users from the display
+      const filteredUsers = res.data.filter(user => user.role !== 'admin');
+      setUsers(filteredUsers);
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch users');
+    }
+  };
+
+  const fetchUserStats = async () => {
+    try {
+      const res = await api.get(API_PATHS.ADMIN.USERS.GET_STATS);
+      setUserStats(res.data);
+    } catch (err) {
+      console.error('Failed to fetch user statistics:', err);
     }
   };
 
@@ -37,11 +57,26 @@ const AdminUsers = () => {
     try {
       await api.delete(API_PATHS.ADMIN.USERS.DELETE(id));
       fetchUsers();
+      fetchUserStats();
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to delete user');
     } finally {
       setIsDeleting(prev => ({ ...prev, [id]: false }));
+    }
+  };
+
+  const updateUserStatus = async (id, newStatus) => {
+    setIsUpdatingStatus(prev => ({ ...prev, [id]: true }));
+    try {
+      await api.patch(API_PATHS.ADMIN.USERS.UPDATE_STATUS(id), { status: newStatus });
+      fetchUsers();
+      fetchUserStats();
+      setLocalError(null);
+    } catch (err) {
+      setLocalError(err.response?.data?.message || 'Failed to update user status');
+    } finally {
+      setIsUpdatingStatus(prev => ({ ...prev, [id]: false }));
     }
   };
 
@@ -89,9 +124,50 @@ const AdminUsers = () => {
             <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
             <p className="text-gray-600 mt-1">Manage gym members and user accounts</p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Users className="w-4 h-4" />
-            <span>{users.length} total users</span>
+        </div>
+
+        {/* User Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Users className="h-8 w-8 text-blue-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Total Users</dt>
+                  <dd className="text-lg font-medium text-gray-900">{userStats.totalUsers}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Active Users</dt>
+                  <dd className="text-lg font-medium text-gray-900">{userStats.activeUsers}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <XCircle className="h-8 w-8 text-gray-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Inactive Users</dt>
+                  <dd className="text-lg font-medium text-gray-900">{userStats.inactiveUsers}</dd>
+                </dl>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -129,11 +205,31 @@ const AdminUsers = () => {
                   </span>
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-2">
+                  {u.status === 'active' ? (
+                    <button
+                      onClick={() => updateUserStatus(u._id, 'inactive')}
+                      disabled={isUpdatingStatus[u._id]}
+                      className="text-orange-600 hover:text-orange-900 p-1 rounded hover:bg-orange-50 transition-colors"
+                      title="Deactivate user"
+                    >
+                      <Pause className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => updateUserStatus(u._id, 'active')}
+                      disabled={isUpdatingStatus[u._id]}
+                      className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                      title="Activate user"
+                    >
+                      <Play className="w-4 h-4" />
+                    </button>
+                  )}
                   <button
                     onClick={() => deleteUser(u._id)}
                     disabled={isDeleting[u._id]}
                     className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                    title="Delete user"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -192,14 +288,35 @@ const AdminUsers = () => {
                       </span>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => deleteUser(u._id)}
-                        disabled={isDeleting[u._id]}
-                        className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
-                        title="Delete user"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {u.status === 'active' ? (
+                          <button
+                            onClick={() => updateUserStatus(u._id, 'inactive')}
+                            disabled={isUpdatingStatus[u._id]}
+                            className="text-orange-600 hover:text-orange-900 p-1 rounded hover:bg-orange-50 transition-colors"
+                            title="Deactivate user"
+                          >
+                            <Pause className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => updateUserStatus(u._id, 'active')}
+                            disabled={isUpdatingStatus[u._id]}
+                            className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                            title="Activate user"
+                          >
+                            <Play className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => deleteUser(u._id)}
+                          disabled={isDeleting[u._id]}
+                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                          title="Delete user"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

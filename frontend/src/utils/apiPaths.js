@@ -121,7 +121,9 @@ export const API_PATHS = {
     },
     USERS: {
       GET_ALL: "/api/admin/users",
+      GET_STATS: "/api/admin/users/stats",
       DELETE: (id) => `/api/admin/users/${id}`,
+      UPDATE_STATUS: (id) => `/api/admin/users/${id}/status`,
     },
   },
 };

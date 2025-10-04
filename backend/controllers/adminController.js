@@ -51,4 +51,6 @@ exports.deleteTrainer = trainerController.deleteTrainer;
 
 // ========================= USER ADMIN =========================
 exports.getUsers = userController.getUsers;
+exports.getUserStats = userController.getUserStats;
 exports.deleteUser = userController.deleteUser;
+exports.updateUserStatus = userController.updateUserStatus;
