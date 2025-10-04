@@ -5,10 +5,7 @@ const getAllPlans = async (req, res) => {
   try {
     const plans = await Plan.find().sort({ createdAt: -1 });
     
-    if (plans.length === 0) {
-      return res.status(404).json({ message: 'No plans found' });
-    }
-
+    // Return empty array instead of 404 when no plans exist
     res.json(plans);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -102,4 +99,3 @@ module.exports = {
   updatePlan,
   deletePlan
 };
-
