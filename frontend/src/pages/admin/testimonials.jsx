@@ -179,8 +179,8 @@ const AdminTestimonials = () => {
             <h1 className="text-3xl font-bold text-white">Testimonial Management</h1>
             <p className="text-white mt-1">Review and manage customer testimonials</p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Users className="w-4 h-4" />
+          <div className="flex items-center gap-2 text-sm text-white">
+            <Users className="w-4 h-4 color-white" />
             <span>{testimonials.length} total testimonials</span>
           </div>
         </div>
