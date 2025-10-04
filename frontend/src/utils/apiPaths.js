@@ -118,6 +118,8 @@ export const API_PATHS = {
       CREATE: "/api/admin/trainers",
       UPDATE: (id) => `/api/admin/trainers/${id}`,
       DELETE: (id) => `/api/admin/trainers/${id}`,
+      DEACTIVATE: (id) => `/api/admin/trainers/deactivate/${id}`,
+      REACTIVATE: (id) => `/api/admin/trainers/reactivate/${id}`,
     },
     USERS: {
       GET_ALL: "/api/admin/users",

@@ -92,6 +92,11 @@ exports.createBooking = async (req, res) => {
       const trainer = await Trainer.findById(trainerID);
       if (!trainer) return res.status(404).json({ message: 'Trainer not found' });
 
+      // Check if trainer is deactivated by admin
+      if (trainer.adminDeactivated) {
+        return res.status(400).json({ message: 'This trainer is currently unavailable for booking' });
+      }
+
       // Check trainer conflict (using `date` and the provided startTime)
       const trainerConflict = await Booking.findOne({
         trainerID,
@@ -293,6 +298,12 @@ exports.updateBooking = async (req, res) => {
     if (booking.bookingType === 'personal' && trainerID) {
       const trainer = await Trainer.findById(trainerID);
       if (!trainer) return res.status(404).json({ message: 'Trainer not found' });
+      
+      // Check if trainer is deactivated by admin
+      if (trainer.adminDeactivated) {
+        return res.status(400).json({ message: 'This trainer is currently unavailable for booking' });
+      }
+      
       booking.trainerID = trainer._id;
     }
 

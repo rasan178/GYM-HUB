@@ -33,6 +33,8 @@ router.delete("/testimonials/:id", protect, admin, adminController.deleteTestimo
 router.post("/trainers", protect, admin, upload.single("image"), adminController.createTrainer);
 router.put("/trainers/:id", protect, admin, upload.single("image"), adminController.updateTrainer);
 router.delete("/trainers/:id", protect, admin, adminController.deleteTrainer);
+router.patch("/trainers/deactivate/:id", protect, admin, adminController.deactivateTrainer);
+router.patch("/trainers/reactivate/:id", protect, admin, adminController.reactivateTrainer);
 
 // ========================= PLAN ADMIN =========================
 router.post("/plans", protect, admin, adminController.createPlan);

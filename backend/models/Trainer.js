@@ -38,7 +38,9 @@ const trainerSchema = new mongoose.Schema({
     instagram: String,
     linkedin: String
   },
-  status: { type: String, default: "Active" }
+  status: { type: String, default: "Active" },
+  adminDeactivated: { type: Boolean, default: false },
+  adminDeactivatedAt: { type: Date }
 }, { timestamps: true });
 
 // Auto-increment trainerID & calculate duration
