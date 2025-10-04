@@ -300,8 +300,8 @@ const AdminClasses = () => {
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Class Management</h1>
-            <p className="text-gray-600 mt-1">Manage gym classes and schedules</p>
+            <h1 className="text-3xl font-bold text-white">Class Management</h1>
+            <p className="text-white mt-1">Manage gym classes and schedules</p>
           </div>
       <button
         onClick={() => { setFormData({ className: '', description: '', trainerID: '', schedule: [{ day: '', startTime: '', endTime: '' }], capacity: '', location: '', price: '', category: '', level: 'Beginner' }); setFiles([]); setIsModalOpen(true); }}

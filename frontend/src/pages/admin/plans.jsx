@@ -123,7 +123,7 @@ const AdminPlans = () => {
     <AdminLayout>
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Plan Management</h1>
+          <h1 className="text-3xl font-bold text-white">Plan Management</h1>
           <button
             onClick={openCreateModal}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"

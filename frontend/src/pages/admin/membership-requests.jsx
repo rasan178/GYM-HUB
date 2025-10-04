@@ -94,7 +94,7 @@ const AdminMembershipRequests = () => {
     <AdminLayout>
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Membership Requests</h1>
+          <h1 className="text-3xl font-bold text-white">Membership Requests</h1>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-gray-700">Filter:</span>

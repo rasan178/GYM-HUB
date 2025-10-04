@@ -176,8 +176,8 @@ const AdminTestimonials = () => {
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Testimonial Management</h1>
-            <p className="text-gray-600 mt-1">Review and manage customer testimonials</p>
+            <h1 className="text-3xl font-bold text-white">Testimonial Management</h1>
+            <p className="text-white mt-1">Review and manage customer testimonials</p>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Users className="w-4 h-4" />
