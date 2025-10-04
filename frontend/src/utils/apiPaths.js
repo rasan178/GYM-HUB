@@ -24,6 +24,7 @@ export const API_PATHS = {
     GET_ALL_WITH_AVAILABILITY: "/api/classes/all-with-availability",
     GET_ONE: (id) => `/api/classes/${id}`,
     GET_COUNT: "/api/classes/count",
+    GET_STATS: "/api/classes/stats",
   },
 
   MEMBERSHIPS: {
@@ -91,6 +92,8 @@ export const API_PATHS = {
       DELETE: (id) => `/api/admin/classes/${id}`,
       CANCEL_DATE: (id) => `/api/admin/classes/${id}/cancel`,
       ACTIVATE_DATE: (id) => `/api/admin/classes/${id}/activate`,
+      DEACTIVATE: (id) => `/api/admin/classes/deactivate/${id}`,
+      REACTIVATE: (id) => `/api/admin/classes/reactivate/${id}`,
     },
     MEMBERSHIPS: {
       CREATE: "/api/admin/memberships",

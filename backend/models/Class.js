@@ -32,6 +32,8 @@ const classSchema = new mongoose.Schema({
   price: Number,
   imageURLs: { type: [String], default: [] },
   status: { type: String, default: 'Active' },
+  adminDeactivated: { type: Boolean, default: false },
+  adminDeactivatedAt: { type: Date },
   category: { type: String },
   level: { 
     type: String, 

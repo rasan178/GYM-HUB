@@ -15,6 +15,8 @@ router.put("/classes/:id", protect, admin, upload.array("images", 5), adminContr
 router.delete("/classes/:id", protect, admin, adminController.deleteClass);
 router.post("/classes/:id/cancel", protect, admin, adminController.cancelClassDate);
 router.post("/classes/:id/activate", protect, admin, adminController.activateClassDate);
+router.patch("/classes/deactivate/:id", protect, admin, adminController.deactivateClass);
+router.patch("/classes/reactivate/:id", protect, admin, adminController.reactivateClass);
 
 // ========================= MEMBERSHIP ADMIN =========================
 router.post("/memberships", protect, admin, adminController.createMembership);
