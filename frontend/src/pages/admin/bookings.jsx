@@ -12,16 +12,29 @@ import {
   XCircle, 
   AlertCircle,
   Users,
-  Activity
+  Activity,
+  BookOpen,
+  Target,
+  TrendingUp
 } from 'lucide-react';
 
 const AdminBookings = () => {
   const [bookings, setBookings] = useState([]);
+  const [bookingStats, setBookingStats] = useState({
+    totalBookings: 0,
+    pendingBookings: 0,
+    confirmedBookings: 0,
+    cancelledBookings: 0,
+    completedBookings: 0,
+    classBookings: 0,
+    personalBookings: 0
+  });
   const [localError, setLocalError] = useState(null);
   const [isAction, setIsAction] = useState({});
 
   useEffect(() => {
     fetchBookings();
+    fetchBookingStats();
   }, []);
 
   const fetchBookings = async () => {
@@ -34,11 +47,21 @@ const AdminBookings = () => {
     }
   };
 
+  const fetchBookingStats = async () => {
+    try {
+      const res = await api.get(API_PATHS.BOOKINGS.GET_STATS);
+      setBookingStats(res.data);
+    } catch (err) {
+      console.error('Failed to fetch booking statistics:', err);
+    }
+  };
+
   const updateStatus = async (id, status) => {
     setIsAction(prev => ({ ...prev, [id]: 'update' }));
     try {
       await api.put(API_PATHS.ADMIN.BOOKINGS.UPDATE_STATUS(id), { bookingStatus: status });
       fetchBookings();
+      fetchBookingStats();
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to update status');
@@ -52,6 +75,7 @@ const AdminBookings = () => {
     try {
       await api.delete(API_PATHS.ADMIN.BOOKINGS.DELETE(id));
       fetchBookings();
+      fetchBookingStats();
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to delete booking');
@@ -90,6 +114,107 @@ const AdminBookings = () => {
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Users className="w-4 h-4" />
             <span>{bookings.length} total bookings</span>
+          </div>
+        </div>
+
+        {/* Booking Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <BookOpen className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Total</dt>
+                  <dd className="text-sm font-medium text-gray-900">{bookingStats.totalBookings}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <AlertCircle className="h-6 w-6 text-yellow-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Pending</dt>
+                  <dd className="text-sm font-medium text-gray-900">{bookingStats.pendingBookings}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Confirmed</dt>
+                  <dd className="text-sm font-medium text-gray-900">{bookingStats.confirmedBookings}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <XCircle className="h-6 w-6 text-red-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Cancelled</dt>
+                  <dd className="text-sm font-medium text-gray-900">{bookingStats.cancelledBookings}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <TrendingUp className="h-6 w-6 text-purple-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Completed</dt>
+                  <dd className="text-sm font-medium text-gray-900">{bookingStats.completedBookings}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Users className="h-6 w-6 text-indigo-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Classes</dt>
+                  <dd className="text-sm font-medium text-gray-900">{bookingStats.classBookings}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Target className="h-6 w-6 text-orange-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Personal</dt>
+                  <dd className="text-sm font-medium text-gray-900">{bookingStats.personalBookings}</dd>
+                </dl>
+              </div>
+            </div>
           </div>
         </div>
 

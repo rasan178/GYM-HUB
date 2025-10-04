@@ -32,8 +32,8 @@ router.put("/testimonials/reject/:id", protect, admin, adminController.rejectTes
 router.delete("/testimonials/:id", protect, admin, adminController.deleteTestimonial);
 
 // ========================= TRAINER ADMIN =========================
-router.post("/trainers", protect, admin, upload.single("image"), adminController.createTrainer);
-router.put("/trainers/:id", protect, admin, upload.single("image"), adminController.updateTrainer);
+router.post("/trainers", protect, admin, upload.array("images", 5), adminController.createTrainer);
+router.put("/trainers/:id", protect, admin, upload.array("images", 5), adminController.updateTrainer);
 router.delete("/trainers/:id", protect, admin, adminController.deleteTrainer);
 router.patch("/trainers/deactivate/:id", protect, admin, adminController.deactivateTrainer);
 router.patch("/trainers/reactivate/:id", protect, admin, adminController.reactivateTrainer);

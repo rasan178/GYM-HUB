@@ -92,7 +92,27 @@ exports.createTrainer = async (req, res) => {
 
     const trainerID = await generateTrainerID();
     const trainerData = { trainerID, trainerName, email, specialty, experience, qualifications, bio, schedule, contactInfo, socialLinks };
-    if (req.file) trainerData.image = `http://localhost:8000/uploads/trainers/${req.file.filename}`;
+    
+    // Handle multiple image uploads (up to 5 images)
+    if (req.files && req.files.length > 0) {
+      const images = req.files.map(file => `http://localhost:8000/uploads/trainers/${file.filename}`);
+      
+      // Limit to maximum 5 images
+      if (images.length > 5) {
+        return res.status(400).json({ message: 'Maximum 5 images allowed per trainer' });
+      }
+      
+      trainerData.images = images;
+      
+      // For backward compatibility, set the first image as image
+      if (images.length > 0) {
+        trainerData.image = images[0];
+      }
+    } else if (req.file) {
+      // Handle single image upload (backward compatibility)
+      trainerData.image = `http://localhost:8000/uploads/trainers/${req.file.filename}`;
+      trainerData.images = [trainerData.image];
+    }
 
     const trainer = await Trainer.create(trainerData);
 
@@ -146,7 +166,27 @@ exports.updateTrainer = async (req, res) => {
     trainer.schedule = schedule || trainer.schedule;
     trainer.contactInfo = contactInfo || trainer.contactInfo;
     trainer.socialLinks = socialLinks || trainer.socialLinks;
-    if (req.file) trainer.image = `http://localhost:8000/uploads/trainers/${req.file.filename}`;
+    
+    // Handle multiple image uploads (up to 5 images)
+    if (req.files && req.files.length > 0) {
+      const images = req.files.map(file => `http://localhost:8000/uploads/trainers/${file.filename}`);
+      
+      // Limit to maximum 5 images
+      if (images.length > 5) {
+        return res.status(400).json({ message: 'Maximum 5 images allowed per trainer' });
+      }
+      
+      trainer.images = images;
+      
+      // For backward compatibility, set the first image as image
+      if (images.length > 0) {
+        trainer.image = images[0];
+      }
+    } else if (req.file) {
+      // Handle single image upload (backward compatibility)
+      trainer.image = `http://localhost:8000/uploads/trainers/${req.file.filename}`;
+      trainer.images = [trainer.image];
+    }
 
     await trainer.save();
 

@@ -16,7 +16,12 @@ import {
   PowerOff,
   CheckCircle,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  Image as ImageIcon,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  Grid3X3
 } from 'lucide-react';
 
 const AdminTrainers = () => {
@@ -42,11 +47,33 @@ const AdminTrainers = () => {
   const [file, setFile] = useState(null);
   const [localError, setLocalError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     fetchTrainers();
     fetchTrainerStats();
   }, []);
+
+  // Keyboard navigation for image gallery
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (selectedImages.length > 0) {
+        if (e.key === 'ArrowLeft') {
+          prevImage();
+        } else if (e.key === 'ArrowRight') {
+          nextImage();
+        } else if (e.key === 'Escape') {
+          closeImageGallery();
+        }
+      }
+    };
+
+    if (selectedImages.length > 0) {
+      document.addEventListener('keydown', handleKeyPress);
+      return () => document.removeEventListener('keydown', handleKeyPress);
+    }
+  }, [selectedImages.length, currentImageIndex]);
 
   const fetchTrainers = async () => {
     try {
@@ -65,6 +92,35 @@ const AdminTrainers = () => {
     } catch (err) {
       console.error('Failed to fetch trainer statistics:', err);
     }
+  };
+
+  const openImageGallery = (trainer) => {
+    // Get images from images array or fallback to single image
+    const images = trainer.images && trainer.images.length > 0 
+      ? trainer.images 
+      : (trainer.image ? [trainer.image] : []);
+    
+    if (images.length > 0) {
+      setSelectedImages(images);
+      setCurrentImageIndex(0);
+    }
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => 
+      prev < selectedImages.length - 1 ? prev + 1 : 0
+    );
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => 
+      prev > 0 ? prev - 1 : selectedImages.length - 1
+    );
+  };
+
+  const closeImageGallery = () => {
+    setSelectedImages([]);
+    setCurrentImageIndex(0);
   };
 
   const handleChange = e => {
@@ -316,6 +372,21 @@ const AdminTrainers = () => {
                     <p className="text-xs text-gray-500">
                       {Array.isArray(t.specialty) ? t.specialty.join(', ') : (t.specialty || 'General Training')}
                     </p>
+                    {((t.images && t.images.length > 0) || t.image) && (
+                      <div className="mt-2">
+                        <button
+                          onClick={() => openImageGallery(t)}
+                          className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          <ImageIcon className="w-4 h-4" />
+                          <Eye className="w-4 h-4" />
+                          {(() => {
+                            const imageCount = t.images ? t.images.length : (t.image ? 1 : 0);
+                            return imageCount > 1 ? `View ${imageCount} Images` : 'View Image';
+                          })()}
+                        </button>
+                      </div>
+                    )}
                     <div className="flex flex-col gap-1 mt-2">
                       <div className="flex items-center">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -410,6 +481,9 @@ const AdminTrainers = () => {
                     Experience
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                    Image
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                     Status
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
@@ -460,6 +534,31 @@ const AdminTrainers = () => {
                         <Award className="w-4 h-4 mr-2 text-gray-400" />
                         {t.experience ? `${t.experience} years` : 'N/A'}
                       </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      {((t.images && t.images.length > 0) || t.image) ? (
+                        <button
+                          onClick={() => openImageGallery(t)}
+                          className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                          title={(() => {
+                            const imageCount = t.images ? t.images.length : (t.image ? 1 : 0);
+                            return imageCount > 1 ? `View ${imageCount} images` : 'View image';
+                          })()}
+                        >
+                          <ImageIcon className="w-4 h-4" />
+                          <Eye className="w-3 h-3" />
+                          {(() => {
+                            const imageCount = t.images ? t.images.length : (t.image ? 1 : 0);
+                            return imageCount > 1 ? (
+                              <span className="ml-1 text-xs bg-blue-100 text-blue-800 px-1 rounded">
+                                {imageCount}
+                              </span>
+                            ) : null;
+                          })()}
+                        </button>
+                      ) : (
+                        <span className="text-gray-400 text-sm">No image</span>
+                      )}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex flex-col gap-1">
@@ -930,6 +1029,86 @@ const AdminTrainers = () => {
                   </div>
                 </form>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Image Gallery Modal */}
+        {selectedImages.length > 0 && (
+          <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4">
+            <div className="relative max-w-6xl max-h-full w-full h-full flex flex-col">
+              {/* Header */}
+              <div className="flex justify-between items-center text-white mb-4">
+                <div className="flex items-center gap-2">
+                  <Grid3X3 className="w-5 h-5" />
+                  <span className="text-lg font-medium">
+                    Image {currentImageIndex + 1} of {selectedImages.length}
+                  </span>
+                </div>
+                <button
+                  onClick={closeImageGallery}
+                  className="text-white hover:text-gray-300 transition-colors p-2"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Main Image */}
+              <div className="flex-1 flex items-center justify-center relative">
+                <img
+                  src={selectedImages[currentImageIndex]}
+                  alt={`Trainer ${currentImageIndex + 1}`}
+                  className="max-w-full max-h-full object-contain rounded-lg"
+                />
+                
+                {/* Navigation Arrows */}
+                {selectedImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevImage}
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all"
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+                    <button
+                      onClick={nextImage}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Thumbnail Navigation */}
+              {selectedImages.length > 1 && (
+                <div className="flex justify-center gap-2 mt-4 overflow-x-auto pb-2">
+                  {selectedImages.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                        index === currentImageIndex 
+                          ? 'border-blue-500 ring-2 ring-blue-200' 
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <img
+                        src={image}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Keyboard Navigation Info */}
+              {selectedImages.length > 1 && (
+                <div className="text-center text-white text-sm mt-2 opacity-75">
+                  Use ← → arrow keys or click thumbnails to navigate
+                </div>
+              )}
             </div>
           </div>
         )}

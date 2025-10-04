@@ -7,7 +7,8 @@ const testimonialSchema = new mongoose.Schema({
   userRole: { type: String, required: true }, // now user provides
   message: { type: String, required: true },
   rating: { type: Number, min: 1, max: 5 },
-  imageURL: String,
+  imageURL: String, // Keep for backward compatibility
+  imageURLs: [{ type: String }], // New field for multiple images (max 5)
   status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' }
 }, { timestamps: true }); // createdAt and updatedAt auto
 
