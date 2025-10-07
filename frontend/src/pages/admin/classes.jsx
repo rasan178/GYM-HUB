@@ -1043,7 +1043,7 @@ const AdminClasses = () => {
                 <img
                   src={selectedImages[currentImageIndex]}
                   alt={`Class ${currentImageIndex + 1}`}
-                  className="max-w-full max-h-full object-contain rounded-lg"
+                  className="max-w-[90vw] max-h-[70vh] w-auto h-auto object-contain rounded-lg shadow-lg"
                 />
                 
                 {/* Navigation Arrows */}
@@ -1082,6 +1082,7 @@ const AdminClasses = () => {
                         src={image}
                         alt={`Thumbnail ${index + 1}`}
                         className="w-full h-full object-cover"
+                        style={{ minWidth: '64px', minHeight: '64px' }}
                       />
                     </button>
                   ))}
