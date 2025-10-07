@@ -115,6 +115,4 @@ module.exports = () => {
       console.error("[Membership Scheduler] Error:", err.message);
     }
   });
-
-  console.log('[Membership Scheduler] Started - runs daily at midnight');
 };
