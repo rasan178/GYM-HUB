@@ -21,7 +21,8 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
-  Grid3X3
+  Grid3X3,
+  Phone
 } from 'lucide-react';
 
 const AdminTrainers = () => {
@@ -446,6 +447,13 @@ const AdminTrainers = () => {
                     <span>{t.email}</span>
                   </div>
                   
+                  {t.contactInfo?.phone && (
+                    <div className="flex items-center text-sm">
+                      <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                      <span>{t.contactInfo.phone}</span>
+                    </div>
+                  )}
+                  
                   {t.experience && (
                     <div className="flex items-center text-sm">
                       <Award className="w-4 h-4 mr-2 text-gray-400" />
@@ -473,6 +481,9 @@ const AdminTrainers = () => {
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-64">
                     Email
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                    Phone
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
                     Specialty
@@ -507,6 +518,12 @@ const AdminTrainers = () => {
                       <div className="flex items-center text-sm text-gray-900">
                         <Mail className="w-4 h-4 mr-2 text-gray-400" />
                         {t.email}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center text-sm text-gray-900">
+                        <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                        {t.contactInfo?.phone || 'N/A'}
                       </div>
                     </td>
                     <td className="px-4 py-4">
