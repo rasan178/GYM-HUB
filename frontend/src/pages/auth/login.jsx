@@ -29,7 +29,10 @@ const Login = () => {
       if (loggedInUser.role === "admin") router.push("/admin");
       else router.push("/dashboard");
     } catch (err) {
-      setLocalError(err.message || "Login failed");
+      // Don't show inline error for account suspension/deactivation - let ErrorDisplay handle it
+      if (!err.message?.includes('suspended') && !err.message?.includes('deactivated')) {
+        setLocalError(err.message || "Login failed");
+      }
     }
   };
 
@@ -56,14 +59,23 @@ const Login = () => {
               </p>
             </div>
           
-          {(localError || authError) && (
-            <div className="bg-red-50 border-2 border-red-500 text-red-800 px-4 py-3 mb-6 font-bold flex items-center gap-3">
-              <div className="bg-red-500 text-white p-1 rounded-full">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
+          {(localError || authError) && !(localError || authError)?.includes('suspended') && !(localError || authError)?.includes('deactivated') && (
+            <div className="mb-6 p-4 sm:p-5 rounded-lg border-2 bg-red-50 border-red-500 text-red-800">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="flex-shrink-0 p-2 rounded-full bg-red-500 text-white">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-sm sm:text-base mb-1 text-red-900">
+                    Login Error
+                  </h3>
+                  <p className="text-xs sm:text-sm leading-relaxed break-words">
+                    {localError || authError}
+                  </p>
+                </div>
               </div>
-              <span>{localError || authError}</span>
             </div>
           )}
           
