@@ -45,6 +45,15 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const res = await api.get(API_PATHS.AUTH.GET_PROFILE);
+      
+      // Check if user account is active (exclude admins from this check)
+      if (res.data.role !== 'admin' && res.data.status !== 'active') {
+        // Force logout for deactivated users
+        logout();
+        setError('Account is deactivated. Please contact support.');
+        return;
+      }
+      
       setUser(res.data);
       setRole(res.data.role || localStorage.getItem("role"));
       setError(null);
@@ -88,8 +97,13 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       const res = await api.post(API_PATHS.AUTH.LOGIN, { email, password });
 
-      const { token, role, name } = res.data;
+      const { token, role, name, status } = res.data;
       if (!token) throw new Error("No token received from server");
+
+      // Check if user account is active (exclude admins from this check)
+      if (role !== 'admin' && status !== 'active') {
+        throw new Error("Account is deactivated. Please contact support.");
+      }
 
       if (typeof window !== "undefined") {
         localStorage.setItem("token", token);

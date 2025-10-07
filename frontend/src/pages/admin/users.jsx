@@ -12,8 +12,8 @@ import {
   XCircle,
   Users,
   Info,
-  Play,
-  Pause
+  Power,
+  PowerOff
 } from 'lucide-react';
 
 const AdminUsers = () => {
@@ -234,7 +234,7 @@ const AdminUsers = () => {
                       className="text-orange-600 hover:text-orange-900 p-1 rounded hover:bg-orange-50 transition-colors"
                       title="Deactivate user"
                     >
-                      <Pause className="w-4 h-4" />
+                      <PowerOff className="w-4 h-4" />
                     </button>
                   ) : (
                     <button
@@ -243,7 +243,7 @@ const AdminUsers = () => {
                       className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
                       title="Activate user"
                     >
-                      <Play className="w-4 h-4" />
+                      <Power className="w-4 h-4" />
                     </button>
                   )}
                   <button
@@ -340,7 +340,7 @@ const AdminUsers = () => {
                             className="text-orange-600 hover:text-orange-900 p-1 rounded hover:bg-orange-50 transition-colors"
                             title="Deactivate user"
                           >
-                            <Pause className="w-4 h-4" />
+                            <PowerOff className="w-4 h-4" />
                           </button>
                         ) : (
                           <button
@@ -349,7 +349,7 @@ const AdminUsers = () => {
                             className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
                             title="Activate user"
                           >
-                            <Play className="w-4 h-4" />
+                            <Power className="w-4 h-4" />
                           </button>
                         )}
                         <button
