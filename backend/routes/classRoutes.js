@@ -7,16 +7,15 @@ const {
   getClassCount,
   getClassStats,
 } = require('../controllers/classController');
-const { protect } = require('../middleware/authMiddleware');
 
 
 router.get('/count', getClassCount);
-router.get('/stats', protect, getClassStats);
-router.get('/all-with-availability', protect, getAllClassesWithAvailability);
-router.get('/', protect, getAllClasses);
+router.get('/stats',  getClassStats);
+router.get('/all-with-availability',  getAllClassesWithAvailability);
+router.get('/',  getAllClasses);
 
 // Get a single class by ID
-router.get('/:id', protect, getClassById);
+router.get('/:id',  getClassById);
 
 
 module.exports = router;
