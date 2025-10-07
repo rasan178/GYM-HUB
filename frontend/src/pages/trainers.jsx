@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Filter, Users, AlertCircle, X, User, Mail, Award, Phone, MapPin, Facebook, Instagram, FileText, Briefcase, CheckCircle } from 'lucide-react';
+import { Search, Filter, Users, X, User, Mail, Award, Phone, MapPin, Facebook, Instagram, FileText, Briefcase } from 'lucide-react';
 import api from '../utils/axiosInstance';
 import MainLayout from '../components/Layouts/MainLayout';
 import TrainerCard from '../components/Cards/TrainerCard';

@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const Membership = require('../models/Membership');
 const Plan = require('../models/Plan');
+const User = require('../models/User');
 
 const formatDate = (date) => {
   const d = new Date(date);
@@ -10,50 +11,92 @@ const formatDate = (date) => {
 };
 
 module.exports = () => {
-  cron.schedule('0 0 * * *', async () => { // run daily at midnight
+  // Run every day at midnight to check for expired memberships
+  cron.schedule('0 0 * * *', async () => {
     try {
-      const todayStr = formatDate(new Date());
+      const today = new Date();
+      const todayStr = formatDate(today);
 
-      // 1. Find memberships that are active but past endDate
-      const memberships = await Membership.find({
-        endDate: { $lt: todayStr },
-        status: 'Active'
+      console.log(`[Membership Scheduler] Running at ${todayStr}`);
+
+      // Fetch all active memberships
+      const activeMemberships = await Membership.find({ 
+        status: 'Active', 
+        active: true 
       });
 
-      for (const membership of memberships) {
-        // Skip if admin has deactivated manually
-        if (membership.status === 'Inactive') {
-          console.log(`[Scheduler] Skipped inactive membership: ${membership.userName}`);
-          continue;
+      for (const membership of activeMemberships) {
+        const endDate = new Date(membership.endDate);
+
+        // Check if membership has expired
+        if (endDate < today) {
+          membership.status = 'Expired';
+          membership.active = false;
+          await membership.save();
+          
+          console.log(`[Membership Scheduler] Expired membership: ${membership.userName} (${membership.membershipID})`);
         }
+      }
 
-        if (membership.renewalOption) {
-          // Auto-renew
+      // Auto-renew memberships with renewalOption enabled
+      const membershipsToRenew = await Membership.find({ 
+        renewalOption: true, 
+        status: 'Expired' 
+      });
+
+      for (const membership of membershipsToRenew) {
+        const endDate = new Date(membership.endDate);
+        
+        // Only renew if membership expired today or recently
+        const daysSinceExpiry = Math.floor((today - endDate) / (1000 * 60 * 60 * 24));
+        
+        if (daysSinceExpiry <= 7) { // Allow renewal within 7 days of expiry
           const plan = await Plan.findById(membership.planID);
-          if (!plan) continue;
+          const user = await User.findById(membership.userID);
+          
+          if (!plan || !user) {
+            console.log(`[Membership Scheduler] Skipping renewal - plan or user not found for ${membership.membershipID}`);
+            continue;
+          }
 
-          const newStartDate = new Date(membership.endDate);
-          newStartDate.setDate(newStartDate.getDate() + 1);
+          const newStartDate = new Date(endDate);
+          newStartDate.setDate(endDate.getDate() + 1);
 
           const newEndDate = new Date(newStartDate);
           newEndDate.setMonth(newEndDate.getMonth() + plan.durationMonths);
 
-          membership.startDate = formatDate(newStartDate);
-          membership.endDate = formatDate(newEndDate);
+          const newStartStr = formatDate(newStartDate);
+          const newEndStr = formatDate(newEndDate);
+
+          // Check if renewal already exists
+          const existingRenewal = await Membership.findOne({
+            userID: membership.userID,
+            planID: plan._id,
+            startDate: newStartStr,
+            status: 'Active'
+          });
+
+          if (existingRenewal) {
+            console.log(`[Membership Scheduler] Renewal already exists for ${membership.userName}`);
+            continue;
+          }
+
+          // Update the membership for renewal
+          membership.startDate = newStartStr;
+          membership.endDate = newEndStr;
           membership.status = 'Active';
           membership.active = true;
+          membership.planName = plan.planName;
+          membership.facilitiesIncluded = plan.description;
+          membership.price = plan.price;
+          membership.duration = `${plan.durationMonths} month(s)`;
+
           await membership.save();
-          
-        } else {
-          // No renewal → mark expired
-          membership.status = 'Expired';
-          membership.active = false;
-          await membership.save();
-          console.log(`[Scheduler] Expired membership: ${membership.userName} (${membership.endDate})`);
+          console.log(`[Membership Scheduler] Auto-renewed membership for ${membership.userName}: ${newStartStr} to ${newEndStr}`);
         }
       }
 
-      // 2. Delete old expired memberships (no renewal) after 6 months
+      // Cleanup old expired memberships (older than 6 months)
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
       const sixMonthsStr = formatDate(sixMonthsAgo);
@@ -61,15 +104,17 @@ module.exports = () => {
       const deleted = await Membership.deleteMany({
         endDate: { $lt: sixMonthsStr },
         status: 'Expired',
-        renewalOption: false
+        active: false
       });
 
       if (deleted.deletedCount > 0) {
-        console.log(`[Scheduler] Deleted ${deleted.deletedCount} old membership(s)`);
+        console.log(`[Membership Scheduler] Cleaned up ${deleted.deletedCount} old expired membership(s)`);
       }
 
     } catch (err) {
-      console.error("[Scheduler] Membership scheduler error:", err.message);
+      console.error("[Membership Scheduler] Error:", err.message);
     }
   });
+
+  console.log('[Membership Scheduler] Started - runs daily at midnight');
 };

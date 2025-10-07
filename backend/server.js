@@ -51,10 +51,10 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 // Error middleware
 app.use(errorMiddleware);
 
-// Start booking status scheduler
-// require('./scheduler/membershipScheduler')();
+// Start schedulers
 require('./scheduler/bookingScheduler')();
 require('./scheduler/emailScheduler')();
+require('./scheduler/membershipScheduler')();
 
 const port = process.env.PORT || 5000; // use 5000 as default if no .env
 app.listen(port, () => console.log(`Server running on port ${port}`));

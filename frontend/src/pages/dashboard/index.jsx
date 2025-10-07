@@ -2,7 +2,6 @@ import { useContext, useEffect } from "react";
 import { useRouter } from "next/router";
 import AuthContext from "../../context/AuthContext";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
-import Link from "next/link";
 import BlackSkeletonLoader from "../../components/Loaders/BlackSkeletonLoader";
 
 const Dashboard = () => {
