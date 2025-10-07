@@ -16,10 +16,16 @@ const protect = async (req, res, next) => {
 
     // Fetch user and set isAdmin flag
     req.user = await User.findById(decoded.id).select('-password');
-    if (req.user) {
-      req.user.isAdmin = req.user.role === 'admin'; // <-- added
+    if (!req.user) {
+      return res.status(401).json({ message: 'User not found' });
     }
 
+    // Check if user account is active (exclude admins from this check)
+    if (req.user.role !== 'admin' && req.user.status !== 'active') {
+      return res.status(403).json({ message: 'Account is deactivated. Please contact support.' });
+    }
+
+    req.user.isAdmin = req.user.role === 'admin'; // <-- added
     next();
   } catch (err) {
     res.status(401).json({ message: 'Token failed' });

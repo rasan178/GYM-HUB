@@ -20,7 +20,11 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
   if (user && await user.matchPassword(password)) {
-    res.json({ _id: user._id, userID: user.userID, name: user.name, email: user.email, phoneNumber: user.phoneNumber, role: user.role, token: generateToken(user._id) });
+    // Check if user account is active (exclude admins from this check)
+    if (user.role !== 'admin' && user.status !== 'active') {
+      return res.status(403).json({ message: 'Account is deactivated. Please contact support.' });
+    }
+    res.json({ _id: user._id, userID: user.userID, name: user.name, email: user.email, phoneNumber: user.phoneNumber, role: user.role, status: user.status, token: generateToken(user._id) });
   } else {
     res.status(401).json({ message: 'Invalid email or password' });
   }
