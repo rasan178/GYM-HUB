@@ -22,7 +22,10 @@ const protect = async (req, res, next) => {
 
     // Check if user account is active (exclude admins from this check)
     if (req.user.role !== 'admin' && req.user.status !== 'active') {
-      return res.status(403).json({ message: 'Account is deactivated. Please contact support.' });
+      return res.status(403).json({ 
+        message: 'Account suspended',
+        code: 'ACCOUNT_DEACTIVATED'
+      });
     }
 
     req.user.isAdmin = req.user.role === 'admin'; // <-- added

@@ -2,6 +2,7 @@ import { createContext, useState, useEffect } from "react";
 import api from "../utils/axiosInstance";
 import { API_PATHS } from "../utils/apiPaths";
 import { useRouter } from "next/router";
+import ErrorDisplay from "../components/ErrorDisplay";
 
 const AuthContext = createContext();
 
@@ -50,7 +51,7 @@ export const AuthProvider = ({ children }) => {
       if (res.data.role !== 'admin' && res.data.status !== 'active') {
         // Force logout for deactivated users
         logout();
-        setError('Account is deactivated. Please contact support.');
+        setError('Account suspended');
         return;
       }
       
@@ -102,7 +103,7 @@ export const AuthProvider = ({ children }) => {
 
       // Check if user account is active (exclude admins from this check)
       if (role !== 'admin' && status !== 'active') {
-        throw new Error("Account is deactivated. Please contact support.");
+        throw new Error("Account suspended");
       }
 
       if (typeof window !== "undefined") {
@@ -180,6 +181,12 @@ export const AuthProvider = ({ children }) => {
       }}
     >
       {children}
+      {error && (error.includes('suspended') || error.includes('deactivated')) && (
+        <ErrorDisplay 
+          error={error} 
+          onClose={() => setError(null)}
+        />
+      )}
     </AuthContext.Provider>
   );
 };

@@ -15,8 +15,8 @@ const AuthLayout = ({ children }) => {
       
       {/* Main content with proper top padding to account for fixed navbar */}
       <div className="pt-16">
-        {/* Error Display - positioned below navbar */}
-        {error && (
+        {/* Error Display - positioned below navbar, exclude account suspension errors */}
+        {error && !error.includes('suspended') && !error.includes('deactivated') && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 m-4">
             <div className="flex">
               <div className="ml-3">

@@ -13,8 +13,8 @@ const MainLayout = ({ children }) => {
         <Navbar />
       </div>
       
-      {/* Enhanced Error Display */}
-      {error && (
+      {/* Enhanced Error Display - exclude account suspension errors */}
+      {error && !error.includes('suspended') && !error.includes('deactivated') && (
         <div className="fixed top-16 left-0 right-0 z-40 bg-black text-white">
           <div className="max-w-7xl mx-auto px-4 py-3">
             <div className="flex items-center justify-between bg-white text-black p-4 border-2 border-black shadow-lg">

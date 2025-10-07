@@ -22,7 +22,10 @@ exports.login = async (req, res) => {
   if (user && await user.matchPassword(password)) {
     // Check if user account is active (exclude admins from this check)
     if (user.role !== 'admin' && user.status !== 'active') {
-      return res.status(403).json({ message: 'Account is deactivated. Please contact support.' });
+      return res.status(403).json({ 
+        message: 'Account suspended',
+        code: 'ACCOUNT_DEACTIVATED'
+      });
     }
     res.json({ _id: user._id, userID: user.userID, name: user.name, email: user.email, phoneNumber: user.phoneNumber, role: user.role, status: user.status, token: generateToken(user._id) });
   } else {
