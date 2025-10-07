@@ -166,9 +166,11 @@ const getAllClassesWithAvailability = async (req, res) => {
     // Fetch classes with trainer data first
     let classes;
     
-    // If user is not admin, filter out admin-deactivated classes
+    // If user is not admin, filter out admin-deactivated classes and classes with deactivated trainers
     if (req.user && !req.user.isAdmin) {
       classes = await Class.find({ adminDeactivated: { $ne: true } }).populate("trainerID");
+      // Filter out classes where the trainer is deactivated
+      classes = classes.filter(cls => !cls.trainerID || !cls.trainerID.adminDeactivated);
     } else {
       classes = await Class.find().populate("trainerID");
     }
@@ -240,9 +242,11 @@ const getAllClasses = async (req, res) => {
   try {
     let classes;
     
-    // If user is not admin, filter out admin-deactivated classes
+    // If user is not admin, filter out admin-deactivated classes and classes with deactivated trainers
     if (req.user && !req.user.isAdmin) {
       classes = await Class.find({ adminDeactivated: { $ne: true } }).populate('trainerID');
+      // Filter out classes where the trainer is deactivated
+      classes = classes.filter(cls => !cls.trainerID || !cls.trainerID.adminDeactivated);
     } else {
       classes = await Class.find().populate('trainerID');
     }
@@ -286,7 +290,7 @@ const getClassById = async (req, res) => {
 
     // If user is not admin and class is admin deactivated, return not found
     if (req.user && !req.user.isAdmin && cls.adminDeactivated) {
-      return res.status(404).json({ message: 'Class not found' });
+      return res.status(404).json({ message: 'This class has been temporarily suspended by the gym administration. Please contact support for more information.' });
     }
 
     res.json({
