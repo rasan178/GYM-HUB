@@ -236,7 +236,7 @@ exports.getTrainerById = async (req, res) => {
 
     // If user is not admin and trainer is admin-deactivated, return not found
     if (req.user && !req.user.isAdmin && trainer.adminDeactivated) {
-      return res.status(404).json({ message: "Trainer not found" });
+      return res.status(404).json({ message: "This trainer is currently unavailable. They may be on leave or temporarily suspended. Please contact support for assistance." });
     }
 
     res.json({

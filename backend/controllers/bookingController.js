@@ -36,12 +36,17 @@ exports.createBooking = async (req, res) => {
       if (!classID || !date)
         return res.status(400).json({ message: 'classID and date are required' });
 
-      const gymClass = await Class.findById(classID);
+      const gymClass = await Class.findById(classID).populate('trainerID');
       if (!gymClass) return res.status(404).json({ message: 'Class not found' });
 
       // Check if class is deactivated by admin
       if (gymClass.adminDeactivated) {
-        return res.status(400).json({ message: 'This class is currently unavailable for booking' });
+        return res.status(400).json({ message: 'This class has been temporarily suspended by the gym administration. Please contact support for more information.' });
+      }
+
+      // Check if the trainer assigned to this class is deactivated by admin
+      if (gymClass.trainerID && gymClass.trainerID.adminDeactivated) {
+        return res.status(400).json({ message: 'This class is currently unavailable because the assigned trainer is temporarily unavailable. Please try booking a different class or contact support.' });
       }
 
       // Get weekday from date
@@ -99,7 +104,7 @@ exports.createBooking = async (req, res) => {
 
       // Check if trainer is deactivated by admin
       if (trainer.adminDeactivated) {
-        return res.status(400).json({ message: 'This trainer is currently unavailable for booking' });
+        return res.status(400).json({ message: 'This trainer is currently unavailable for personal training sessions. They may be on leave or temporarily suspended. Please try booking with another trainer or contact support for assistance.' });
       }
 
       // Check trainer conflict (using `date` and the provided startTime)
@@ -269,12 +274,17 @@ exports.updateBooking = async (req, res) => {
 
     // ---------------- Class Booking Update ----------------
     if (booking.bookingType === 'class' && classID) {
-      const cls = await Class.findById(classID);
+      const cls = await Class.findById(classID).populate('trainerID');
       if (!cls) return res.status(404).json({ message: 'Class not found' });
       
       // Check if class is deactivated by admin
       if (cls.adminDeactivated) {
-        return res.status(400).json({ message: 'This class is currently unavailable for booking' });
+        return res.status(400).json({ message: 'This class has been temporarily suspended by the gym administration. Please contact support for more information.' });
+      }
+
+      // Check if the trainer assigned to this class is deactivated by admin
+      if (cls.trainerID && cls.trainerID.adminDeactivated) {
+        return res.status(400).json({ message: 'This class is currently unavailable because the assigned trainer is temporarily unavailable. Please try booking a different class or contact support.' });
       }
       
       booking.classID = cls._id;
@@ -282,8 +292,18 @@ exports.updateBooking = async (req, res) => {
     }
 
     if (booking.bookingType === 'class' && date) {
-      const cls = await Class.findById(booking.classID);
+      const cls = await Class.findById(booking.classID).populate('trainerID');
       if (!cls) return res.status(404).json({ message: 'Class not found for the booking' });
+
+      // Check if class is deactivated by admin
+      if (cls.adminDeactivated) {
+        return res.status(400).json({ message: 'This class has been temporarily suspended by the gym administration. Please contact support for more information.' });
+      }
+
+      // Check if the trainer assigned to this class is deactivated by admin
+      if (cls.trainerID && cls.trainerID.adminDeactivated) {
+        return res.status(400).json({ message: 'This class is currently unavailable because the assigned trainer is temporarily unavailable. Please try booking a different class or contact support.' });
+      }
 
       const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
       const scheduleSlot = cls.schedule.find(s => s.day === dayOfWeek);
@@ -312,7 +332,7 @@ exports.updateBooking = async (req, res) => {
       
       // Check if trainer is deactivated by admin
       if (trainer.adminDeactivated) {
-        return res.status(400).json({ message: 'This trainer is currently unavailable for booking' });
+        return res.status(400).json({ message: 'This trainer is currently unavailable for personal training sessions. They may be on leave or temporarily suspended. Please try booking with another trainer or contact support for assistance.' });
       }
       
       booking.trainerID = trainer._id;
