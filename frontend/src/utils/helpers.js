@@ -34,11 +34,35 @@ export const getISODate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-// Allow editing within 10 days of creation
+// Add this to your utils/helpers.js file
+
+/**
+ * Check if a testimonial can be edited (within 10 days of creation)
+ * @param {string|Date} createdAt - The creation date of the testimonial
+ * @returns {boolean} - True if can edit, false otherwise
+ */
 export const canEditTestimonial = (createdAt) => {
   if (!createdAt) return false;
-  const created = new Date(createdAt).getTime();
-  const now = Date.now();
-  const tenDaysMs = 10 * 24 * 60 * 60 * 1000;
-  return now - created <= tenDaysMs;
+  
+  const now = new Date();
+  const created = new Date(createdAt);
+  const diffDays = Math.floor((now - created) / (1000 * 60 * 60 * 24));
+  
+  return diffDays <= 10;
+};
+
+/**
+ * Get days remaining to edit a testimonial
+ * @param {string|Date} createdAt - The creation date of the testimonial
+ * @returns {number} - Days remaining (0 if expired)
+ */
+export const getDaysRemainingToEdit = (createdAt) => {
+  if (!createdAt) return 0;
+  
+  const now = new Date();
+  const created = new Date(createdAt);
+  const diffDays = Math.floor((now - created) / (1000 * 60 * 60 * 24));
+  const remaining = 10 - diffDays;
+  
+  return remaining > 0 ? remaining : 0;
 };
