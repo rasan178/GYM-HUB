@@ -4,13 +4,28 @@ const User = require('../models/User');
 // Create testimonial (user provides role/job)
 exports.createTestimonial = async (req, res) => {
   try {
-    const { message, rating, userRole } = req.body; // user provides role/job
+    const { message, rating, userRole } = req.body;
+    
+    // Validate required fields
+    if (!message || !rating || !userRole) {
+      return res.status(400).json({ message: 'Message, rating, and userRole are required' });
+    }
+    
+    // Validate rating range
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+    }
+    
     const user = await User.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
     const data = {
       userID: req.user._id,
-      userName: user.name,      // auto from User
-      userRole,                 // from request
+      userName: user.name,
+      userRole,
       message,
       rating,
       status: 'Pending'
@@ -20,19 +35,16 @@ exports.createTestimonial = async (req, res) => {
     if (req.files && req.files.length > 0) {
       const imageURLs = req.files.map(file => `http://localhost:8000/uploads/testimonials/${file.filename}`);
       
-      // Limit to maximum 5 images
       if (imageURLs.length > 5) {
         return res.status(400).json({ message: 'Maximum 5 images allowed per testimonial' });
       }
       
       data.imageURLs = imageURLs;
       
-      // For backward compatibility, set the first image as imageURL
       if (imageURLs.length > 0) {
         data.imageURL = imageURLs[0];
       }
     } else if (req.file) {
-      // Handle single image upload (backward compatibility)
       data.imageURL = `http://localhost:8000/uploads/testimonials/${req.file.filename}`;
       data.imageURLs = [data.imageURL];
     }
@@ -48,6 +60,16 @@ exports.createTestimonial = async (req, res) => {
 exports.getTestimonials = async (req, res) => {
   try {
     const testimonials = await Testimonial.find({ status: 'Approved' }).sort({ createdAt: -1 });
+    res.json(testimonials);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get user's own testimonials
+exports.getMyTestimonials = async (req, res) => {
+  try {
+    const testimonials = await Testimonial.find({ userID: req.user._id }).sort({ createdAt: -1 });
     res.json(testimonials);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -108,12 +130,28 @@ exports.updateTestimonial = async (req, res) => {
       return res.status(400).json({ message: 'You can no longer edit your testimonial after 10 days' });
     }
 
+    // Validate rating if provided
+    if (req.body.rating && (req.body.rating < 1 || req.body.rating > 5)) {
+      return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+    }
+
     testimonial.message = req.body.message || testimonial.message;
     testimonial.rating = req.body.rating || testimonial.rating;
-    testimonial.userRole = req.body.userRole || testimonial.userRole; // allow update of role
+    testimonial.userRole = req.body.userRole || testimonial.userRole;
 
-    if (req.file) {
+    // Handle multiple image uploads
+    if (req.files && req.files.length > 0) {
+      const imageURLs = req.files.map(file => `http://localhost:8000/uploads/testimonials/${file.filename}`);
+      
+      if (imageURLs.length > 5) {
+        return res.status(400).json({ message: 'Maximum 5 images allowed per testimonial' });
+      }
+      
+      testimonial.imageURLs = imageURLs;
+      testimonial.imageURL = imageURLs[0];
+    } else if (req.file) {
       testimonial.imageURL = `http://localhost:8000/uploads/testimonials/${req.file.filename}`;
+      testimonial.imageURLs = [testimonial.imageURL];
     }
 
     testimonial.status = 'Pending'; // reset for re-approval
@@ -122,6 +160,24 @@ exports.updateTestimonial = async (req, res) => {
     res.json({ message: 'Testimonial updated, pending approval', testimonial });
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+// User: delete own testimonial
+exports.deleteOwnTestimonial = async (req, res) => {
+  try {
+    const testimonial = await Testimonial.findById(req.params.id);
+    if (!testimonial) return res.status(404).json({ message: 'Testimonial not found' });
+
+    // Check if user owns this testimonial
+    if (testimonial.userID.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'You can only delete your own testimonials' });
+    }
+
+    await testimonial.deleteOne();
+    res.json({ message: 'Testimonial deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -138,7 +194,7 @@ exports.deleteTestimonial = async (req, res) => {
   }
 };
 
-// ========================= GET TESTIMONIAL STATISTICS =========================
+// Get testimonial statistics
 exports.getTestimonialStats = async (req, res) => {
   try {
     const testimonials = await Testimonial.find();
@@ -153,7 +209,6 @@ exports.getTestimonialStats = async (req, res) => {
     let ratedTestimonials = 0;
 
     testimonials.forEach(testimonial => {
-      // Count by status
       switch (testimonial.status) {
         case 'Pending':
           pendingTestimonials++;
@@ -166,7 +221,6 @@ exports.getTestimonialStats = async (req, res) => {
           break;
       }
 
-      // Calculate average rating
       if (testimonial.rating) {
         totalRating += testimonial.rating;
         ratedTestimonials++;
@@ -174,7 +228,7 @@ exports.getTestimonialStats = async (req, res) => {
     });
 
     if (ratedTestimonials > 0) {
-      averageRating = Math.round((totalRating / ratedTestimonials) * 10) / 10; // Round to 1 decimal
+      averageRating = Math.round((totalRating / ratedTestimonials) * 10) / 10;
     }
 
     res.json({

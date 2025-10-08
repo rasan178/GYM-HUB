@@ -58,11 +58,13 @@ export const API_PATHS = {
     GET_STATS: "/api/bookings/stats",
   },
 
-  TESTIMONIALS: {
-    GET_APPROVED: "/api/testimonials",
-    CREATE: "/api/testimonials",
+   TESTIMONIALS: {
+    CREATE: '/api/testimonials',
+    GET_APPROVED: '/api/testimonials',
+    GET_MY: '/api/testimonials/my',  // New: Get user's own testimonials
     UPDATE: (id) => `/api/testimonials/${id}`,
-    GET_STATS: "/api/testimonials/stats",
+    DELETE: (id) => `/api/testimonials/${id}`,  // New: Delete own testimonial
+    STATS: '/api/testimonials/stats',
   },
 
   AI: {

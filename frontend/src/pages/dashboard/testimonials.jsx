@@ -8,7 +8,7 @@ import FileInput from '../../components/Inputs/FileInput';
 import Modal from '../../components/Modal';
 import TestimonialCard from '../../components/Cards/TestimonialCard';
 import { API_PATHS } from '../../utils/apiPaths';
-import { canEditTestimonial } from '../../utils/helpers';
+import { canEditTestimonial, getDaysRemainingToEdit } from '../../utils/helpers';
 import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
 import SkeletonLoader from '../../components/Loaders/SkeletonLoader';
 import { 
@@ -72,23 +72,11 @@ const Testimonials = () => {
 
   const fetchTestimonials = async () => {
     try {
-      // Fetch user's own testimonials
+      // Only fetch user's own testimonials
       const myTestimonialsRes = await api.get(API_PATHS.TESTIMONIALS.GET_MY);
       const myTestimonials = myTestimonialsRes.data || [];
       
-      // Also fetch approved testimonials for display
-      const approvedRes = await api.get(API_PATHS.TESTIMONIALS.GET_APPROVED);
-      const approvedTestimonials = approvedRes.data || [];
-      
-      // Combine user's testimonials with approved testimonials, removing duplicates
-      const allTestimonials = [...myTestimonials];
-      approvedTestimonials.forEach(approved => {
-        if (!allTestimonials.find(t => t._id === approved._id)) {
-          allTestimonials.push(approved);
-        }
-      });
-      
-      setTestimonials(allTestimonials);
+      setTestimonials(myTestimonials);
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch testimonials');
@@ -106,11 +94,41 @@ const Testimonials = () => {
   };
 
   const submitTestimonial = async () => {
+    // Frontend validation to match backend validation
+    if (!formData.message?.trim()) {
+      setLocalError('Message is required');
+      return;
+    }
+    
+    if (!formData.rating || formData.rating === '') {
+      setLocalError('Rating is required');
+      return;
+    }
+    
+    const rating = parseInt(formData.rating);
+    if (isNaN(rating) || rating < 1 || rating > 5) {
+      setLocalError('Rating must be between 1 and 5');
+      return;
+    }
+    
+    if (!formData.userRole?.trim()) {
+      setLocalError('Your role/job is required');
+      return;
+    }
+    
+    // Validate image count
+    if (formData.images && formData.images.length > 5) {
+      setLocalError('Maximum 5 images allowed per testimonial');
+      return;
+    }
+    
     setIsSubmitting(true);
+    setLocalError(null); // Clear any previous errors
+    
     const fd = new FormData();
-    fd.append('message', formData.message);
-    fd.append('rating', formData.rating);
-    fd.append('userRole', formData.userRole);
+    fd.append('message', formData.message.trim());
+    fd.append('rating', rating);
+    fd.append('userRole', formData.userRole.trim());
     
     // Handle multiple images
     if (formData.images && formData.images.length > 0) {
@@ -139,9 +157,14 @@ const Testimonials = () => {
 
   const editTestimonial = (t) => {
     if (!canEditTestimonial(t.createdAt)) {
-      setLocalError('Cannot edit testimonial after 10 days');
+      const daysExpired = Math.floor((new Date() - new Date(t.createdAt)) / (1000 * 60 * 60 * 24)) - 10;
+      setLocalError(`Cannot edit testimonial. The 10-day editing period has expired ${daysExpired} day(s) ago.`);
       return;
     }
+    
+    // Clear any previous errors when opening edit modal
+    setLocalError(null);
+    
     setFormData({
       _id: t._id,
       message: t.message,
@@ -219,14 +242,11 @@ const Testimonials = () => {
 
   if (isLoading) return <SkeletonLoader />;
 
-  // Calculate testimonial statistics
-  const userTestimonials = testimonials.filter(t => user && String(t.userID) === String(user._id));
+  // Calculate testimonial statistics - only user's own testimonials
+  const userTestimonials = testimonials; // Already filtered to user's own
   const approvedTestimonials = userTestimonials.filter(t => t.status === 'Approved').length;
   const pendingTestimonials = userTestimonials.filter(t => t.status === 'Pending').length;
-  const totalTestimonials = testimonials.length;
-  const averageRating = userTestimonials.length > 0 
-    ? (userTestimonials.reduce((sum, t) => sum + (t.rating || 0), 0) / userTestimonials.length).toFixed(1)
-    : 0;
+  const totalTestimonials = userTestimonials.length;
 
   return (
     <DashboardLayout>
@@ -234,30 +254,16 @@ const Testimonials = () => {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-white">Testimonials</h1>
-            <p className="text-white mt-1">Share your fitness journey and read others' experiences</p>
+            <p className="text-white mt-1">Manage and track your testimonials</p>
           </div>
           <div className="flex items-center gap-2 text-sm text-white">
             <Users className="w-4 h-4 color-white" />
-            <span>{testimonials.length} total testimonials</span>
+            <span>{userTestimonials.length} my testimonials</span>
           </div>
         </div>
 
         {/* Testimonial Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <MessageSquare className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="ml-3 w-0 flex-1">
-                <dl>
-                  <dt className="text-xs font-medium text-gray-500 truncate">Total</dt>
-                  <dd className="text-sm font-medium text-gray-900">{totalTestimonials}</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -275,11 +281,25 @@ const Testimonials = () => {
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0">
+                <XCircle className="h-6 w-6 text-red-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">My Rejected</dt>
+                  <dd className="text-sm font-medium text-gray-900">{userTestimonials.filter(t => t.status === 'Rejected').length}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
                 <CheckCircle className="h-6 w-6 text-green-600" />
               </div>
               <div className="ml-3 w-0 flex-1">
                 <dl>
-                  <dt className="text-xs font-medium text-gray-500 truncate">Approved</dt>
+                  <dt className="text-xs font-medium text-gray-500 truncate">My Approved</dt>
                   <dd className="text-sm font-medium text-gray-900">{approvedTestimonials}</dd>
                 </dl>
               </div>
@@ -293,49 +313,13 @@ const Testimonials = () => {
               </div>
               <div className="ml-3 w-0 flex-1">
                 <dl>
-                  <dt className="text-xs font-medium text-gray-500 truncate">Pending</dt>
+                  <dt className="text-xs font-medium text-gray-500 truncate">My Pending</dt>
                   <dd className="text-sm font-medium text-gray-900">{pendingTestimonials}</dd>
                 </dl>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <TrendingUp className="h-6 w-6 text-indigo-600" />
-              </div>
-              <div className="ml-3 w-0 flex-1">
-                <dl>
-                  <dt className="text-xs font-medium text-gray-500 truncate">Avg Rating</dt>
-                  <dd className="text-sm font-medium text-gray-900">{averageRating || 'N/A'}</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Plus className="h-6 w-6 text-pink-600" />
-              </div>
-              <div className="ml-3 w-0 flex-1">
-                <dl>
-                  <dt className="text-xs font-medium text-gray-500 truncate">Actions</dt>
-                  <dd className="text-sm font-medium text-gray-900">
-                    {user && (
-                      <button
-                        onClick={() => { setFormData({ message: '', rating: '', userRole: '', images: [] }); setIsModalOpen(true); }}
-                        className="text-pink-600 hover:text-pink-800 font-medium"
-                      >
-                        Submit
-                      </button>
-                    )}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
         </div>
 
         {error && (
@@ -367,31 +351,27 @@ const Testimonials = () => {
                       {getStatusIcon(t.status)}
                       {t.status}
                     </span>
-                    {user && String(t.userID) === String(user._id) && (
-                      <div className="flex gap-1">
-                        {canEditTestimonial(t.createdAt) && (
-                          <button 
-                            className="bg-blue-600 text-white p-1 rounded hover:bg-blue-700 transition-colors"
-                            onClick={() => editTestimonial(t)}
-                            title="Edit testimonial"
-                          >
-                            <Edit className="w-3 h-3" />
-                          </button>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => editTestimonial(t)}
+                        className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
+                        title="Edit testimonial"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => deleteTestimonial(t._id)}
+                        disabled={isAction[t._id] === 'delete'}
+                        className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                        title="Delete testimonial"
+                      >
+                        {isAction[t._id] === 'delete' ? (
+                          <SpinnerLoader />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
                         )}
-                        <button
-                          onClick={() => deleteTestimonial(t._id)}
-                          disabled={isAction[t._id] === 'delete'}
-                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
-                          title="Delete testimonial"
-                        >
-                          {isAction[t._id] === 'delete' ? (
-                            <SpinnerLoader />
-                          ) : (
-                            <Trash2 className="w-3 h-3" />
-                          )}
-                        </button>
-                      </div>
-                    )}
+                      </button>
+                    </div>
                   </div>
                 </div>
                 
@@ -404,6 +384,21 @@ const Testimonials = () => {
                     <div className="flex items-center mt-2">
                       <Star className="w-4 h-4 text-yellow-400 mr-1" />
                       <span className="text-sm text-gray-600">{t.rating}/5</span>
+                    </div>
+                  )}
+                  {user && String(t.userID) === String(user._id) && (
+                    <div className="mt-2">
+                      {canEditTestimonial(t.createdAt) ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          <Edit className="w-3 h-3 mr-1" />
+                          {getDaysRemainingToEdit(t.createdAt)} days left to edit
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                          <X className="w-3 h-3 mr-1" />
+                          Edit period expired
+                        </span>
+                      )}
                     </div>
                   )}
                   {((t.imageURLs && t.imageURLs.length > 0) || t.imageURL) && (
@@ -509,37 +504,50 @@ const Testimonials = () => {
                       )}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${getStatusColor(t.status)}`}>
-                        {getStatusIcon(t.status)}
-                        {t.status}
-                      </span>
+                      <div className="space-y-1">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${getStatusColor(t.status)}`}>
+                          {getStatusIcon(t.status)}
+                          {t.status}
+                        </span>
+                        {user && String(t.userID) === String(user._id) && (
+                          <div>
+                            {canEditTestimonial(t.createdAt) ? (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <Edit className="w-3 h-3 mr-1" />
+                                {getDaysRemainingToEdit(t.createdAt)} days left
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                <X className="w-3 h-3 mr-1" />
+                                Edit expired
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                      {user && String(t.userID) === String(user._id) && (
-                        <div className="flex space-x-2">
-                          {canEditTestimonial(t.createdAt) && (
-                            <button
-                              onClick={() => editTestimonial(t)}
-                              className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 flex items-center gap-1"
-                            >
-                              <Edit className="w-3 h-3" />
-                              Edit
-                            </button>
+                      <div className="flex space-x-1">
+                        <button
+                          onClick={() => editTestimonial(t)}
+                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
+                          title="Edit testimonial"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => deleteTestimonial(t._id)}
+                          disabled={isAction[t._id] === 'delete'}
+                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                          title="Delete testimonial"
+                        >
+                          {isAction[t._id] === 'delete' ? (
+                            <SpinnerLoader />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
                           )}
-                          <button
-                            onClick={() => deleteTestimonial(t._id)}
-                            disabled={isAction[t._id] === 'delete'}
-                            className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
-                            title="Delete testimonial"
-                          >
-                            {isAction[t._id] === 'delete' ? (
-                              <SpinnerLoader />
-                            ) : (
-                              <Trash2 className="w-4 h-4" />
-                            )}
-                          </button>
-                        </div>
-                      )}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -552,10 +560,14 @@ const Testimonials = () => {
               <div className="text-gray-500">
                 <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No testimonials found</h3>
-                <p className="text-gray-500">No testimonials have been submitted yet.</p>
+                <p className="text-gray-500">You haven't submitted any testimonials yet.</p>
                 {user && (
                   <button
-                    onClick={() => { setFormData({ message: '', rating: '', userRole: '', images: [] }); setIsModalOpen(true); }}
+                    onClick={() => { 
+                      setFormData({ message: '', rating: '', userRole: '', images: [] }); 
+                      setLocalError(null); // Clear any previous errors
+                      setIsModalOpen(true); 
+                    }}
                     className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors flex items-center mx-auto mt-4"
                   >
                     <Plus className="w-4 h-4 mr-2" />
@@ -649,14 +661,39 @@ const Testimonials = () => {
         )}
       </div>
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">
+            {formData._id ? 'Edit Testimonial' : 'Create New Testimonial'}
+          </h3>
+          {formData._id && (
+            <p className="text-sm text-gray-600 mt-1">
+              Note: Editing will reset the testimonial status to "Pending" for re-approval
+            </p>
+          )}
+        </div>
         <TextInput label="Message" name="message" value={formData.message} onChange={handleChange} required />
         <TextInput label="Rating (1-5)" name="rating" type="number" value={formData.rating} onChange={handleChange} required />
         <TextInput label="Your Role/Job" name="userRole" value={formData.userRole} onChange={handleChange} required />
         <FileInput label="Images (up to 5)" name="images" multiple onChange={handleChange} />
         <button className="btn btn-primary mt-4" onClick={submitTestimonial} disabled={isSubmitting}>
-          {isSubmitting ? <SpinnerLoader /> : 'Submit'}
+          {isSubmitting ? <SpinnerLoader /> : (formData._id ? 'Update Testimonial' : 'Submit Testimonial')}
         </button>
       </Modal>
+
+      {/* Floating Plus Button */}
+      {user && (
+        <button
+          onClick={() => { 
+            setFormData({ message: '', rating: '', userRole: '', images: [] }); 
+            setLocalError(null); // Clear any previous errors
+            setIsModalOpen(true); 
+          }}
+          className="fixed bottom-6 right-6 bg-white hover:bg-gray-50 text-black p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-40 border-2 border-gray-200 hover:border-gray-300"
+          title="Add New Testimonial"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
+      )}
     </DashboardLayout>
   );
 };
