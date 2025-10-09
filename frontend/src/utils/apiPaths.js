@@ -41,6 +41,7 @@ export const API_PATHS = {
       GET_ALL: "/api/membership-requests/admin/all",
       APPROVE: (id) => `/api/membership-requests/${id}/approve`,
       REJECT: (id) => `/api/membership-requests/${id}/reject`,
+      DELETE: (id) => `/api/membership-requests/${id}`,
     },
   },
 

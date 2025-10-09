@@ -19,6 +19,7 @@ import {
   Send,
   X
 } from 'lucide-react';
+import MembershipErrorDisplay from '../../components/MembershipErrorDisplay';
 
 export default function MembershipDetail() {
   const router = useRouter();
@@ -35,12 +36,18 @@ export default function MembershipDetail() {
   const [requestLoading, setRequestLoading] = useState(false);
   const [requestError, setRequestError] = useState(null);
   const [requestSuccess, setRequestSuccess] = useState(false);
+  const [userMemberships, setUserMemberships] = useState([]);
+  const [hasActiveMembership, setHasActiveMembership] = useState(false);
+  const [showMembershipError, setShowMembershipError] = useState(false);
 
   useEffect(() => {
     if (id) {
       fetchPlan();
     }
-  }, [id]);
+    if (user) {
+      fetchUserMemberships();
+    }
+  }, [id, user]);
 
   const fetchPlan = async () => {
     try {
@@ -61,10 +68,32 @@ export default function MembershipDetail() {
     }
   };
 
+  const fetchUserMemberships = async () => {
+    try {
+      const { data } = await api.get(API_PATHS.MEMBERSHIPS.GET_ALL);
+      setUserMemberships(data.memberships || []);
+      
+      // Check if user has any active memberships
+      const activeMemberships = data.memberships.filter(membership => 
+        membership.status === 'Active' && new Date(membership.endDate) >= new Date()
+      );
+      setHasActiveMembership(activeMemberships.length > 0);
+    } catch (error) {
+      console.error('Error fetching user memberships:', error);
+    }
+  };
+
   const handleRequestMembership = async (e) => {
     e.preventDefault();
     setRequestLoading(true);
     setRequestError(null);
+
+    // Check if user has active membership before submitting
+    if (hasActiveMembership) {
+      setShowMembershipError(true);
+      setRequestLoading(false);
+      return;
+    }
 
     try {
       await api.post(API_PATHS.MEMBERSHIP_REQUESTS.CREATE, {
@@ -219,7 +248,13 @@ export default function MembershipDetail() {
               <div className="space-y-3">
                 {user ? (
                   <button 
-                    onClick={() => setShowRequestModal(true)}
+                    onClick={() => {
+                      if (hasActiveMembership) {
+                        setShowMembershipError(true);
+                        return;
+                      }
+                      setShowRequestModal(true);
+                    }}
                     className="w-full bg-white text-black px-6 py-4 font-black uppercase tracking-widest hover:bg-gray-200 transition-all border-2 border-white flex items-center justify-center gap-2"
                   >
                     <Send className="w-5 h-5" />
@@ -283,6 +318,26 @@ export default function MembershipDetail() {
           </div>
         </div>
       </section>
+
+      {/* Membership Error Display */}
+      <MembershipErrorDisplay
+        isOpen={showMembershipError}
+        onClose={() => setShowMembershipError(false)}
+        title="Active Membership Detected"
+        message="You already have an active membership. Please wait until it expires before requesting a new one."
+        type="error"
+      />
+
+      {/* Request Error Display */}
+      {requestError && (
+        <MembershipErrorDisplay
+          isOpen={!!requestError}
+          onClose={() => setRequestError(null)}
+          title="Request Failed"
+          message={requestError}
+          type="error"
+        />
+      )}
 
       {/* Success Message */}
       {requestSuccess && (
