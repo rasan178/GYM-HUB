@@ -6,6 +6,7 @@ const membershipSchema = new mongoose.Schema({
   userName: { type: String }, // auto-filled from Users collection
   planID: { type: mongoose.Schema.Types.ObjectId, ref: 'Plan', required: true },
   planName: { type: String }, // auto-filled from Plans collection
+  description: { type: String }, // from plan description
   facilitiesIncluded: { type: String }, // from plan description
   price: { type: Number }, // from plan price
   duration: { type: String }, // e.g., "6 months"
