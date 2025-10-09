@@ -35,10 +35,10 @@ const createMembershipRequest = async (req, res) => {
       return res.status(400).json({ message: 'Requested start date cannot be in the past' });
     }
 
-    // Check if user already has an active membership
+    // Check if user already has an active membership (any active membership, not just conflicting ones)
     const activeMembership = await Membership.findOne({
       userID: userID,
-      endDate: { $gte: start },
+      endDate: { $gte: new Date() }, // Check if any membership is still active today
       status: { $in: ['Active', 'Inactive'] }
     });
     if (activeMembership) {
@@ -160,15 +160,28 @@ const approveMembershipRequest = async (req, res) => {
       return res.status(400).json({ message: 'Request has already been processed' });
     }
 
-    // Check if user still has an active membership
-    const activeMembership = await Membership.findOne({
+    // Check if user has an active membership that would conflict with this request
+    const conflictingMembership = await Membership.findOne({
       userID: request.userID._id,
       endDate: { $gte: new Date(request.requestedStartDate) },
       status: { $in: ['Active', 'Inactive'] }
     });
-    if (activeMembership) {
+    if (conflictingMembership) {
       return res.status(400).json({ 
-        message: 'User now has an active membership. Cannot approve this request.' 
+        message: 'User has an active membership that conflicts with this request. Cannot approve.' 
+      });
+    }
+
+    // Additional check: Verify the user doesn't have an active membership at the time of approval
+    // This prevents approving requests if user has gained an active membership since making the request
+    const currentActiveMembership = await Membership.findOne({
+      userID: request.userID._id,
+      endDate: { $gte: new Date() }, // Check if membership is still active today
+      status: { $in: ['Active', 'Inactive'] }
+    });
+    if (currentActiveMembership) {
+      return res.status(400).json({ 
+        message: 'User currently has an active membership. Cannot approve this request.' 
       });
     }
 
@@ -260,13 +273,34 @@ const getMembershipRequestById = async (req, res) => {
   }
 };
 
+// ========================= DELETE MEMBERSHIP REQUEST (Admin) =========================
+const deleteMembershipRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const request = await MembershipRequest.findById(id);
+    if (!request) return res.status(404).json({ message: 'Membership request not found' });
+
+    // Allow deletion of any membership request regardless of status
+    // Admin can delete pending, approved, or rejected requests
+    await MembershipRequest.findByIdAndDelete(id);
+
+    res.json({ 
+      message: 'Membership request deleted successfully' 
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createMembershipRequest,
   getUserMembershipRequests,
   getAllMembershipRequests,
   approveMembershipRequest,
   rejectMembershipRequest,
-  getMembershipRequestById
+  getMembershipRequestById,
+  deleteMembershipRequest
 };
 
 

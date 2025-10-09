@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import AdminLayout from '../../components/Layouts/AdminLayout';
 import { api } from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
@@ -10,8 +10,36 @@ import {
   Calendar, 
   MessageSquare,
   DollarSign,
-  AlertCircle
+  AlertCircle,
+  Trash2
 } from 'lucide-react';
+
+// Reusable SummaryCard component
+const SummaryCard = ({ icon: Icon, title, count, iconColor }) => (
+  <div className="bg-white p-6 rounded-lg shadow">
+    <div className="flex items-center">
+      <div className="flex-shrink-0">
+        <Icon className={`w-8 h-8 ${iconColor}`} />
+      </div>
+      <div className="ml-4">
+        <p className="text-sm font-medium text-gray-500">{title}</p>
+        <p className="text-2xl font-semibold text-gray-900">{count}</p>
+      </div>
+    </div>
+  </div>
+);
+
+// Reusable DeleteButton component
+const DeleteButton = ({ onClick, disabled }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+    title="Delete request"
+  >
+    <Trash2 className="w-4 h-4" />
+  </button>
+);
 
 const AdminMembershipRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -34,37 +62,45 @@ const AdminMembershipRequests = () => {
     }
   };
 
-  const handleApprove = async (requestId) => {
-    if (!confirm('Are you sure you want to approve this membership request?')) return;
+  const handleAction = async (requestId, action, confirmMessage, successMessage, apiCall) => {
+    if (!confirm(confirmMessage)) return;
     
     setIsSubmitting(true);
     setLocalError(null);
     try {
-      await api.patch(API_PATHS.MEMBERSHIP_REQUESTS.ADMIN.APPROVE(requestId));
+      await apiCall(requestId);
       fetchRequests();
-      alert('Membership request approved successfully!');
+      alert(successMessage);
     } catch (err) {
-      setLocalError(err.response?.data?.message || 'Failed to approve request');
+      setLocalError(err.response?.data?.message || `Failed to ${action} request`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleReject = async (requestId) => {
-    if (!confirm('Are you sure you want to reject this membership request?')) return;
-    
-    setIsSubmitting(true);
-    setLocalError(null);
-    try {
-      await api.patch(API_PATHS.MEMBERSHIP_REQUESTS.ADMIN.REJECT(requestId));
-      fetchRequests();
-      alert('Membership request rejected successfully!');
-    } catch (err) {
-      setLocalError(err.response?.data?.message || 'Failed to reject request');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const handleApprove = (requestId) => handleAction(
+    requestId,
+    'approve',
+    'Are you sure you want to approve this membership request?',
+    'Membership request approved successfully!',
+    (id) => api.patch(API_PATHS.MEMBERSHIP_REQUESTS.ADMIN.APPROVE(id))
+  );
+
+  const handleReject = (requestId) => handleAction(
+    requestId,
+    'reject',
+    'Are you sure you want to reject this membership request?',
+    'Membership request rejected successfully!',
+    (id) => api.patch(API_PATHS.MEMBERSHIP_REQUESTS.ADMIN.REJECT(id))
+  );
+
+  const handleDelete = (requestId) => handleAction(
+    requestId,
+    'delete',
+    'Are you sure you want to delete this membership request? This action cannot be undone.',
+    'Membership request deleted successfully!',
+    (id) => api.delete(API_PATHS.MEMBERSHIP_REQUESTS.ADMIN.DELETE(id))
+  );
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -84,10 +120,18 @@ const AdminMembershipRequests = () => {
     );
   };
 
-  const filteredRequests = (requests || []).filter(request => {
-    if (filter === 'all') return true;
-    return request.status === filter;
-  });
+  // Memoize filter calculations to avoid recalculating on every render
+  const requestCounts = useMemo(() => ({
+    total: requests.length,
+    pending: requests.filter(r => r.status === 'Pending').length,
+    approved: requests.filter(r => r.status === 'Approved').length,
+    rejected: requests.filter(r => r.status === 'Rejected').length
+  }), [requests]);
+
+  const filteredRequests = useMemo(() => {
+    if (filter === 'all') return requests || [];
+    return (requests || []).filter(request => request.status === filter);
+  }, [requests, filter]);
 
 
   return (
@@ -110,7 +154,7 @@ const AdminMembershipRequests = () => {
               </select>
             </div>
             <div className="text-sm text-white">
-              Total: {requests.length} | Pending: {requests.filter(r => r.status === 'Pending').length}
+              Total: {requestCounts.total} | Pending: {requestCounts.pending}
             </div>
           </div>
         </div>
@@ -124,61 +168,30 @@ const AdminMembershipRequests = () => {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <User className="w-8 h-8 text-blue-500" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total Requests</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {requests.length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Clock className="w-8 h-8 text-yellow-500" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Pending Requests</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {requests.filter(r => r.status === 'Pending').length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <CheckCircle className="w-8 h-8 text-green-500" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Approved Requests</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {requests.filter(r => r.status === 'Approved').length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <XCircle className="w-8 h-8 text-red-500" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Rejected Requests</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {requests.filter(r => r.status === 'Rejected').length}
-                </p>
-              </div>
-            </div>
-          </div>
+          <SummaryCard
+            icon={User}
+            title="Total Requests"
+            count={requestCounts.total}
+            iconColor="text-blue-500"
+          />
+          <SummaryCard
+            icon={Clock}
+            title="Pending Requests"
+            count={requestCounts.pending}
+            iconColor="text-yellow-500"
+          />
+          <SummaryCard
+            icon={CheckCircle}
+            title="Approved Requests"
+            count={requestCounts.approved}
+            iconColor="text-green-500"
+          />
+          <SummaryCard
+            icon={XCircle}
+            title="Rejected Requests"
+            count={requestCounts.rejected}
+            iconColor="text-red-500"
+          />
         </div>
 
         {filteredRequests.length === 0 ? (
@@ -276,7 +289,7 @@ const AdminMembershipRequests = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         {request.status === 'Pending' ? (
-                          <div className="flex space-x-2">
+                          <div className="flex items-center space-x-2">
                             <button
                               onClick={() => handleApprove(request._id)}
                               disabled={isSubmitting}
@@ -293,16 +306,26 @@ const AdminMembershipRequests = () => {
                               <XCircle className="w-3 h-3 mr-1" />
                               Reject
                             </button>
+                            <DeleteButton
+                              onClick={() => handleDelete(request._id)}
+                              disabled={isSubmitting}
+                            />
                           </div>
                         ) : (
-                          <span className="text-gray-500 text-xs">
-                            {request.status === 'Approved' ? 'Already Approved' : 'Already Rejected'}
-                            {request.processedAt && (
-                              <div className="text-gray-400 mt-1">
-                                {new Date(request.processedAt).toLocaleDateString()}
-                              </div>
-                            )}
-                          </span>
+                          <div className="flex flex-col space-y-1">
+                            <span className="text-gray-500 text-xs">
+                              {request.status === 'Approved' ? 'Already Approved' : 'Already Rejected'}
+                              {request.processedAt && (
+                                <div className="text-gray-400 mt-1">
+                                  {new Date(request.processedAt).toLocaleDateString()}
+                                </div>
+                              )}
+                            </span>
+                            <DeleteButton
+                              onClick={() => handleDelete(request._id)}
+                              disabled={isSubmitting}
+                            />
+                          </div>
                         )}
                       </td>
                     </tr>

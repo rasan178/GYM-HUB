@@ -6,6 +6,7 @@ import AuthContext from "../context/AuthContext";
 import { formatTime } from "../utils/helpers";
 import { API_PATHS } from "../utils/apiPaths";
 import BookingLoader from "../components/Loaders/BookingLoader";
+import BookingErrorDisplay from "../components/BookingErrorDisplay";
 
 const Classes = () => {
   const { user, error } = useContext(AuthContext);
@@ -18,6 +19,7 @@ const Classes = () => {
   const [isBooking, setIsBooking] = useState({});
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [showBookingError, setShowBookingError] = useState(false);
   
   const calendarRef = useRef(null);
 
@@ -95,6 +97,12 @@ const Classes = () => {
       setLocalError("Please log in to book a class");
       return;
     }
+    
+    if (!date) {
+      setLocalError("Please select a date to join a class");
+      return;
+    }
+    
     setIsBooking((prev) => ({ ...prev, [classID]: true }));
     try {
       await api.post(API_PATHS.BOOKINGS.CREATE, {
@@ -105,7 +113,10 @@ const Classes = () => {
       setLocalError(null);
       alert("Class booked successfully!");
     } catch (err) {
-      setLocalError("Select a date to join a class");
+      // Display the actual error message from the backend
+      const errorMessage = err.response?.data?.message || "Failed to book class. Please try again.";
+      setLocalError(errorMessage);
+      setShowBookingError(true);
     } finally {
       setIsBooking((prev) => ({ ...prev, [classID]: false }));
     }
@@ -139,6 +150,8 @@ const Classes = () => {
   const clearFilters = () => {
     setSearchQuery("");
     setDate(null);
+    setLocalError(null);
+    setShowBookingError(false);
   };
 
   // Reusable components
@@ -696,6 +709,12 @@ const Classes = () => {
       </div>
 
       <ClassModal />
+      
+      <BookingErrorDisplay 
+        isOpen={showBookingError}
+        onClose={() => setShowBookingError(false)}
+        error={localError}
+      />
     </MainLayout>
   );
 };

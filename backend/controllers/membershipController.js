@@ -58,11 +58,11 @@ const createMembership = async (req, res) => {
     // 🚨 Check: Active/future membership
     const overlapping = await Membership.findOne({
       userID: user._id,
-      endDate: { $gte: start },
+      endDate: { $gte: new Date() }, // Check if any membership is still active today
       status: { $in: ['Active', 'Inactive'] }
     });
     if (overlapping) {
-      return res.status(400).json({ message: 'User already has an active or future membership. Wait until it expires.' });
+      return res.status(400).json({ message: 'User already has an active membership. Wait until it expires before creating a new one.' });
     }
 
     // Create membership

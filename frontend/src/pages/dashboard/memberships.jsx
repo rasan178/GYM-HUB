@@ -16,11 +16,13 @@ import {
   TrendingUp,
   Filter,
   Search,
-  Info
+  Info,
+  FileText
 } from 'lucide-react';
 
 const Memberships = () => {
   const [memberships, setMemberships] = useState([]);
+  const [membershipRequests, setMembershipRequests] = useState([]);
   const [localError, setLocalError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredFacilities, setHoveredFacilities] = useState(null);
@@ -28,6 +30,7 @@ const Memberships = () => {
 
   useEffect(() => {
     fetchMemberships();
+    fetchMembershipRequests();
   }, []);
 
   const fetchMemberships = async () => {
@@ -42,12 +45,24 @@ const Memberships = () => {
     }
   };
 
+  const fetchMembershipRequests = async () => {
+    try {
+      const res = await api.get(API_PATHS.MEMBERSHIP_REQUESTS.GET_MY);
+      setMembershipRequests(res.data.requests || []);
+    } catch (err) {
+      console.error('Failed to fetch membership requests:', err);
+      setMembershipRequests([]);
+    }
+  };
+
   if (isLoading) return <BlackSkeletonLoader lines={8} />;
 
   // Calculate membership statistics
   const activeMemberships = memberships.filter(m => m.status === 'Active').length;
   const expiredMemberships = memberships.filter(m => m.status === 'Expired').length;
   const totalMemberships = memberships.length;
+  const pendingRequests = membershipRequests.filter(r => r.status === 'Pending').length;
+  const totalRequests = membershipRequests.length;
 
   return (
     <DashboardLayout>
@@ -65,7 +80,7 @@ const Memberships = () => {
         )}
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
@@ -101,6 +116,19 @@ const Memberships = () => {
               </div>
               <div className="p-3 rounded-full bg-red-500">
                 <XCircle className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Pending Requests</p>
+                <p className="text-2xl font-bold text-gray-900">{pendingRequests}</p>
+                <p className="text-xs text-gray-500 mt-1">Awaiting approval</p>
+              </div>
+              <div className="p-3 rounded-full bg-yellow-500">
+                <FileText className="w-6 h-6 text-white" />
               </div>
             </div>
           </div>
