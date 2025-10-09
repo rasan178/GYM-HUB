@@ -6,11 +6,8 @@ import AuthContext from '../../context/AuthContext';
 import TextInput from '../../components/Inputs/TextInput';
 import FileInput from '../../components/Inputs/FileInput';
 import Modal from '../../components/Modal';
-import TestimonialCard from '../../components/Cards/TestimonialCard';
 import { API_PATHS } from '../../utils/apiPaths';
 import { canEditTestimonial, getDaysRemainingToEdit } from '../../utils/helpers';
-import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
-import SkeletonLoader from '../../components/Loaders/SkeletonLoader';
 import { 
   MessageSquare, 
   CheckCircle,
@@ -19,12 +16,8 @@ import {
   Star,
   Edit,
   Plus,
-  Filter,
-  Search,
-  Award,
   Users,
   User,
-  TrendingUp,
   Image as ImageIcon,
   Eye,
   ChevronLeft,
@@ -40,7 +33,6 @@ const Testimonials = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ message: '', rating: '', userRole: '', images: [] });
   const [localError, setLocalError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -80,8 +72,6 @@ const Testimonials = () => {
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch testimonials');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -240,7 +230,6 @@ const Testimonials = () => {
     }
   };
 
-  if (isLoading) return <SkeletonLoader />;
 
   // Calculate testimonial statistics - only user's own testimonials
   const userTestimonials = testimonials; // Already filtered to user's own
@@ -263,7 +252,7 @@ const Testimonials = () => {
         </div>
 
         {/* Testimonial Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -281,25 +270,11 @@ const Testimonials = () => {
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <XCircle className="h-6 w-6 text-red-600" />
-              </div>
-              <div className="ml-3 w-0 flex-1">
-                <dl>
-                  <dt className="text-xs font-medium text-gray-500 truncate">My Rejected</dt>
-                  <dd className="text-sm font-medium text-gray-900">{userTestimonials.filter(t => t.status === 'Rejected').length}</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
                 <CheckCircle className="h-6 w-6 text-green-600" />
               </div>
               <div className="ml-3 w-0 flex-1">
                 <dl>
-                  <dt className="text-xs font-medium text-gray-500 truncate">My Approved</dt>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Approved</dt>
                   <dd className="text-sm font-medium text-gray-900">{approvedTestimonials}</dd>
                 </dl>
               </div>
@@ -309,16 +284,53 @@ const Testimonials = () => {
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0">
+                <XCircle className="h-6 w-6 text-red-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Rejected</dt>
+                  <dd className="text-sm font-medium text-gray-900">{userTestimonials.filter(t => t.status === 'Rejected').length}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
                 <AlertTriangle className="h-6 w-6 text-yellow-600" />
               </div>
               <div className="ml-3 w-0 flex-1">
                 <dl>
-                  <dt className="text-xs font-medium text-gray-500 truncate">My Pending</dt>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Pending</dt>
                   <dd className="text-sm font-medium text-gray-900">{pendingTestimonials}</dd>
                 </dl>
               </div>
             </div>
           </div>
+
+          <button 
+            className="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow duration-200 w-full text-left"
+            onClick={() => { 
+              setFormData({ message: '', rating: '', userRole: '', images: [] }); 
+              setLocalError(null); 
+              setIsModalOpen(true); 
+            }}
+          >
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Plus className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Add New</dt>
+                  <dd className="text-sm font-medium text-gray-900">Review</dd>
+                </dl>
+              </div>
+            </div>
+          </button>
 
         </div>
 
@@ -352,25 +364,21 @@ const Testimonials = () => {
                       {t.status}
                     </span>
                     <div className="flex space-x-2">
-                      <button
-                        onClick={() => editTestimonial(t)}
-                        className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
+                        <button
+                          onClick={() => editTestimonial(t)}
+                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
                         title="Edit testimonial"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => deleteTestimonial(t._id)}
-                        disabled={isAction[t._id] === 'delete'}
-                        className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
-                        title="Delete testimonial"
-                      >
-                        {isAction[t._id] === 'delete' ? (
-                          <SpinnerLoader />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </button>
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => deleteTestimonial(t._id)}
+                          disabled={isAction[t._id] === 'delete'}
+                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                          title="Delete testimonial"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
                     </div>
                   </div>
                 </div>
@@ -528,25 +536,21 @@ const Testimonials = () => {
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-1">
-                        <button
-                          onClick={() => editTestimonial(t)}
-                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
+                          <button
+                            onClick={() => editTestimonial(t)}
+                            className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
                           title="Edit testimonial"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => deleteTestimonial(t._id)}
-                          disabled={isAction[t._id] === 'delete'}
-                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
-                          title="Delete testimonial"
-                        >
-                          {isAction[t._id] === 'delete' ? (
-                            <SpinnerLoader />
-                          ) : (
-                            <Trash2 className="w-4 h-4" />
-                          )}
-                        </button>
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => deleteTestimonial(t._id)}
+                            disabled={isAction[t._id] === 'delete'}
+                            className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                            title="Delete testimonial"
+                          >
+                              <Trash2 className="w-4 h-4" />
+                          </button>
                       </div>
                     </td>
                   </tr>
@@ -661,39 +665,161 @@ const Testimonials = () => {
         )}
       </div>
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">
-            {formData._id ? 'Edit Testimonial' : 'Create New Testimonial'}
-          </h3>
-          {formData._id && (
-            <p className="text-sm text-gray-600 mt-1">
-              Note: Editing will reset the testimonial status to "Pending" for re-approval
-            </p>
+      <div className="bg-white p-4 md:p-8 rounded-xl shadow-2xl max-w-2xl mx-auto max-h-[90vh] overflow-y-auto w-full mx-4 md:mx-auto">
+          {/* Header Section with Gradient */}
+          <div className="mb-8">
+            <div className="flex items-center mb-4">
+              <div className="bg-blue-600 p-3 md:p-4 rounded-xl mr-3 md:mr-4 shadow-lg">
+                <MessageSquare className="w-6 h-6 md:w-7 md:h-7 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl md:text-2xl font-bold text-black">
+                  {formData._id ? 'Edit Your Testimonial' : 'Share Your Experience'}
+                </h3>
+                <p className="text-xs md:text-sm text-blue-600 font-medium">
+                  {formData._id ? 'Update Mode' : 'Create New Review'}
+                </p>
+              </div>
+            </div>
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+              <p className="text-black text-sm leading-relaxed">
+                {formData._id 
+                  ? 'Update your testimonial below. Note: Editing will reset the status to "Pending" for re-approval.'
+                  : 'Tell others about your fitness journey and help them make informed decisions. Your review helps the community!'
+                }
+              </p>
+            </div>
+          </div>
+
+          {/* Form Section */}
+          <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-white space-y-4 md:space-y-6">
+            <div>
+              <TextInput 
+                label="Your Experience" 
+                name="message" 
+                value={formData.message} 
+                onChange={handleChange} 
+                placeholder="Share your fitness journey, results, and experience with this gym..."
+                required 
+              />
+              <div className="flex items-center mt-2 p-2 bg-green-50 rounded-md">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                <p className="text-xs text-green-700 font-medium">Be honest and detailed about your experience</p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">
+                Rating <span className="text-red-500">*</span>
+              </label>
+              <div className="flex items-center space-x-1 mb-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, rating: star }))}
+                    className="focus:outline-none transition-transform duration-150 hover:scale-110"
+                  >
+                    <Star 
+                      className={`w-8 h-8 ${
+                        star <= (formData.rating || 0) 
+                          ? 'text-yellow-400 fill-current' 
+                          : 'text-gray-400 hover:text-yellow-300'
+                      }`} 
+                    />
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center justify-between text-xs text-black mb-2">
+                <span>Poor</span>
+                <span className="font-medium">Your Rating: {formData.rating || 0}/5</span>
+                <span>Excellent</span>
+              </div>
+              <div className="flex items-center mt-2 p-2 bg-yellow-50 rounded-md">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                <p className="text-xs text-yellow-700 font-medium">Click on stars to rate your experience</p>
+              </div>
+            </div>
+
+            <div>
+              <TextInput 
+                label="Your Role/Position" 
+                name="userRole" 
+                value={formData.userRole} 
+                onChange={handleChange} 
+                placeholder="e.g., Personal Trainer, Student, Office Worker, Athlete..."
+                required 
+              />
+              <div className="flex items-center mt-2 p-2 bg-purple-50 rounded-md">
+                <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+                <p className="text-xs text-purple-700 font-medium">Help others understand your perspective and background</p>
+              </div>
+            </div>
+
+            <div>
+              <FileInput 
+                label="Photos (Optional)" 
+                name="images" 
+                multiple 
+                onChange={handleChange} 
+              />
+              <div className="flex items-center mt-2 p-2 bg-indigo-50 rounded-md">
+                <div className="w-2 h-2 bg-indigo-500 rounded-full mr-3"></div>
+                <p className="text-xs text-indigo-700 font-medium">Add up to 5 photos of your progress, gym facilities, or workouts</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Error Section */}
+          {localError && (
+            <div className="mt-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
+              <div className="flex items-center">
+                <XCircle className="w-5 h-5 text-red-500 mr-3" />
+                <p className="text-red-800 text-sm font-semibold">{localError}</p>
+              </div>
+            </div>
           )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-4 mt-8">
+            <button 
+              className="flex-1 bg-white hover:bg-white border-2 border-black text-black px-6 py-3 rounded-lg transition-all duration-200 font-semibold text-sm flex items-center justify-center"
+              onClick={() => setIsModalOpen(false)}
+              disabled={isSubmitting}
+            >
+              <X className="w-4 h-4 mr-2" />
+              Cancel
+            </button>
+            <button 
+              className="flex-1 bg-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg transition-all duration-200 font-semibold text-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg" 
+              onClick={submitTestimonial} 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <div className="flex items-center">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  <span>Submitting...</span>
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  {formData._id ? (
+                    <>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Update Testimonial
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Submit Testimonial
+                    </>
+                  )}
+                </div>
+              )}
+            </button>
+          </div>
         </div>
-        <TextInput label="Message" name="message" value={formData.message} onChange={handleChange} required />
-        <TextInput label="Rating (1-5)" name="rating" type="number" value={formData.rating} onChange={handleChange} required />
-        <TextInput label="Your Role/Job" name="userRole" value={formData.userRole} onChange={handleChange} required />
-        <FileInput label="Images (up to 5)" name="images" multiple onChange={handleChange} />
-        <button className="btn btn-primary mt-4" onClick={submitTestimonial} disabled={isSubmitting}>
-          {isSubmitting ? <SpinnerLoader /> : (formData._id ? 'Update Testimonial' : 'Submit Testimonial')}
-        </button>
       </Modal>
 
-      {/* Floating Plus Button */}
-      {user && (
-        <button
-          onClick={() => { 
-            setFormData({ message: '', rating: '', userRole: '', images: [] }); 
-            setLocalError(null); // Clear any previous errors
-            setIsModalOpen(true); 
-          }}
-          className="fixed bottom-6 right-6 bg-white hover:bg-gray-50 text-black p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-40 border-2 border-gray-200 hover:border-gray-300"
-          title="Add New Testimonial"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      )}
     </DashboardLayout>
   );
 };
