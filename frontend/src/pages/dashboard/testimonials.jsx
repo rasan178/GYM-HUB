@@ -6,6 +6,7 @@ import AuthContext from '../../context/AuthContext';
 import TextInput from '../../components/Inputs/TextInput';
 import FileInput from '../../components/Inputs/FileInput';
 import Modal from '../../components/Modal';
+import TestimonialErrorDisplay from '../../components/TestimonialErrorDisplay';
 import { API_PATHS } from '../../utils/apiPaths';
 import { canEditTestimonial, getDaysRemainingToEdit } from '../../utils/helpers';
 import { 
@@ -339,7 +340,7 @@ const Testimonials = () => {
             {error}
           </div>
         )}
-        {localError && (
+        {localError && !localError.includes('Cannot edit testimonial') && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
             {localError}
           </div>
@@ -819,6 +820,17 @@ const Testimonials = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Testimonial Error Display Modal */}
+      <TestimonialErrorDisplay 
+        error={localError} 
+        onClose={() => setLocalError(null)}
+        onCreateNew={() => {
+          setFormData({ message: '', rating: '', userRole: '', images: [] });
+          setLocalError(null);
+          setIsModalOpen(true);
+        }}
+      />
 
     </DashboardLayout>
   );
