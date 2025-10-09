@@ -10,7 +10,7 @@ const formatDate = (date) => {
 
 const formatMembership = (membership) => {
   if (!membership) return null;
-  const obj = membership.toObject();
+  const obj = membership.toObject ? membership.toObject() : membership;
   obj.startDate = formatDate(obj.startDate);
   obj.endDate = formatDate(obj.endDate);
   return obj;
@@ -71,6 +71,7 @@ const createMembership = async (req, res) => {
       userName: user.name,
       planID: plan._id,
       planName: plan.planName,
+      description: plan.description,
       facilitiesIncluded: plan.benifits,
       price: plan.price,
       duration: `${plan.durationMonths} month(s)`,
@@ -112,17 +113,32 @@ const getAllMemberships = async (req, res) => {
     }
 
     const memberships = await Membership.find(filter)
+      .populate('planID', 'planName description benifits price durationMonths')
       .sort({ createdAt: -1 })
       .skip(parseInt(skip))
       .limit(parseInt(limit));
 
     const total = await Membership.countDocuments(filter);
 
+    // Ensure description is populated from plan if missing
+    const membershipsWithDescription = memberships.map(membership => {
+      const membershipObj = membership.toObject ? membership.toObject() : membership;
+      // If membership doesn't have description but plan does, use plan description
+      if (!membershipObj.description && membershipObj.planID?.description) {
+        membershipObj.description = membershipObj.planID.description;
+      }
+      // Also ensure facilities are populated from plan if missing
+      if (!membershipObj.facilitiesIncluded && membershipObj.planID?.benifits) {
+        membershipObj.facilitiesIncluded = membershipObj.planID.benifits;
+      }
+      return membershipObj;
+    });
+
     res.json({
       total,
       page: parseInt(page),
       limit: parseInt(limit),
-      memberships: memberships.map(formatMembership)
+      memberships: membershipsWithDescription.map(formatMembership)
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -132,7 +148,8 @@ const getAllMemberships = async (req, res) => {
 // ========================= GET MEMBERSHIP BY ID =========================
 const getMembershipById = async (req, res) => {
   try {
-    const membership = await Membership.findById(req.params.id);
+    const membership = await Membership.findById(req.params.id)
+      .populate('planID', 'planName description benifits price durationMonths');
     if (!membership) return res.status(404).json({ message: 'Membership not found' });
 
     // Restrict access for normal user
@@ -140,7 +157,17 @@ const getMembershipById = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
-    res.json(formatMembership(membership));
+    // Ensure description is populated from plan if missing
+    const membershipObj = membership.toObject ? membership.toObject() : membership;
+    if (!membershipObj.description && membershipObj.planID?.description) {
+      membershipObj.description = membershipObj.planID.description;
+    }
+    // Also ensure facilities are populated from plan if missing
+    if (!membershipObj.facilitiesIncluded && membershipObj.planID?.benifits) {
+      membershipObj.facilitiesIncluded = membershipObj.planID.benifits;
+    }
+
+    res.json(formatMembership(membershipObj));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -161,6 +188,7 @@ const updateMembership = async (req, res) => {
 
       membership.planID = plan._id;
       membership.planName = plan.planName;
+      membership.description = plan.description;
       membership.facilitiesIncluded = plan.benifits;
       membership.price = plan.price;
       membership.duration = `${plan.durationMonths} month(s)`;
