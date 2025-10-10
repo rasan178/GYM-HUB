@@ -22,6 +22,7 @@ const AdminPlans = () => {
   const [localError, setLocalError] = useState(null);
   const [hoveredBenefit, setHoveredBenefit] = useState(null);
   const [hoveredDescription, setHoveredDescription] = useState(null);
+  const [hoverTimeout, setHoverTimeout] = useState(null);
   const [formData, setFormData] = useState({
     planName: '',
     description: '',
@@ -33,6 +34,15 @@ const AdminPlans = () => {
   useEffect(() => {
     fetchPlans();
   }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+      }
+    };
+  }, [hoverTimeout]);
 
   const fetchPlans = async () => {
     try {
@@ -116,6 +126,36 @@ const AdminPlans = () => {
       durationMonths: ''
     });
     setIsModalOpen(true);
+  };
+
+  // Handle description tooltip hover with delay
+  const handleDescriptionMouseEnter = (planId) => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+    }
+    setHoveredDescription(planId);
+  };
+
+  const handleDescriptionMouseLeave = () => {
+    const timeout = setTimeout(() => {
+      setHoveredDescription(null);
+    }, 300);
+    setHoverTimeout(timeout);
+  };
+
+  // Handle benefits tooltip hover with delay
+  const handleBenefitMouseEnter = (planId) => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+    }
+    setHoveredBenefit(planId);
+  };
+
+  const handleBenefitMouseLeave = () => {
+    const timeout = setTimeout(() => {
+      setHoveredBenefit(null);
+    }, 300);
+    setHoverTimeout(timeout);
   };
 
 
@@ -256,19 +296,29 @@ const AdminPlans = () => {
                             {plan.description.length > 100 ? (
                               <div className="relative">
                                 <p className="line-clamp-3 cursor-pointer" 
-                                   onMouseEnter={() => setHoveredDescription(plan._id)}
-                                   onMouseLeave={() => setHoveredDescription(null)}>
+                                   onMouseEnter={() => handleDescriptionMouseEnter(plan._id)}
+                                   onMouseLeave={handleDescriptionMouseLeave}>
                                   {plan.description}
                                 </p>
                                 
-                                {/* Description Tooltip */}
-                                {hoveredDescription === plan._id && (
-                                  <div className="absolute z-10 bottom-full left-0 mb-2 w-80 bg-gray-900 text-white text-xs rounded-lg shadow-lg p-3">
-                                    <div className="font-semibold text-white mb-2">Full Description:</div>
-                                    <p className="leading-relaxed">{plan.description}</p>
-                                    <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-                                  </div>
-                                )}
+                                 {/* Description Tooltip */}
+                                 {hoveredDescription === plan._id && (
+                                   <div className={`absolute z-50 left-1/2 transform -translate-x-1/2 w-80 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3 ${
+                                     plans.indexOf(plan) === plans.length - 1 
+                                       ? 'bottom-full mb-2' 
+                                       : 'top-full mt-2'
+                                   }`}
+                                        onMouseEnter={() => handleDescriptionMouseEnter(plan._id)}
+                                        onMouseLeave={handleDescriptionMouseLeave}>
+                                     <div className="font-semibold text-white mb-2">Full Description:</div>
+                                     <p className="leading-relaxed">{plan.description}</p>
+                                     <div className={`absolute left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 ${
+                                       plans.indexOf(plan) === plans.length - 1 
+                                         ? 'top-full border-t-4 border-transparent border-t-gray-900' 
+                                         : 'bottom-full border-b-4 border-transparent border-b-gray-900'
+                                     }`}></div>
+                                   </div>
+                                 )}
                                 
                                 <div className="text-xs text-blue-600 mt-1 flex items-center gap-1">
                                   <Info className="w-3 h-3" />
@@ -312,28 +362,38 @@ const AdminPlans = () => {
                               <div className="relative">
                                 <button
                                   className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-1"
-                                  onMouseEnter={() => setHoveredBenefit(plan._id)}
-                                  onMouseLeave={() => setHoveredBenefit(null)}
+                                  onMouseEnter={() => handleBenefitMouseEnter(plan._id)}
+                                  onMouseLeave={handleBenefitMouseLeave}
                                 >
                                   <Info className="w-3 h-3" />
                                   +{plan.benifits.split(',').length - 4} more benefits
                                 </button>
                                 
-                                {/* Tooltip */}
-                                {hoveredBenefit === plan._id && (
-                                  <div className="absolute z-10 bottom-full left-0 mb-2 w-80 bg-gray-900 text-white text-xs rounded-lg shadow-lg p-3">
-                                    <div className="space-y-2">
-                                      <div className="font-semibold text-white mb-2">All Benefits:</div>
-                                      {plan.benifits.split(',').map((benefit, index) => (
-                                        <div key={index} className="flex items-start">
-                                          <CheckCircle className="w-3 h-3 text-green-400 mr-2 mt-0.5 flex-shrink-0" />
-                                          <span className="leading-relaxed">{benefit.trim()}</span>
-                                        </div>
-                                      ))}
-                                    </div>
-                                    <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-                                  </div>
-                                )}
+                                 {/* Tooltip */}
+                                 {hoveredBenefit === plan._id && (
+                                   <div className={`absolute z-50 left-1/2 transform -translate-x-1/2 w-80 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3 ${
+                                     plans.indexOf(plan) === plans.length - 1 
+                                       ? 'bottom-full mb-2' 
+                                       : 'top-full mt-2'
+                                   }`}
+                                        onMouseEnter={() => handleBenefitMouseEnter(plan._id)}
+                                        onMouseLeave={handleBenefitMouseLeave}>
+                                     <div className="space-y-2">
+                                       <div className="font-semibold text-white mb-2">All Benefits:</div>
+                                       {plan.benifits.split(',').map((benefit, index) => (
+                                         <div key={index} className="flex items-start">
+                                           <CheckCircle className="w-3 h-3 text-green-400 mr-2 mt-0.5 flex-shrink-0" />
+                                           <span className="leading-relaxed">{benefit.trim()}</span>
+                                         </div>
+                                       ))}
+                                     </div>
+                                     <div className={`absolute left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 ${
+                                       plans.indexOf(plan) === plans.length - 1 
+                                         ? 'top-full border-t-4 border-transparent border-t-gray-900' 
+                                         : 'bottom-full border-b-4 border-transparent border-b-gray-900'
+                                     }`}></div>
+                                   </div>
+                                 )}
                               </div>
                             )}
                           </div>
