@@ -11,7 +11,8 @@ import {
   MessageSquare,
   DollarSign,
   AlertCircle,
-  Trash2
+  Trash2,
+  Info
 } from 'lucide-react';
 
 // Reusable SummaryCard component
@@ -46,10 +47,21 @@ const AdminMembershipRequests = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [hoveredMessage, setHoveredMessage] = useState(null);
+  const [hoverTimeout, setHoverTimeout] = useState(null);
 
   useEffect(() => {
     fetchRequests();
   }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+      }
+    };
+  }, [hoverTimeout]);
 
   const fetchRequests = async () => {
     try {
@@ -127,6 +139,21 @@ const AdminMembershipRequests = () => {
     );
   };
 
+  // Handle message tooltip hover with delay
+  const handleMessageMouseEnter = (requestId) => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+    }
+    setHoveredMessage(requestId);
+  };
+
+  const handleMessageMouseLeave = () => {
+    const timeout = setTimeout(() => {
+      setHoveredMessage(null);
+    }, 300);
+    setHoverTimeout(timeout);
+  };
+
   // Memoize filter calculations to avoid recalculating on every render
   const requestCounts = useMemo(() => ({
     total: requests.length,
@@ -144,15 +171,15 @@ const AdminMembershipRequests = () => {
   return (
     <AdminLayout>
       <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-6">
           <h1 className="text-3xl font-bold text-white">Membership Requests</h1>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-white">Filter:</span>
+              <span className="text-sm font-medium text-white whitespace-nowrap">Filter:</span>
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="border border-white rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border border-white rounded-md px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[140px]"
               >
                 <option value="all">All Requests</option>
                 <option value="Pending">Pending</option>
@@ -160,8 +187,10 @@ const AdminMembershipRequests = () => {
                 <option value="Rejected">Rejected</option>
               </select>
             </div>
-            <div className="text-sm text-white">
-              Total: {requestCounts.total} | Pending: {requestCounts.pending}
+            <div className="text-sm text-white bg-gray-800 bg-opacity-50 px-3 py-2 rounded-md">
+              <span className="font-medium">Total: {requestCounts.total}</span>
+              <span className="mx-2">|</span>
+              <span className="font-medium">Pending: {requestCounts.pending}</span>
             </div>
           </div>
         </div>
@@ -283,11 +312,48 @@ const AdminMembershipRequests = () => {
                         {getStatusBadge(request.status, request.processedAt)}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 max-w-xs">
+                        <div className="text-sm text-gray-900 max-w-md">
                           {request.message ? (
-                            <div className="flex items-start">
-                              <MessageSquare className="w-4 h-4 text-gray-400 mr-2 mt-0.5 flex-shrink-0" />
-                              <span className="truncate">{request.message}</span>
+                            <div className="flex items-start relative">
+                              <div className="relative">
+                                {request.message.length > 80 ? (
+                                  <div className="relative">
+                                    <p 
+                                      className="line-clamp-3 cursor-pointer" 
+                                      onMouseEnter={() => handleMessageMouseEnter(request._id)}
+                                      onMouseLeave={handleMessageMouseLeave}
+                                    >
+                                      {request.message}
+                                    </p>
+                                    
+                                    {/* Message Tooltip */}
+                                    {hoveredMessage === request._id && (
+                                      <div className={`absolute z-50 left-1/2 transform -translate-x-1/2 w-80 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3 ${
+                                        filteredRequests.indexOf(request) === filteredRequests.length - 1 
+                                          ? 'bottom-full mb-2' 
+                                          : 'top-full mt-2'
+                                      }`}
+                                           onMouseEnter={() => handleMessageMouseEnter(request._id)}
+                                           onMouseLeave={handleMessageMouseLeave}>
+                                        <div className="font-semibold text-white mb-2">Full Message:</div>
+                                        <p className="leading-relaxed">{request.message}</p>
+                                        <div className={`absolute left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 ${
+                                          filteredRequests.indexOf(request) === filteredRequests.length - 1 
+                                            ? 'top-full border-t-4 border-transparent border-t-gray-900' 
+                                            : 'bottom-full border-b-4 border-transparent border-b-gray-900'
+                                        }`}></div>
+                                      </div>
+                                    )}
+                                    
+                                    <div className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+                                      <Info className="w-3 h-3" />
+                                      +{request.message.length - 80} more characters
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <p className="line-clamp-3">{request.message}</p>
+                                )}
+                              </div>
                             </div>
                           ) : (
                             <span className="text-gray-500 italic">No message</span>
