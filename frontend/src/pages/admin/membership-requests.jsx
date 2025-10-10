@@ -34,7 +34,7 @@ const DeleteButton = ({ onClick, disabled }) => (
   <button
     onClick={onClick}
     disabled={disabled}
-    className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+    className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     title="Delete request"
   >
     <Trash2 className="w-4 h-4" />
@@ -102,7 +102,7 @@ const AdminMembershipRequests = () => {
     (id) => api.delete(API_PATHS.MEMBERSHIP_REQUESTS.ADMIN.DELETE(id))
   );
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status, processedAt) => {
     const statusConfig = {
       Pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
       Approved: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
@@ -113,10 +113,17 @@ const AdminMembershipRequests = () => {
     const IconComponent = config.icon;
     
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
-        <IconComponent className="w-3 h-3 mr-1" />
-        {status}
-      </span>
+      <div className="flex flex-col space-y-1">
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
+          <IconComponent className="w-3 h-3 mr-1" />
+          {status}
+        </span>
+        {processedAt && status !== 'Pending' && (
+          <div className="text-xs text-gray-500">
+            {new Date(processedAt).toLocaleDateString()}
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -273,7 +280,7 @@ const AdminMembershipRequests = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {getStatusBadge(request.status)}
+                        {getStatusBadge(request.status, request.processedAt)}
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900 max-w-xs">
@@ -293,18 +300,18 @@ const AdminMembershipRequests = () => {
                             <button
                               onClick={() => handleApprove(request._id)}
                               disabled={isSubmitting}
-                              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Approve request"
                             >
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Approve
+                              <CheckCircle className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleReject(request._id)}
                               disabled={isSubmitting}
-                              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Reject request"
                             >
-                              <XCircle className="w-3 h-3 mr-1" />
-                              Reject
+                              <XCircle className="w-4 h-4" />
                             </button>
                             <DeleteButton
                               onClick={() => handleDelete(request._id)}
@@ -312,20 +319,10 @@ const AdminMembershipRequests = () => {
                             />
                           </div>
                         ) : (
-                          <div className="flex flex-col space-y-1">
-                            <span className="text-gray-500 text-xs">
-                              {request.status === 'Approved' ? 'Already Approved' : 'Already Rejected'}
-                              {request.processedAt && (
-                                <div className="text-gray-400 mt-1">
-                                  {new Date(request.processedAt).toLocaleDateString()}
-                                </div>
-                              )}
-                            </span>
-                            <DeleteButton
-                              onClick={() => handleDelete(request._id)}
-                              disabled={isSubmitting}
-                            />
-                          </div>
+                          <DeleteButton
+                            onClick={() => handleDelete(request._id)}
+                            disabled={isSubmitting}
+                          />
                         )}
                       </td>
                     </tr>
