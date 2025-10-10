@@ -3,7 +3,6 @@ import api from '../../utils/axiosInstance';
 import DashboardLayout from '../../components/Layouts/DashboardLayout';
 import { API_PATHS } from '../../utils/apiPaths';
 import { formatDate } from '../../utils/helpers';
-import BlackSkeletonLoader from '../../components/Loaders/BlackSkeletonLoader';
 import { 
   Award, 
   CheckCircle,
@@ -24,7 +23,6 @@ const Memberships = () => {
   const [memberships, setMemberships] = useState([]);
   const [membershipRequests, setMembershipRequests] = useState([]);
   const [localError, setLocalError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [hoveredFacilities, setHoveredFacilities] = useState(null);
   const [hoveredDescription, setHoveredDescription] = useState(null);
 
@@ -40,8 +38,6 @@ const Memberships = () => {
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch memberships');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -55,7 +51,6 @@ const Memberships = () => {
     }
   };
 
-  if (isLoading) return <BlackSkeletonLoader lines={8} />;
 
   // Calculate membership statistics
   const activeMemberships = memberships.filter(m => m.status === 'Active').length;
