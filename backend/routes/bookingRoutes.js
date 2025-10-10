@@ -7,6 +7,7 @@ const {
   getBookingById,
   updateBooking,
   cancelBooking,
+  deleteBooking,
   getBookingStats,
 } = require('../controllers/bookingController');
 
@@ -30,5 +31,8 @@ router.put('/:id', protect, updateBooking);
 
 // Cancel booking (user or admin)
 router.put('/:id/cancel', protect, cancelBooking);
+
+// Delete booking (user can delete their own pending bookings, admin can delete any)
+router.delete('/:id', protect, deleteBooking);
 
 module.exports = router;

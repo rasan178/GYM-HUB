@@ -1,59 +1,41 @@
-import { useContext, useEffect, useState } from 'react';
-import AuthContext from '../../context/AuthContext';
+import { useEffect, useState } from 'react';
 import api from '../../utils/axiosInstance';
 import DashboardLayout from '../../components/Layouts/DashboardLayout';
-import { formatDate, formatTime, getISODate } from '../../utils/helpers';
+import { formatDate, formatTime } from '../../utils/helpers';
 import { API_PATHS } from '../../utils/apiPaths';
-import BlackSkeletonLoader from '../../components/Loaders/BlackSkeletonLoader';
-import Modal from '../../components/Modal';
-import TextInput from '../../components/Inputs/TextInput';
-import SelectInput from '../../components/Inputs/SelectInput';
-import SpinnerLoader from '../../components/Loaders/SpinnerLoader';
-import { useRouter } from 'next/router';
 import { 
   Calendar, 
   Clock, 
   User, 
+  Trash2, 
+  CheckCircle, 
+  XCircle, 
+  AlertCircle,
   Users,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  Plus,
-  Trash2,
-  Eye,
-  Edit,
-  Filter,
-  Search
+  Activity,
+  BookOpen,
+  Target,
+  TrendingUp
 } from 'lucide-react';
 
-const Bookings = () => {
-  const { user, loading, error } = useContext(AuthContext);
+const UserBookings = () => {
   const [bookings, setBookings] = useState([]);
-  const [trainers, setTrainers] = useState([]);
-  const [classes, setClasses] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    bookingType: 'class',
-    classID: '',
-    trainerID: '',
-    date: '',
-    startTime: '',
-    endTime: '',
-    goal: ''
+  const [bookingStats, setBookingStats] = useState({
+    totalBookings: 0,
+    pendingBookings: 0,
+    confirmedBookings: 0,
+    cancelledBookings: 0,
+    completedBookings: 0,
+    classBookings: 0,
+    personalBookings: 0
   });
   const [localError, setLocalError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
+  const [isAction, setIsAction] = useState({});
 
   useEffect(() => {
-    if (!loading && !user) router.push('/auth/login');
-    else if (user) {
-      fetchBookings();
-      fetchTrainers();
-      fetchClasses();
-    }
-  }, [user, loading]);
+    fetchBookings();
+    fetchBookingStats();
+  }, []);
 
   const fetchBookings = async () => {
     try {
@@ -62,308 +44,393 @@ const Bookings = () => {
       setLocalError(null);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to fetch bookings');
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const fetchTrainers = async () => {
+  const fetchBookingStats = async () => {
     try {
-      const res = await api.get(API_PATHS.TRAINERS.GET_ALL);
-      setTrainers(res.data.map(t => ({ value: t._id, label: t.trainerName })));
+      const res = await api.get(API_PATHS.BOOKINGS.GET_STATS);
+      setBookingStats(res.data);
     } catch (err) {
-      setLocalError(err.response?.data?.message || 'Failed to fetch trainers');
-    }
-  };
-
-  const fetchClasses = async () => {
-    try {
-      const res = await api.get(API_PATHS.CLASSES.GET_ALL_WITH_AVAILABILITY, { params: { date: getISODate(new Date()) } });
-      setClasses(res.data.map(c => ({ value: c._id, label: c.className })));
-    } catch (err) {
-      setLocalError(err.response?.data?.message || 'Failed to fetch classes');
-    }
-  };
-
-  const handleChange = e => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const createBooking = async () => {
-    setIsSubmitting(true);
-    try {
-      const data = { bookingType: formData.bookingType };
-      if (formData.bookingType === 'class') {
-        data.classID = formData.classID;
-        data.date = formData.date;
-      } else {
-        data.trainerID = formData.trainerID;
-        data.date = formData.date;
-        data.startTime = formData.startTime;
-        data.endTime = formData.endTime;
-        data.goal = formData.goal;
-      }
-      await api.post(API_PATHS.BOOKINGS.CREATE, data);
-      setIsModalOpen(false);
-      setFormData({ bookingType: 'class', classID: '', trainerID: '', date: '', startTime: '', endTime: '', goal: '' });
-      fetchBookings();
-      setLocalError(null);
-      alert('Booking created successfully!');
-    } catch (err) {
-      setLocalError(err.response?.data?.message || 'Failed to create booking');
-    } finally {
-      setIsSubmitting(false);
+      console.error('Failed to fetch booking statistics:', err);
     }
   };
 
   const cancelBooking = async (id) => {
-    setIsSubmitting(true);
+    setIsAction(prev => ({ ...prev, [id]: 'cancel' }));
     try {
       await api.put(API_PATHS.BOOKINGS.CANCEL(id));
       fetchBookings();
+      fetchBookingStats();
       setLocalError(null);
-      alert('Booking cancelled successfully!');
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to cancel booking');
     } finally {
-      setIsSubmitting(false);
+      setIsAction(prev => ({ ...prev, [id]: null }));
     }
   };
 
-  if (loading || isLoading) return <BlackSkeletonLoader lines={10} />;
+  const deleteBooking = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
+      return;
+    }
+    
+    setIsAction(prev => ({ ...prev, [id]: 'delete' }));
+    try {
+      await api.delete(API_PATHS.BOOKINGS.DELETE(id));
+      fetchBookings();
+      fetchBookingStats();
+      setLocalError(null);
+    } catch (err) {
+      setLocalError(err.response?.data?.message || 'Failed to delete booking');
+    } finally {
+      setIsAction(prev => ({ ...prev, [id]: null }));
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Confirmed': return 'bg-green-100 text-green-800 border-green-200';
+      case 'Pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'Cancelled': return 'bg-red-100 text-red-800 border-red-200';
+      case 'Completed': return 'bg-blue-100 text-blue-800 border-blue-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'Confirmed': return <CheckCircle className="w-4 h-4" />;
+      case 'Pending': return <AlertCircle className="w-4 h-4" />;
+      case 'Cancelled': return <XCircle className="w-4 h-4" />;
+      case 'Completed': return <TrendingUp className="w-4 h-4" />;
+      default: return <Activity className="w-4 h-4" />;
+    }
+  };
+
+  const canCancelBooking = (booking) => {
+    return booking.bookingStatus === 'Pending';
+  };
+
+  const canDeleteBooking = (booking) => {
+    return booking.bookingStatus === 'Pending' || booking.bookingStatus === 'Cancelled';
+  };
 
   return (
     <DashboardLayout>
       <div className="p-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">My Bookings</h1>
-          <p className="text-white/70">Manage your fitness class and trainer bookings</p>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-white">My Bookings</h1>
+            <p className="text-white mt-1">Manage your fitness class and trainer bookings</p>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-white">
+            <Users className="w-4 h-4 color-white" />
+            <span>{bookings.length} total bookings</span>
+          </div>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6 flex items-center">
-            <XCircle className="w-5 h-5 mr-2" />
-            {error}
+        {/* Booking Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <BookOpen className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Total</dt>
+                  <dd className="text-sm font-medium text-gray-900">{bookingStats.totalBookings}</dd>
+                </dl>
+              </div>
+            </div>
           </div>
-        )}
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <AlertCircle className="h-6 w-6 text-yellow-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Pending</dt>
+                  <dd className="text-sm font-medium text-gray-900">{bookingStats.pendingBookings}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Confirmed</dt>
+                  <dd className="text-sm font-medium text-gray-900">{bookingStats.confirmedBookings}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <XCircle className="h-6 w-6 text-red-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Cancelled</dt>
+                  <dd className="text-sm font-medium text-gray-900">{bookingStats.cancelledBookings}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <TrendingUp className="h-6 w-6 text-purple-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Completed</dt>
+                  <dd className="text-sm font-medium text-gray-900">{bookingStats.completedBookings}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Users className="h-6 w-6 text-indigo-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Classes</dt>
+                  <dd className="text-sm font-medium text-gray-900">{bookingStats.classBookings}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Target className="h-6 w-6 text-orange-600" />
+              </div>
+              <div className="ml-3 w-0 flex-1">
+                <dl>
+                  <dt className="text-xs font-medium text-gray-500 truncate">Personal</dt>
+                  <dd className="text-sm font-medium text-gray-900">{bookingStats.personalBookings}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {localError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6 flex items-center">
-            <XCircle className="w-5 h-5 mr-2" />
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
             {localError}
           </div>
         )}
 
-        {/* Header with Create Button */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-blue-500 mr-4">
-                <Calendar className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">Bookings Overview</h2>
-                <p className="text-gray-600">Total bookings: {bookings.length}</p>
-              </div>
-            </div>
-            <button 
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-              onClick={() => setIsModalOpen(true)}
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Create Booking
-            </button>
-          </div>
-        </div>
-
-        {/* Bookings Table */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">All Bookings</h3>
+          {/* Mobile Card View */}
+          <div className="block md:hidden">
+            {bookings.map(booking => (
+              <div key={booking._id} className="border-b border-gray-200 p-4 last:border-b-0">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 flex items-center">
+                      {booking.bookingType === 'class' ? (
+                        <Users className="w-4 h-4 mr-2 text-blue-500" />
+                      ) : (
+                        <User className="w-4 h-4 mr-2 text-green-500" />
+                      )}
+                      {booking.bookingType === 'class' 
+                        ? (booking.classID?.className || booking.classID?.name || 'N/A') 
+                        : (booking.trainerID?.trainerName || booking.trainerID?.name || 'N/A')}
+                    </h3>
+                    <p className="text-xs text-gray-500 capitalize">{booking.bookingType} Session</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${getStatusColor(booking.bookingStatus)}`}>
+                      {getStatusIcon(booking.bookingStatus)}
+                      {booking.bookingStatus}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center text-sm">
+                    <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                    <span>{booking.date ? formatDate(booking.date) : 'N/A'}</span>
+                  </div>
+                  
+                  <div className="flex items-center text-sm">
+                    <Clock className="w-4 h-4 mr-2 text-gray-400" />
+                    <span>
+                      {[booking.startTime, booking.endTime].some(Boolean) 
+                        ? `${formatTime(booking.startTime)} - ${formatTime(booking.endTime)}` 
+                        : 'N/A'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center mt-4">
+                  <div className="text-xs text-gray-500">
+                    Booking ID: {booking.bookingID || 'N/A'}
+                  </div>
+                  
+                  <div className="flex space-x-2">
+                    {canCancelBooking(booking) && (
+                      <button
+                        onClick={() => cancelBooking(booking._id)}
+                        disabled={isAction[booking._id] === 'cancel'}
+                        className="text-yellow-600 hover:text-yellow-900 p-1 rounded hover:bg-yellow-50 transition-colors"
+                        title="Cancel booking"
+                      >
+                        <XCircle className="w-4 h-4" />
+                      </button>
+                    )}
+                    
+                    {canDeleteBooking(booking) && (
+                      <button
+                        onClick={() => deleteBooking(booking._id)}
+                        disabled={isAction[booking._id] === 'delete'}
+                        className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                        title="Delete booking"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
           
-          {bookings.length === 0 ? (
-            <div className="text-center py-12">
-              <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings yet</h3>
-              <p className="text-gray-500 mb-4">Start by booking a class or personal training session.</p>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center mx-auto"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create Your First Booking
-              </button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Class/Trainer
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Time
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {bookings.map(b => (
-                    <tr key={b._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          {b.bookingType === 'class' ? (
-                            <Users className="w-4 h-4 mr-2 text-blue-500" />
-                          ) : (
-                            <User className="w-4 h-4 mr-2 text-green-500" />
-                          )}
-                          <span className="text-sm font-medium text-gray-900 capitalize">
-                            {b.bookingType}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {b.bookingType === 'class' ? b.classID?.className || 'N/A' : b.trainerID?.trainerName || 'N/A'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{formatDate(b.date)}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {formatTime(b.startTime)} - {formatTime(b.endTime)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          b.bookingStatus === 'Confirmed' 
-                            ? 'bg-green-100 text-green-800' 
-                            : b.bookingStatus === 'Pending'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : b.bookingStatus === 'Completed'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {b.bookingStatus === 'Confirmed' && <CheckCircle className="w-3 h-3 mr-1" />}
-                          {b.bookingStatus === 'Pending' && <Clock className="w-3 h-3 mr-1" />}
-                          {b.bookingStatus === 'Completed' && <CheckCircle className="w-3 h-3 mr-1" />}
-                          {b.bookingStatus === 'Cancelled' && <XCircle className="w-3 h-3 mr-1" />}
-                          {b.bookingStatus}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        {b.bookingStatus !== 'Cancelled' && b.bookingStatus !== 'Completed' && (
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                    Type
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-64">
+                    Class/Trainer
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                    Date
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                    Time
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                    Booking ID
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {bookings.map(booking => (
+                  <tr key={booking._id} className="hover:bg-gray-50">
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {booking.bookingType}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm text-gray-900">
+                        {booking.bookingType === 'class' 
+                          ? (booking.classID?.className || booking.classID?.name || 'N/A') 
+                          : (booking.trainerID?.trainerName || booking.trainerID?.name || 'N/A')}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center text-sm text-gray-900">
+                        <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                        {booking.date ? formatDate(booking.date) : 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center text-sm text-gray-900">
+                        <Clock className="w-4 h-4 mr-2 text-gray-400" />
+                        {[booking.startTime, booking.endTime].some(Boolean) 
+                          ? `${formatTime(booking.startTime)} - ${formatTime(booking.endTime)}` 
+                          : 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${getStatusColor(booking.bookingStatus)}`}>
+                        {getStatusIcon(booking.bookingStatus)}
+                        {booking.bookingStatus}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {booking.bookingID || 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-1">
+                        {canCancelBooking(booking) && (
                           <button
-                            className="text-red-600 hover:text-red-900 flex items-center"
-                            onClick={() => cancelBooking(b._id)}
-                            disabled={isSubmitting}
+                            onClick={() => cancelBooking(booking._id)}
+                            disabled={isAction[booking._id] === 'cancel'}
+                            className="text-yellow-600 hover:text-yellow-900 p-1 rounded hover:bg-yellow-50 transition-colors"
+                            title="Cancel booking"
                           >
-                            {isSubmitting ? (
-                              <SpinnerLoader />
-                            ) : (
-                              <>
-                                <Trash2 className="w-4 h-4 mr-1" />
-                                Cancel
-                              </>
-                            )}
+                            <XCircle className="w-4 h-4" />
                           </button>
                         )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        
+                        {canDeleteBooking(booking) && (
+                          <button
+                            onClick={() => deleteBooking(booking._id)}
+                            disabled={isAction[booking._id] === 'delete'}
+                            className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                            title="Delete booking"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                        
+                        {booking.bookingStatus === 'Confirmed' && (
+                          <span className="text-xs text-gray-500">
+                            Contact support to cancel
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {bookings.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-gray-500">
+                <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
+                <p className="text-gray-500">You haven't made any bookings yet. Start by booking a class or personal training session.</p>
+              </div>
             </div>
           )}
         </div>
       </div>
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <SelectInput
-          label="Booking Type"
-          name="bookingType"
-          options={[{ value: 'class', label: 'Class' }, { value: 'personal', label: 'Personal' }]}
-          value={formData.bookingType}
-          onChange={handleChange}
-        />
-        {formData.bookingType === 'class' ? (
-          <>
-            <SelectInput
-              label="Class"
-              name="classID"
-              options={classes}
-              value={formData.classID}
-              onChange={handleChange}
-            />
-            <TextInput
-              label="Date"
-              type="date"
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-            />
-          </>
-        ) : (
-          <>
-            <SelectInput
-              label="Trainer"
-              name="trainerID"
-              options={trainers}
-              value={formData.trainerID}
-              onChange={handleChange}
-            />
-            <TextInput
-              label="Date"
-              type="date"
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-            />
-            <TextInput
-              label="Start Time"
-              type="time"
-              name="startTime"
-              value={formData.startTime}
-              onChange={handleChange}
-            />
-            <TextInput
-              label="End Time"
-              type="time"
-              name="endTime"
-              value={formData.endTime}
-              onChange={handleChange}
-            />
-            <TextInput
-              label="Goal"
-              name="goal"
-              value={formData.goal}
-              onChange={handleChange}
-            />
-          </>
-        )}
-        <button
-          className="btn btn-primary mt-4"
-          onClick={createBooking}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? <SpinnerLoader /> : 'Create'}
-        </button>
-      </Modal>
     </DashboardLayout>
   );
 };
 
-export default Bookings;
+export default UserBookings;

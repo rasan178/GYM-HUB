@@ -57,6 +57,7 @@ export const API_PATHS = {
     GET_ONE: (id) => `/api/bookings/${id}`,
     UPDATE: (id) => `/api/bookings/${id}`,
     CANCEL: (id) => `/api/bookings/${id}/cancel`,
+    DELETE: (id) => `/api/bookings/${id}`,
     GET_STATS: "/api/bookings/stats",
   },
 

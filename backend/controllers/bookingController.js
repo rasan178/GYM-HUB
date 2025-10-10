@@ -195,6 +195,13 @@ exports.cancelBooking = async (req, res) => {
     if (booking.bookingStatus === 'Cancelled')
       return res.status(400).json({ message: 'Booking is already cancelled' });
 
+    // Users can only cancel pending bookings, admins can cancel any non-completed booking
+    if (!req.user.isAdmin && booking.bookingStatus === 'Confirmed')
+      return res.status(400).json({ message: 'You cannot cancel a confirmed booking. Please contact support for assistance.' });
+
+    if (booking.bookingStatus === 'Completed')
+      return res.status(400).json({ message: 'Cannot cancel completed bookings' });
+
     booking.bookingStatus = 'Cancelled';
     await booking.save();
 
@@ -370,11 +377,19 @@ exports.updateBooking = async (req, res) => {
   }
 };
 
-// ------------------ DELETE BOOKING (Admin Only) ------------------
+// ------------------ DELETE BOOKING ------------------
 exports.deleteBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
     if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+    // Check if user is trying to delete their own booking or is admin
+    if (!req.user.isAdmin && booking.userID.toString() !== req.user._id.toString())
+      return res.status(403).json({ message: 'You can only delete your own booking' });
+
+    // Users can only delete pending or cancelled bookings, admins can delete any booking
+    if (!req.user.isAdmin && !['Pending', 'Cancelled'].includes(booking.bookingStatus))
+      return res.status(400).json({ message: 'You can only delete pending or cancelled bookings' });
 
     await booking.deleteOne();
     res.json({ message: 'Booking deleted successfully' });
@@ -386,7 +401,9 @@ exports.deleteBooking = async (req, res) => {
 // ------------------ GET BOOKING STATISTICS ------------------
 exports.getBookingStats = async (req, res) => {
   try {
-    const bookings = await Booking.find();
+    // Filter by user if not admin, otherwise get all bookings
+    const filter = req.user.isAdmin ? {} : { userID: req.user._id };
+    const bookings = await Booking.find(filter);
     
     let totalBookings = bookings.length;
     let pendingBookings = 0;
