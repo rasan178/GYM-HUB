@@ -8,9 +8,18 @@ exports.register = async (req, res) => {
   const { name, email, password } = req.body;
   const userExists = await User.findOne({ email });
   if (userExists) return res.status(400).json({ message: 'User exists' });
-  const user = await User.create({ name, email, password });
+  
+  // Set default profile image URL for new users
+  const userData = { 
+    name, 
+    email, 
+    password,
+    profileImageURL: '/images/default-profile.svg'
+  };
+  
+  const user = await User.create(userData);
   if (user) {
-    res.status(201).json({ _id: user._id, userID: user.userID, name: user.name, email: user.email, phoneNumber: user.phoneNumber, role: user.role, token: generateToken(user._id) });
+    res.status(201).json({ _id: user._id, userID: user.userID, name: user.name, email: user.email, phoneNumber: user.phoneNumber, role: user.role, profileImageURL: user.profileImageURL, token: generateToken(user._id) });
   } else {
     res.status(400).json({ message: 'Invalid data' });
   }
@@ -27,7 +36,7 @@ exports.login = async (req, res) => {
         code: 'ACCOUNT_DEACTIVATED'
       });
     }
-    res.json({ _id: user._id, userID: user.userID, name: user.name, email: user.email, phoneNumber: user.phoneNumber, role: user.role, status: user.status, token: generateToken(user._id) });
+    res.json({ _id: user._id, userID: user.userID, name: user.name, email: user.email, phoneNumber: user.phoneNumber, role: user.role, status: user.status, profileImageURL: user.profileImageURL, token: generateToken(user._id) });
   } else {
     res.status(401).json({ message: 'Invalid email or password' });
   }
