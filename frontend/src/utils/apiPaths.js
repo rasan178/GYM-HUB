@@ -10,6 +10,7 @@ export const API_PATHS = {
 
   USERS: {
     UPDATE_PROFILE: "/api/users/profile",
+    REMOVE_PROFILE_IMAGE: "/api/users/profile/image",
     GET_COUNT: "/api/users/count",
   },
 

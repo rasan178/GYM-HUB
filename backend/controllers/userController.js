@@ -140,3 +140,33 @@ exports.updateProfile = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+// Remove profile image
+exports.removeProfileImage = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Reset to default profile image
+    user.profileImageURL = '/images/default-profile.svg';
+    await user.save();
+
+    res.json({ 
+      message: 'Profile image removed successfully', 
+      user: {
+        userID: user.userID,
+        name: user.name,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+        profileImageURL: user.profileImageURL,
+        status: user.status,
+        createdDate: user.createdDate,
+        updatedDate: user.updatedDate
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ message: error.message });
+  }
+};

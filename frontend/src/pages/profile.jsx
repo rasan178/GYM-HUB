@@ -7,13 +7,15 @@ import TextInput from "../components/Inputs/TextInput";
 import FileInput from "../components/Inputs/FileInput";
 import { API_PATHS } from "../utils/apiPaths";
 import SpinnerLoader from "../components/Loaders/SpinnerLoader";
-import { User, Mail, Lock, Camera, Calendar, Shield, Activity, Phone } from 'lucide-react';
+import { User, Mail, Lock, Camera, Calendar, Shield, Activity, Phone, Trash2, AlertTriangle, X, Check } from 'lucide-react';
 
 const Profile = () => {
   const { user, loading, error, refreshUser } = useContext(AuthContext);
   const [formData, setFormData] = useState({ name: "", email: "", phoneNumber: "", password: "", image: null, previewImage: null });
   const [localError, setLocalError] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isRemovingImage, setIsRemovingImage] = useState(false);
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -87,6 +89,33 @@ const Profile = () => {
     }
   };
 
+  const removeProfileImage = async () => {
+    setIsRemovingImage(true);
+    setLocalError(null);
+
+    const token = localStorage.getItem("token");
+    if (token) api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+    try {
+      await api.delete(API_PATHS.USERS.REMOVE_PROFILE_IMAGE);
+      await refreshUser();
+      setShowRemoveConfirm(false);
+      setLocalError(null);
+      // Clean up any preview image
+      if (formData.previewImage) {
+        URL.revokeObjectURL(formData.previewImage);
+        setFormData(prev => ({ ...prev, previewImage: null, image: null }));
+      }
+      alert("Profile image removed successfully!");
+    } catch (err) {
+      setLocalError(err.response?.data?.message || "Failed to remove profile image");
+    } finally {
+      setIsRemovingImage(false);
+    }
+  };
+
+  const hasCustomImage = user?.profileImageURL && !user.profileImageURL.includes('/images/default-profile.svg');
+
   if (loading) return <SpinnerLoader />;
   // Block admin access to profile page
   if (user && user.role === 'admin') {
@@ -128,66 +157,87 @@ const Profile = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Profile Overview Card */}
             <div className="lg:col-span-1">
-              <div className="bg-white text-black rounded-lg p-6 border-2 border-white">
+              <div className="bg-gradient-to-br from-white to-gray-50 text-black rounded-2xl p-8 border-2 border-black shadow-2xl">
                 <div className="text-center">
                   <div className="relative inline-block group">
-                    <img
-                      src={formData.previewImage || user?.profileImageURL || "/images/default-profile.png"}
-            alt="Profile"
-                      className="w-32 h-32 rounded-full border-4 border-black object-cover mx-auto"
-                    />
-                    <label className="absolute -bottom-2 -right-2 bg-black text-white rounded-full p-2 cursor-pointer hover:bg-gray-800 transition-colors z-10 shadow-lg">
-                      <Camera className="w-4 h-4" />
-                      <input
-                        type="file"
-                        name="image"
-                        onChange={handleChange}
-                        accept="image/jpeg,image/png,image/jpg"
-                        className="hidden"
+                    <div className="relative">
+                      <img
+                        src={formData.previewImage || user?.profileImageURL || "/images/default-profile.svg"}
+                        alt="Profile"
+                        className="w-36 h-36 rounded-full border-4 border-black object-cover mx-auto shadow-xl transition-all duration-300 group-hover:scale-105"
                       />
-                    </label>
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-full transition-all duration-300 flex items-center justify-center">
-                      <span className="text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        Click to change
-                      </span>
+                      
+                      {/* Image overlay with actions */}
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-full transition-all duration-300 flex items-center justify-center">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center space-y-2">
+                          <span className="text-white text-sm font-bold bg-black bg-opacity-70 px-3 py-1 rounded-full">
+                            Change Photo
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Camera button */}
+                      <label className="absolute -bottom-2 -right-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full p-3 cursor-pointer hover:from-blue-700 hover:to-purple-700 transition-all duration-300 z-20 shadow-xl hover:shadow-2xl transform hover:scale-110">
+                        <Camera className="w-5 h-5" />
+                        <input
+                          type="file"
+                          name="image"
+                          onChange={handleChange}
+                          accept="image/jpeg,image/png,image/jpg"
+                          className="hidden"
+                        />
+                      </label>
+
+                      {/* Remove button - only show if user has custom image */}
+                      {hasCustomImage && (
+                        <button
+                          onClick={() => setShowRemoveConfirm(true)}
+                          className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-full p-2 hover:from-red-600 hover:to-red-700 transition-all duration-300 z-20 shadow-xl hover:shadow-2xl transform hover:scale-110"
+                          title="Remove profile image"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
-                  <h2 className="text-2xl font-bold mt-4">{user?.name || "User"}</h2>
-                  <p className="text-gray-600 flex items-center justify-center mt-2">
-                    <Mail className="w-4 h-4 mr-2" />
-                    {user?.email}
-                  </p>
-                  {user?.phoneNumber && (
-                    <p className="text-gray-600 flex items-center justify-center mt-1">
-                      <Phone className="w-4 h-4 mr-2" />
-                      {user.phoneNumber}
+                  <h2 className="text-3xl font-black mt-6 text-black">{user?.name || "User"}</h2>
+                  <div className="mt-4 space-y-2">
+                    <p className="text-gray-700 flex items-center justify-center text-sm">
+                      <Mail className="w-4 h-4 mr-2 text-blue-600" />
+                      <span className="font-medium">{user?.email}</span>
                     </p>
-                  )}
-                  <div className="mt-4 flex items-center justify-center text-sm text-gray-500">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    Member since {new Date(user?.createdDate || Date.now()).toLocaleDateString()}
+                    {user?.phoneNumber && (
+                      <p className="text-gray-700 flex items-center justify-center text-sm">
+                        <Phone className="w-4 h-4 mr-2 text-green-600" />
+                        <span className="font-medium">{user.phoneNumber}</span>
+                      </p>
+                    )}
+                    <div className="mt-4 flex items-center justify-center text-sm text-gray-600 bg-gray-100 rounded-full px-4 py-2">
+                      <Calendar className="w-4 h-4 mr-2 text-purple-600" />
+                      <span className="font-medium">Member since {new Date(user?.createdDate || Date.now()).toLocaleDateString()}</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Quick Stats */}
-              <div className="mt-6 bg-white text-black rounded-lg p-6 border-2 border-white">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <Activity className="w-5 h-5 mr-2" />
+              <div className="mt-6 bg-gradient-to-br from-white to-gray-50 text-black rounded-2xl p-6 border-2 border-black shadow-xl">
+                <h3 className="text-xl font-black mb-6 flex items-center text-black">
+                  <Activity className="w-6 h-6 mr-3 text-blue-600" />
                   Account Stats
                 </h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Account Status</span>
-                    <span className="text-green-600 font-semibold">Active</span>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-xl border border-green-200">
+                    <span className="text-gray-700 font-medium">Account Status</span>
+                    <span className="text-green-700 font-black bg-green-100 px-3 py-1 rounded-full text-sm">Active</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Role</span>
-                    <span className="text-black font-semibold capitalize">{user?.role || "User"}</span>
+                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-200">
+                    <span className="text-gray-700 font-medium">Role</span>
+                    <span className="text-blue-700 font-black bg-blue-100 px-3 py-1 rounded-full text-sm capitalize">{user?.role || "User"}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Last Updated</span>
-                    <span className="text-gray-500 text-sm">
+                  <div className="flex justify-between items-center p-3 bg-purple-50 rounded-xl border border-purple-200">
+                    <span className="text-gray-700 font-medium">Last Updated</span>
+                    <span className="text-purple-700 font-medium text-sm">
                       {new Date(user?.updatedDate || Date.now()).toLocaleDateString()}
                     </span>
                   </div>
@@ -198,9 +248,9 @@ const Profile = () => {
             {/* Main Content */}
             <div className="lg:col-span-2">
               {/* Personal Information Section */}
-              <div className="bg-white text-black rounded-lg p-6 border-2 border-white mb-6">
-                <h3 className="text-xl font-semibold mb-6 flex items-center">
-                  <User className="w-6 h-6 mr-2" />
+              <div className="bg-gradient-to-br from-white to-gray-50 text-black rounded-2xl p-8 border-2 border-black shadow-xl mb-6">
+                <h3 className="text-2xl font-black mb-8 flex items-center text-black">
+                  <User className="w-7 h-7 mr-3 text-blue-600" />
                   Personal Information
                 </h3>
                 <form onSubmit={updateProfile} className="space-y-6">
@@ -247,71 +297,62 @@ const Profile = () => {
                     />
                   </div>
 
-                  <div>
-                    <FileInput 
-                      label="Profile Image" 
-                      name="image" 
-                      onChange={handleChange}
-                      icon={<Camera className="w-5 h-5" />}
-                    />
-                  </div>
-
-                  <div className="pt-4">
+                  <div className="pt-6">
                     <button 
-                      className="w-full bg-black text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-800 transition-colors disabled:opacity-60 flex items-center justify-center" 
+                      className="w-full bg-gradient-to-r from-black to-gray-800 text-white py-4 px-8 rounded-xl font-black text-lg hover:from-gray-800 hover:to-black transition-all duration-300 disabled:opacity-60 flex items-center justify-center shadow-xl hover:shadow-2xl transform hover:scale-[1.02]" 
                       type="submit" 
                       disabled={isUpdating}
                     >
                       {isUpdating ? (
                         <>
                           <SpinnerLoader />
-                          <span className="ml-2">Updating...</span>
+                          <span className="ml-3">Updating Profile...</span>
                         </>
                       ) : (
                         <>
-                          <Shield className="w-5 h-5 mr-2" />
+                          <Shield className="w-6 h-6 mr-3" />
                           Update Profile
                         </>
                       )}
-            </button>
+                    </button>
                   </div>
-          </form>
+                </form>
               </div>
 
               {/* Account Settings Section */}
-              <div className="bg-white text-black rounded-lg p-6 border-2 border-white">
-                <h3 className="text-xl font-semibold mb-6 flex items-center">
-                  <Shield className="w-6 h-6 mr-2" />
+              <div className="bg-gradient-to-br from-white to-gray-50 text-black rounded-2xl p-8 border-2 border-black shadow-xl">
+                <h3 className="text-2xl font-black mb-8 flex items-center text-black">
+                  <Shield className="w-7 h-7 mr-3 text-purple-600" />
                   Account Settings
                 </h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl border border-blue-200">
                     <div>
-                      <h4 className="font-semibold">Email Notifications</h4>
-                      <p className="text-sm text-gray-600">Receive updates about your bookings and memberships</p>
+                      <h4 className="font-black text-lg text-black">Email Notifications</h4>
+                      <p className="text-sm text-gray-700 mt-1">Receive updates about your bookings and memberships</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                      <div className="w-12 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-blue-600 peer-checked:to-purple-600"></div>
                     </label>
                   </div>
                   
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-6 bg-gradient-to-r from-green-50 to-green-100 rounded-2xl border border-green-200">
                     <div>
-                      <h4 className="font-semibold">Two-Factor Authentication</h4>
-                      <p className="text-sm text-gray-600">Add an extra layer of security to your account</p>
+                      <h4 className="font-black text-lg text-black">Two-Factor Authentication</h4>
+                      <p className="text-sm text-gray-700 mt-1">Add an extra layer of security to your account</p>
                     </div>
-                    <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors">
+                    <button className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl text-sm font-black hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
                       Enable
                     </button>
                   </div>
                   
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-6 bg-gradient-to-r from-purple-50 to-purple-100 rounded-2xl border border-purple-200">
                     <div>
-                      <h4 className="font-semibold">Data Export</h4>
-                      <p className="text-sm text-gray-600">Download a copy of your account data</p>
+                      <h4 className="font-black text-lg text-black">Data Export</h4>
+                      <p className="text-sm text-gray-700 mt-1">Download a copy of your account data</p>
                     </div>
-                    <button className="bg-gray-200 text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 transition-colors">
+                    <button className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-3 rounded-xl text-sm font-black hover:from-purple-700 hover:to-purple-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
                       Download
                     </button>
                   </div>
@@ -320,6 +361,49 @@ const Profile = () => {
             </div>
           </div>
         </div>
+
+        {/* Remove Image Confirmation Dialog */}
+        {showRemoveConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full border-4 border-red-200 shadow-2xl">
+              <div className="text-center">
+                <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-6">
+                  <AlertTriangle className="h-8 w-8 text-red-600" />
+                </div>
+                <h3 className="text-2xl font-black text-black mb-4">Remove Profile Image?</h3>
+                <p className="text-gray-700 mb-8">
+                  Are you sure you want to remove your profile image? This will reset it to the default avatar.
+                </p>
+                <div className="flex space-x-4">
+                  <button
+                    onClick={() => setShowRemoveConfirm(false)}
+                    className="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-xl font-bold hover:bg-gray-300 transition-all duration-300 flex items-center justify-center"
+                  >
+                    <X className="w-5 h-5 mr-2" />
+                    Cancel
+                  </button>
+                  <button
+                    onClick={removeProfileImage}
+                    disabled={isRemovingImage}
+                    className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-6 rounded-xl font-bold hover:from-red-600 hover:to-red-700 transition-all duration-300 disabled:opacity-60 flex items-center justify-center"
+                  >
+                    {isRemovingImage ? (
+                      <>
+                        <SpinnerLoader />
+                        <span className="ml-2">Removing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="w-5 h-5 mr-2" />
+                        Remove
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </MainLayout>
   );

@@ -173,7 +173,7 @@ const Navbar = () => {
                       className="flex items-center space-x-2 ml-4 hover:opacity-80 transition-opacity"
                     >
                       <img
-                        src={user?.profileImageURL || "/images/default-profile.png"}
+                        src={user?.profileImageURL || "/images/default-profile.svg"}
                         alt="Profile"
                         className="w-8 h-8 rounded-full border-2 border-white object-cover"
                       />
