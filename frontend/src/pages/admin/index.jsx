@@ -16,13 +16,9 @@ import {
   BarChart3,
   CreditCard,
   Clock,
-  MessageSquare,
   Star,
-  BookOpen,
   Target,
   AlertTriangle,
-  Power,
-  PowerOff
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -60,7 +56,7 @@ const AdminDashboard = () => {
         api.get(API_PATHS.ADMIN.USERS.GET_STATS).catch(() => ({ data: { totalUsers: 0, activeUsers: 0, inactiveUsers: 0 } })),
         api.get(API_PATHS.TRAINERS.GET_STATS).catch(() => ({ data: { totalTrainers: 0, activeTrainers: 0, inactiveTrainers: 0, adminDeactivatedTrainers: 0 } })),
         api.get(API_PATHS.BOOKINGS.GET_STATS).catch(() => ({ data: { totalBookings: 0, pendingBookings: 0, confirmedBookings: 0, cancelledBookings: 0, completedBookings: 0, classBookings: 0, personalBookings: 0 } })),
-        api.get(API_PATHS.TESTIMONIALS.GET_STATS).catch(() => ({ data: { totalTestimonials: 0, pendingTestimonials: 0, approvedTestimonials: 0, rejectedTestimonials: 0, averageRating: 0, ratedTestimonials: 0 } })),
+        api.get(API_PATHS.TESTIMONIALS.STATS).catch(() => ({ data: { totalTestimonials: 0, pendingTestimonials: 0, approvedTestimonials: 0, rejectedTestimonials: 0, averageRating: 0, ratedTestimonials: 0 } })),
         api.get(API_PATHS.CLASSES.GET_STATS).catch(() => ({ data: { totalClasses: 0, activeClasses: 0, inactiveClasses: 0, adminDeactivatedClasses: 0 } })),
         api.get(API_PATHS.MEMBERSHIP_REQUESTS.ADMIN.GET_ALL).catch(() => ({ data: { requests: [] } })),
         api.get(API_PATHS.MEMBERSHIPS.GET_STATS).catch(() => ({ data: { totalMemberships: 0, activeMemberships: 0, inactiveMemberships: 0, expiredMemberships: 0 } })),

@@ -30,7 +30,6 @@ const Sidebar = ({ role }) => {
   ];
 
   const userMenu = [
-    { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
     { name: "My Membership", path: "/dashboard/memberships", icon: CreditCard },
     { name: "My Bookings", path: "/dashboard/bookings", icon: BookOpen },
     { name: "AI Plan", path: "/ai-plan", icon: Brain },
@@ -41,12 +40,15 @@ const Sidebar = ({ role }) => {
 
   return (
     <aside className="w-64 h-screen bg-black text-white p-4">
-      <div className="flex items-center space-x-2 mb-6">
+      <Link 
+        href={role === "admin" ? "/admin" : "/dashboard"}
+        className="flex items-center space-x-2 mb-6 cursor-pointer hover:opacity-80 transition-opacity"
+      >
         <Settings className="w-6 h-6 text-white" />
         <h2 className="text-xl font-bold text-white">
           {role === "admin" ? "Admin Panel" : "User Dashboard"}
         </h2>
-      </div>
+      </Link>
       <ul className="space-y-2">
         {menuItems.map((item, index) => {
           const IconComponent = item.icon;
