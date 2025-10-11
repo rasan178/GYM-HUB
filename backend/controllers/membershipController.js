@@ -173,6 +173,30 @@ const getMembershipById = async (req, res) => {
   }
 };
 
+// ========================= UPDATE MEMBERSHIP RENEWAL OPTION (User) =========================
+const updateMembershipRenewal = async (req, res) => {
+  try {
+    const membership = await Membership.findById(req.params.id);
+    if (!membership) return res.status(404).json({ message: 'Membership not found' });
+
+    // Check if user owns this membership or is admin
+    if (req.user.role !== 'admin' && membership.userID.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to update this membership' });
+    }
+
+    const { renewalOption } = req.body;
+
+    if (renewalOption !== undefined) {
+      membership.renewalOption = renewalOption;
+    }
+
+    await membership.save();
+    res.json({ message: 'Membership renewal option updated successfully', membership: formatMembership(membership) });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 // ========================= UPDATE MEMBERSHIP (Admin Only) =========================
 const updateMembership = async (req, res) => {
   try {
@@ -313,6 +337,7 @@ module.exports = {
   createMembership,
   getAllMemberships,
   getMembershipById,
+  updateMembershipRenewal,
   updateMembership,
   deactivateMembership,
   reactivateMembership,

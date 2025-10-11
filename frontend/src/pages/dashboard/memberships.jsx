@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../../utils/axiosInstance';
 import DashboardLayout from '../../components/Layouts/DashboardLayout';
+import MembershipRenewalToggle from '../../components/MembershipRenewalToggle';
 import { API_PATHS } from '../../utils/apiPaths';
 import { formatDate } from '../../utils/helpers';
 import { 
@@ -49,6 +50,14 @@ const Memberships = () => {
       console.error('Failed to fetch membership requests:', err);
       setMembershipRequests([]);
     }
+  };
+
+  const handleMembershipUpdate = (updatedMembership) => {
+    setMemberships(prevMemberships => 
+      prevMemberships.map(membership => 
+        membership._id === updatedMembership._id ? updatedMembership : membership
+      )
+    );
   };
 
 
@@ -233,8 +242,13 @@ const Memberships = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {remainingDays > 0 ? `${remainingDays} days` : 'Expired'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {membership.renewalOption ? 'Yes' : 'No'}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <MembershipRenewalToggle
+                            membership={membership}
+                            onUpdate={handleMembershipUpdate}
+                            size="sm"
+                            showLabel={false}
+                          />
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-900 relative">
@@ -359,9 +373,14 @@ const Memberships = () => {
                         </div>
                       )}
                       
-                      <div className="flex items-center text-sm">
-                        <span className="text-gray-500">Renewal: </span>
-                        <span className="font-medium">{membership.renewalOption ? 'Yes' : 'No'}</span>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-500">Auto Renewal:</span>
+                        <MembershipRenewalToggle
+                          membership={membership}
+                          onUpdate={handleMembershipUpdate}
+                          size="sm"
+                          showLabel={false}
+                        />
                       </div>
                     </div>
                   </div>

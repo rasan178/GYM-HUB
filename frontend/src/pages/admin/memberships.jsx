@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../../utils/axiosInstance';
 import AdminLayout from '../../components/Layouts/AdminLayout';
+import MembershipRenewalToggle from '../../components/MembershipRenewalToggle';
 import { formatDate } from '../../utils/helpers';
 import { API_PATHS } from '../../utils/apiPaths';
 import { 
@@ -164,6 +165,15 @@ const AdminMemberships = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleMembershipUpdate = (updatedMembership) => {
+    setMemberships(prevMemberships => 
+      prevMemberships.map(membership => 
+        membership._id === updatedMembership._id ? updatedMembership : membership
+      )
+    );
+    fetchMembershipStats();
   };
 
   const edit = m => {
@@ -350,18 +360,12 @@ const AdminMemberships = () => {
                         <Power className="w-4 h-4" />
                       </button>
                     )}
-                    <button
-                      onClick={() => toggleRenewalOption(m._id, !m.renewalOption)}
-                      disabled={isSubmitting}
-                      className={`p-1 rounded transition-colors ${
-                        m.renewalOption 
-                          ? 'text-green-600 hover:text-green-900 hover:bg-green-50' 
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                      }`}
-                      title={m.renewalOption ? 'Disable renewal' : 'Enable renewal'}
-                    >
-                      {m.renewalOption ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                    </button>
+                    <MembershipRenewalToggle
+                      membership={m}
+                      onUpdate={handleMembershipUpdate}
+                      size="sm"
+                      showLabel={false}
+                    />
                     <button
                       onClick={() => deleteMembership(m._id)}
                       disabled={isSubmitting}
@@ -429,14 +433,12 @@ const AdminMemberships = () => {
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${
-                        m.renewalOption 
-                          ? 'bg-green-100 text-green-800 border-green-200' 
-                          : 'bg-gray-100 text-gray-800 border-gray-200'
-                      }`}>
-                        {m.renewalOption ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                        {m.renewalOption ? 'Enabled' : 'Disabled'}
-                      </span>
+                      <MembershipRenewalToggle
+                        membership={m}
+                        onUpdate={handleMembershipUpdate}
+                        size="sm"
+                        showLabel={false}
+                      />
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${getStatusColor(m.status, m.active)}`}>
@@ -472,18 +474,6 @@ const AdminMemberships = () => {
                             <Power className="w-4 h-4" />
                           </button>
                         )}
-                        <button
-                          onClick={() => toggleRenewalOption(m._id, !m.renewalOption)}
-                          disabled={isSubmitting}
-                          className={`p-1 rounded transition-colors ${
-                            m.renewalOption 
-                              ? 'text-green-600 hover:text-green-900 hover:bg-green-50' 
-                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                          }`}
-                          title={m.renewalOption ? 'Disable renewal' : 'Enable renewal'}
-                        >
-                          {m.renewalOption ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                        </button>
                         <button
                           onClick={() => deleteMembership(m._id)}
                           disabled={isSubmitting}

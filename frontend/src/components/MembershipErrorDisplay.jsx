@@ -10,44 +10,52 @@ const MembershipErrorDisplay = ({
   if (!isOpen) return null;
 
   const isError = type === "error";
-  const bgColor = isError ? "bg-red-500" : "bg-yellow-500";
-  const borderColor = isError ? "border-red-500" : "border-yellow-500";
-  const textColor = isError ? "text-red-600" : "text-yellow-600";
-  const buttonColor = isError ? "bg-red-500 hover:bg-red-600 border-red-500" : "bg-yellow-500 hover:bg-yellow-600 border-yellow-500";
+  const accentColor = isError ? "bg-red-500" : "bg-amber-500";
   const IconComponent = isError ? XCircle : AlertTriangle;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className={`bg-white text-black p-8 border-4 ${borderColor} max-w-md w-full shadow-2xl text-center transform transition-all duration-300 scale-100`}>
-        {/* Icon */}
-        <div className={`${bgColor} text-white p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center`}>
-          <IconComponent className="w-8 h-8" />
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-2xl max-w-md w-full mx-4 transform transition-all border-2 border-black">
+        {/* Header */}
+        <div className="p-4 sm:p-6 border-b-2 border-black bg-black text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-full ${accentColor} text-white`}>
+                <IconComponent className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">
+                  {title}
+                </h3>
+              </div>
+            </div>
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="p-1 rounded-full hover:bg-white hover:bg-opacity-20 transition-colors"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Title */}
-        <h3 className={`text-2xl font-black mb-4 uppercase tracking-wider ${textColor}`}>
-          {title}
-        </h3>
+        {/* Content */}
+        <div className="p-4 sm:p-6 bg-white">
+          <div className="space-y-4">
+            <p className="text-sm sm:text-base leading-relaxed text-black">
+              {message}
+            </p>
 
-        {/* Message */}
-        <p className="text-gray-700 font-medium mb-6 leading-relaxed">
-          {message}
-        </p>
-
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className={`${buttonColor} text-white px-6 py-3 font-black uppercase tracking-widest transition-all border-2 hover:shadow-lg transform hover:scale-105`}
-        >
-          Close
-        </button>
-
-        {/* Decorative Elements */}
-        <div className="absolute top-4 right-4">
-          <div className={`w-3 h-3 ${bgColor} rounded-full opacity-20`}></div>
-        </div>
-        <div className="absolute bottom-4 left-4">
-          <div className={`w-2 h-2 ${bgColor} rounded-full opacity-30`}></div>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
+              <button
+                onClick={onClose}
+                className={`flex-1 ${accentColor} text-white px-4 py-3 rounded-lg hover:opacity-90 transition-colors text-sm font-bold flex items-center justify-center gap-2 border-2 border-transparent`}
+              >
+                Got It
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
