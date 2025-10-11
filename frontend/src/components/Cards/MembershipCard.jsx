@@ -1,6 +1,7 @@
 import { formatDate } from '../../utils/helpers';
+import MembershipRenewalToggle from '../MembershipRenewalToggle';
 
-const MembershipCard = ({ membership }) => {
+const MembershipCard = ({ membership, onUpdate }) => {
   const remainingDays = Math.ceil((new Date(membership.endDate) - new Date()) / (1000 * 60 * 60 * 24));
   return (
     <div className="border-2 border-black bg-white text-black shadow-lg hover:shadow-2xl transition-all">
@@ -16,7 +17,15 @@ const MembershipCard = ({ membership }) => {
           <div className="border-2 border-black px-3 py-2 bg-white">Status: {membership.status}</div>
           <div className="border-2 border-black px-3 py-2 bg-white">Start: {formatDate(membership.startDate)}</div>
           <div className="border-2 border-black px-3 py-2 bg-white">End: {formatDate(membership.endDate)}</div>
-          <div className="border-2 border-black px-3 py-2 bg-white">Renewal: {membership.renewalOption ? 'Yes' : 'No'}</div>
+          <div className="border-2 border-black px-3 py-2 bg-white flex items-center justify-between">
+            <span>Auto Renewal:</span>
+            <MembershipRenewalToggle
+              membership={membership}
+              onUpdate={onUpdate}
+              size="sm"
+              showLabel={false}
+            />
+          </div>
           <div className="border-2 border-black px-3 py-2 bg-white">Remaining: {remainingDays > 0 ? `${remainingDays} days` : 'Expired'}</div>
         </div>
         {membership.facilitiesIncluded && (

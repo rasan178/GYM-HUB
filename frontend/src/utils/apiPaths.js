@@ -31,6 +31,7 @@ export const API_PATHS = {
   MEMBERSHIPS: {
     GET_ALL: "/api/memberships",
     GET_ONE: (id) => `/api/memberships/${id}`,
+    UPDATE_RENEWAL: (id) => `/api/memberships/${id}/renewal`,
     GET_STATS: "/api/memberships/stats",
   },
 
