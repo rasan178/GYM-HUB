@@ -56,6 +56,7 @@ const AdminBookings = () => {
     }
   };
 
+
   const updateStatus = async (id, status) => {
     setIsAction(prev => ({ ...prev, [id]: 'update' }));
     try {
@@ -89,6 +90,7 @@ const AdminBookings = () => {
       case 'Confirmed': return 'bg-green-100 text-green-800 border-green-200';
       case 'Pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'Cancelled': return 'bg-red-100 text-red-800 border-red-200';
+      case 'Completed': return 'bg-blue-100 text-blue-800 border-blue-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -98,6 +100,7 @@ const AdminBookings = () => {
       case 'Confirmed': return <CheckCircle className="w-4 h-4" />;
       case 'Pending': return <AlertCircle className="w-4 h-4" />;
       case 'Cancelled': return <XCircle className="w-4 h-4" />;
+      case 'Completed': return <TrendingUp className="w-4 h-4" />;
       default: return <Activity className="w-4 h-4" />;
     }
   };
@@ -235,7 +238,14 @@ const AdminBookings = () => {
                       <User className="w-4 h-4 mr-2 text-gray-400" />
                       {booking.userID?.name || 'N/A'}
                     </h3>
-                    <p className="text-xs text-gray-500">{booking.bookingType}</p>
+                    <p className="text-xs text-gray-500 flex items-center">
+                      {booking.bookingType === 'class' ? (
+                        <Users className="w-3 h-3 mr-1" />
+                      ) : (
+                        <User className="w-3 h-3 mr-1" />
+                      )}
+                      {booking.bookingType}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${getStatusColor(booking.bookingStatus)}`}>
@@ -278,6 +288,7 @@ const AdminBookings = () => {
                   >
                     <option value="Pending">Pending</option>
                     <option value="Confirmed">Confirmed</option>
+                    <option value="Completed">Completed</option>
                     <option value="Cancelled">Cancelled</option>
                   </select>
                   
@@ -332,6 +343,11 @@ const AdminBookings = () => {
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {booking.bookingType === 'class' ? (
+                          <Users className="w-3 h-3 mr-1" />
+                        ) : (
+                          <User className="w-3 h-3 mr-1" />
+                        )}
                         {booking.bookingType}
                       </span>
                     </td>
@@ -364,6 +380,7 @@ const AdminBookings = () => {
                       >
                         <option value="Pending">Pending</option>
                         <option value="Confirmed">Confirmed</option>
+                        <option value="Completed">Completed</option>
                         <option value="Cancelled">Cancelled</option>
                       </select>
               </td>

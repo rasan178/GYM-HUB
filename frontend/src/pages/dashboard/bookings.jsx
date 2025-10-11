@@ -113,7 +113,7 @@ const UserBookings = () => {
   };
 
   const canDeleteBooking = (booking) => {
-    return booking.bookingStatus === 'Pending' || booking.bookingStatus === 'Cancelled';
+    return booking.bookingStatus === 'Pending' || booking.bookingStatus === 'Cancelled' || booking.bookingStatus === 'Completed';
   };
 
   return (
@@ -346,6 +346,11 @@ const UserBookings = () => {
                   <tr key={booking._id} className="hover:bg-gray-50">
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {booking.bookingType === 'class' ? (
+                          <Users className="w-3 h-3 mr-1" />
+                        ) : (
+                          <User className="w-3 h-3 mr-1" />
+                        )}
                         {booking.bookingType}
                       </span>
                     </td>

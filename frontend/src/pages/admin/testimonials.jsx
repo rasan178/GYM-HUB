@@ -74,7 +74,7 @@ const AdminTestimonials = () => {
 
   const fetchTestimonialStats = async () => {
     try {
-      const res = await api.get(API_PATHS.TESTIMONIALS.GET_STATS);
+      const res = await api.get(API_PATHS.TESTIMONIALS.STATS);
       setTestimonialStats(res.data);
     } catch (err) {
       console.error('Failed to fetch testimonial statistics:', err);

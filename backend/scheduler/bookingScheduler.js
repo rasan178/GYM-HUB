@@ -10,14 +10,14 @@ const formatDate = (date) => {
 };
 
 module.exports = () => {
-  // Run every day at midnight (production), can keep * * * * * for testing
+  // Run every day at midnight (production)
   cron.schedule('0 0 * * *', async () => {
     try {
       const todayStr = formatDate(new Date());
 
       // 1. Mark past bookings as Completed
       const bookingResult = await Booking.updateMany(
-        { dateTime: { $lt: todayStr }, bookingStatus: { $nin: ['Completed', 'Cancelled'] } },
+        { date: { $lt: todayStr }, bookingStatus: { $nin: ['Completed', 'Cancelled'] } },
         { bookingStatus: 'Completed' }
       );
       if (bookingResult.modifiedCount > 0) {
@@ -31,8 +31,8 @@ module.exports = () => {
 
       const deleted = await Booking.deleteMany({
         $or: [
-          { bookingStatus: 'Cancelled', updatedAt: { $lt: twelveMonthsStr } },
-          { bookingStatus: 'Completed', updatedAt: { $lt: twelveMonthsStr } }
+          { bookingStatus: 'Cancelled', createdDate: { $lt: twelveMonthsStr } },
+          { bookingStatus: 'Completed', createdDate: { $lt: twelveMonthsStr } }
         ]
       });
       if (deleted.deletedCount > 0) {
