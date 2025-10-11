@@ -218,7 +218,7 @@ exports.updateBookingStatus = async (req, res) => {
     if (!booking) return res.status(404).json({ message: 'Booking not found' });
 
     const { bookingStatus } = req.body;
-    const validStatuses = ['Confirmed', 'Cancelled']; // ✅ Removed "Completed"
+    const validStatuses = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
     if (!validStatuses.includes(bookingStatus))
       return res.status(400).json({ message: `Status must be one of: ${validStatuses.join(', ')}` });
 
@@ -387,9 +387,10 @@ exports.deleteBooking = async (req, res) => {
     if (!req.user.isAdmin && booking.userID.toString() !== req.user._id.toString())
       return res.status(403).json({ message: 'You can only delete your own booking' });
 
-    // Users can only delete pending or cancelled bookings, admins can delete any booking
-    if (!req.user.isAdmin && !['Pending', 'Cancelled'].includes(booking.bookingStatus))
-      return res.status(400).json({ message: 'You can only delete pending or cancelled bookings' });
+    // Users can delete pending, cancelled, or completed bookings (confirmed bookings become deletable after completion)
+    // Admins can delete any booking
+    if (!req.user.isAdmin && !['Pending', 'Cancelled', 'Completed'].includes(booking.bookingStatus))
+      return res.status(400).json({ message: 'You can only delete pending, cancelled, or completed bookings' });
 
     await booking.deleteOne();
     res.json({ message: 'Booking deleted successfully' });
