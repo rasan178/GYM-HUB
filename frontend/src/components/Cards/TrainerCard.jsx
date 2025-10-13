@@ -1,4 +1,5 @@
-import { User, Mail, Award, Calendar, FileText, CheckCircle, Phone, MapPin, Facebook, Instagram, Star, Briefcase, Eye, Users } from 'lucide-react';
+import { User, Mail, Award, Calendar, FileText, CheckCircle, Phone, MapPin, Star, Briefcase, Eye, Users } from 'lucide-react';
+import { FaFacebook, FaInstagram } from 'react-icons/fa';
 
 const TrainerCard = ({ trainer, onViewDetails }) => {
   // safely handle specialty
@@ -160,7 +161,7 @@ const TrainerCard = ({ trainer, onViewDetails }) => {
                   className="w-10 h-10 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-200 flex items-center justify-center group/social"
                   title="Visit Facebook Profile"
                 >
-                  <Facebook className="w-4 h-4" />
+                  <FaFacebook className="w-4 h-4" />
                 </button>
               )}
               
@@ -170,7 +171,7 @@ const TrainerCard = ({ trainer, onViewDetails }) => {
                   className="w-10 h-10 border-2 border-black bg-white hover:bg-black hover:text-white transition-all duration-200 flex items-center justify-center group/social"
                   title="Visit Instagram Profile"
                 >
-                  <Instagram className="w-4 h-4" />
+                  <FaInstagram className="w-4 h-4" />
                 </button>
               )}
               

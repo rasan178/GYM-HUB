@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Search, Filter, Users, X, User, Mail, Award, Phone, MapPin, Facebook, Instagram, FileText, Briefcase } from 'lucide-react';
+import { Search, Filter, Users, X, User, Mail, Award, Phone, MapPin, FileText, Briefcase } from 'lucide-react';
+import { FaFacebook, FaInstagram } from 'react-icons/fa';
 import api from '../utils/axiosInstance';
 import MainLayout from '../components/Layouts/MainLayout';
 import TrainerCard from '../components/Cards/TrainerCard';
@@ -223,7 +224,7 @@ const Trainers = () => {
                         className="w-10 h-10 border-2 border-white bg-transparent text-white hover:bg-white hover:text-black transition-all duration-200 flex items-center justify-center"
                         title="Visit Facebook Profile"
                       >
-                        <Facebook className="w-4 h-4" />
+                        <FaFacebook className="w-4 h-4" />
                       </button>
                     )}
                     {selectedTrainer?.socialLinks?.instagram && selectedTrainer.socialLinks.instagram !== "N/A" && (
@@ -232,7 +233,7 @@ const Trainers = () => {
                         className="w-10 h-10 border-2 border-white bg-transparent text-white hover:bg-white hover:text-black transition-all duration-200 flex items-center justify-center"
                         title="Visit Instagram Profile"
                       >
-                        <Instagram className="w-4 h-4" />
+                        <FaInstagram className="w-4 h-4" />
                       </button>
                     )}
                     {(!selectedTrainer?.socialLinks?.facebook || selectedTrainer.socialLinks.facebook === "N/A") && 
