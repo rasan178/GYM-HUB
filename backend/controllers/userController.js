@@ -116,7 +116,8 @@ exports.updateProfile = async (req, res) => {
     if (req.body.password) user.password = req.body.password;
 
     if (req.file) {
-      user.profileImageURL = `http://localhost:8000/uploads/users/profile/${req.file.filename}`;
+      const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
+      user.profileImageURL = `${BASE_URL}/uploads/users/profile/${req.file.filename}`;
     }
 
     await user.save();
