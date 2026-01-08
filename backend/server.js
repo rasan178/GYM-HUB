@@ -24,7 +24,10 @@ const app = express(); // ✅ initialize app first
 
 // ✅ CORS middleware must come after app is created
 app.use(cors({
-  origin: ['http://localhost:3000'],  // your Next.js frontend
+  origin: [
+    'http://localhost:3000',
+    'https://gym-hub-kappa.vercel.app'
+  ],  // your Next.js frontend
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   credentials: true, // if you send cookies/auth headers
