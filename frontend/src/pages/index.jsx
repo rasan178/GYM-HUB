@@ -3,7 +3,6 @@ import Link from 'next/link';
 import MainLayout from '../components/Layouts/MainLayout';
 import api from '../utils/axiosInstance';
 import { API_PATHS } from '../utils/apiPaths';
-import { normalizeImageUrl } from '../utils/helpers';
 import { 
   Dumbbell, 
   Target, 
@@ -476,7 +475,7 @@ export default function Home() {
                 <div key={testimonial._id} className="bg-white text-black p-8 border-2 border-white hover:transform hover:-translate-y-2 transition-all duration-300 shadow-lg">
                   {testimonial.imageURL && (
                     <img 
-                      src={normalizeImageUrl(testimonial.imageURL)} 
+                      src={testimonial.imageURL} 
                       alt={testimonial.userName}
                       className="w-20 h-20 border-4 border-black mx-auto mb-4 object-cover rounded-full"
                     />

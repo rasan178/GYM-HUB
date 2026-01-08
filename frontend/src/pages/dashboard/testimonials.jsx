@@ -9,7 +9,7 @@ import Modal from '../../components/Modal';
 import DeleteAlertContent from '../../components/DeleteAlertContent';
 import TestimonialErrorDisplay from '../../components/TestimonialErrorDisplay';
 import { API_PATHS } from '../../utils/apiPaths';
-import { canEditTestimonial, getDaysRemainingToEdit, normalizeImageUrl } from '../../utils/helpers';
+import { canEditTestimonial, getDaysRemainingToEdit } from '../../utils/helpers';
 import { 
   MessageSquare, 
   CheckCircle,
@@ -652,7 +652,7 @@ const Testimonials = () => {
                       }`}
                     >
                       <img
-                        src={normalizeImageUrl(image)}
+                        src={image}
                         alt={`Thumbnail ${index + 1}`}
                         className="w-full h-full object-cover"
                         style={{ minWidth: '64px', minHeight: '64px' }}

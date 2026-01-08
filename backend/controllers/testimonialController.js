@@ -1,6 +1,5 @@
 const Testimonial = require('../models/Testimonial');
 const User = require('../models/User');
-const { makeUploadsUrl, normalizePublicUrl, normalizePublicUrls } = require('../utils/publicUrl');
 
 // Create testimonial (user provides role/job)
 exports.createTestimonial = async (req, res) => {
@@ -33,8 +32,9 @@ exports.createTestimonial = async (req, res) => {
     };
 
     // Handle multiple image uploads (up to 5 images)
+    const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
     if (req.files && req.files.length > 0) {
-      const imageURLs = req.files.map(file => makeUploadsUrl(req, `/uploads/testimonials/${file.filename}`));
+      const imageURLs = req.files.map(file => `${BASE_URL}/uploads/testimonials/${file.filename}`);
       
       if (imageURLs.length > 5) {
         return res.status(400).json({ message: 'Maximum 5 images allowed per testimonial' });
@@ -46,15 +46,12 @@ exports.createTestimonial = async (req, res) => {
         data.imageURL = imageURLs[0];
       }
     } else if (req.file) {
-      data.imageURL = makeUploadsUrl(req, `/uploads/testimonials/${req.file.filename}`);
+      data.imageURL = `${BASE_URL}/uploads/testimonials/${req.file.filename}`;
       data.imageURLs = [data.imageURL];
     }
 
     const testimonial = await Testimonial.create(data);
-    const obj = testimonial.toObject();
-    obj.imageURL = normalizePublicUrl(obj.imageURL, req);
-    obj.imageURLs = normalizePublicUrls(obj.imageURLs, req);
-    res.status(201).json({ message: 'Testimonial submitted, pending approval', testimonial: obj });
+    res.status(201).json({ message: 'Testimonial submitted, pending approval', testimonial });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -64,13 +61,7 @@ exports.createTestimonial = async (req, res) => {
 exports.getTestimonials = async (req, res) => {
   try {
     const testimonials = await Testimonial.find({ status: 'Approved' }).sort({ createdAt: -1 });
-    const data = testimonials.map(t => {
-      const obj = t.toObject();
-      obj.imageURL = normalizePublicUrl(obj.imageURL, req);
-      obj.imageURLs = normalizePublicUrls(obj.imageURLs, req);
-      return obj;
-    });
-    res.json(data);
+    res.json(testimonials);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -80,13 +71,7 @@ exports.getTestimonials = async (req, res) => {
 exports.getMyTestimonials = async (req, res) => {
   try {
     const testimonials = await Testimonial.find({ userID: req.user._id }).sort({ createdAt: -1 });
-    const data = testimonials.map(t => {
-      const obj = t.toObject();
-      obj.imageURL = normalizePublicUrl(obj.imageURL, req);
-      obj.imageURLs = normalizePublicUrls(obj.imageURLs, req);
-      return obj;
-    });
-    res.json(data);
+    res.json(testimonials);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -96,13 +81,7 @@ exports.getMyTestimonials = async (req, res) => {
 exports.getAllTestimonials = async (req, res) => {
   try {
     const testimonials = await Testimonial.find().sort({ createdAt: -1 });
-    const data = testimonials.map(t => {
-      const obj = t.toObject();
-      obj.imageURL = normalizePublicUrl(obj.imageURL, req);
-      obj.imageURLs = normalizePublicUrls(obj.imageURLs, req);
-      return obj;
-    });
-    res.json(data);
+    res.json(testimonials);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -162,8 +141,9 @@ exports.updateTestimonial = async (req, res) => {
     testimonial.userRole = req.body.userRole || testimonial.userRole;
 
     // Handle multiple image uploads
+    const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
     if (req.files && req.files.length > 0) {
-      const imageURLs = req.files.map(file => makeUploadsUrl(req, `/uploads/testimonials/${file.filename}`));
+      const imageURLs = req.files.map(file => `${BASE_URL}/uploads/testimonials/${file.filename}`);
       
       if (imageURLs.length > 5) {
         return res.status(400).json({ message: 'Maximum 5 images allowed per testimonial' });
@@ -172,17 +152,14 @@ exports.updateTestimonial = async (req, res) => {
       testimonial.imageURLs = imageURLs;
       testimonial.imageURL = imageURLs[0];
     } else if (req.file) {
-      testimonial.imageURL = makeUploadsUrl(req, `/uploads/testimonials/${req.file.filename}`);
+      testimonial.imageURL = `${BASE_URL}/uploads/testimonials/${req.file.filename}`;
       testimonial.imageURLs = [testimonial.imageURL];
     }
 
     testimonial.status = 'Pending'; // reset for re-approval
     await testimonial.save();
 
-    const obj = testimonial.toObject();
-    obj.imageURL = normalizePublicUrl(obj.imageURL, req);
-    obj.imageURLs = normalizePublicUrls(obj.imageURLs, req);
-    res.json({ message: 'Testimonial updated, pending approval', testimonial: obj });
+    res.json({ message: 'Testimonial updated, pending approval', testimonial });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../../utils/axiosInstance';
 import AdminLayout from '../../components/Layouts/AdminLayout';
-import { formatDate, normalizeImageUrl } from '../../utils/helpers';
+import { formatDate } from '../../utils/helpers';
 import { API_PATHS } from '../../utils/apiPaths';
 import { 
   Plus, 
@@ -1080,7 +1080,7 @@ const AdminClasses = () => {
                       }`}
                     >
                       <img
-                        src={normalizeImageUrl(image)}
+                        src={image}
                         alt={`Thumbnail ${index + 1}`}
                         className="w-full h-full object-cover"
                         style={{ minWidth: '64px', minHeight: '64px' }}

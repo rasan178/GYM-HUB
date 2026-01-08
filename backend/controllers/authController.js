@@ -1,7 +1,6 @@
 // backend/controllers/authController.js
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const { normalizePublicUrl } = require('../utils/publicUrl');
 
 const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 
@@ -20,7 +19,7 @@ exports.register = async (req, res) => {
   
   const user = await User.create(userData);
   if (user) {
-    res.status(201).json({ _id: user._id, userID: user.userID, name: user.name, email: user.email, phoneNumber: user.phoneNumber, role: user.role, profileImageURL: normalizePublicUrl(user.profileImageURL, req), token: generateToken(user._id) });
+    res.status(201).json({ _id: user._id, userID: user.userID, name: user.name, email: user.email, phoneNumber: user.phoneNumber, role: user.role, profileImageURL: user.profileImageURL, token: generateToken(user._id) });
   } else {
     res.status(400).json({ message: 'Invalid data' });
   }
@@ -37,7 +36,7 @@ exports.login = async (req, res) => {
         code: 'ACCOUNT_DEACTIVATED'
       });
     }
-    res.json({ _id: user._id, userID: user.userID, name: user.name, email: user.email, phoneNumber: user.phoneNumber, role: user.role, status: user.status, profileImageURL: normalizePublicUrl(user.profileImageURL, req), token: generateToken(user._id) });
+    res.json({ _id: user._id, userID: user.userID, name: user.name, email: user.email, phoneNumber: user.phoneNumber, role: user.role, status: user.status, profileImageURL: user.profileImageURL, token: generateToken(user._id) });
   } else {
     res.status(401).json({ message: 'Invalid email or password' });
   }
@@ -54,7 +53,7 @@ exports.getProfile = async (req, res) => {
       email: user.email, 
       phoneNumber: user.phoneNumber,
       role: user.role, 
-      profileImageURL: normalizePublicUrl(user.profileImageURL, req),
+      profileImageURL: user.profileImageURL, 
       status: user.status,
       createdDate: user.createdDate,
       updatedDate: user.updatedDate
