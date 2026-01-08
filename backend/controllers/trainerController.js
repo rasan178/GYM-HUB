@@ -3,6 +3,7 @@ const Class = require('../models/Class');
 const Booking = require('../models/Booking');
 const Membership = require('../models/Membership');
 const Counter = require('../models/Counter'); // for auto-increment IDs
+const { makeUploadsUrl, normalizePublicUrl, normalizePublicUrls } = require('../utils/publicUrl');
 
 // ========================= Helper: Generate unique Trainer ID =========================
 async function generateTrainerID() {
@@ -94,9 +95,8 @@ exports.createTrainer = async (req, res) => {
     const trainerData = { trainerID, trainerName, email, specialty, experience, qualifications, bio, schedule, contactInfo, socialLinks };
     
     // Handle multiple image uploads (up to 5 images)
-    const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
     if (req.files && req.files.length > 0) {
-      const images = req.files.map(file => `${BASE_URL}/uploads/trainers/${file.filename}`);
+      const images = req.files.map(file => makeUploadsUrl(req, `/uploads/trainers/${file.filename}`));
       
       // Limit to maximum 5 images
       if (images.length > 5) {
@@ -111,7 +111,7 @@ exports.createTrainer = async (req, res) => {
       }
     } else if (req.file) {
       // Handle single image upload (backward compatibility)
-      trainerData.image = `${BASE_URL}/uploads/trainers/${req.file.filename}`;
+      trainerData.image = makeUploadsUrl(req, `/uploads/trainers/${req.file.filename}`);
       trainerData.images = [trainerData.image];
     }
 
@@ -169,9 +169,8 @@ exports.updateTrainer = async (req, res) => {
     trainer.socialLinks = socialLinks || trainer.socialLinks;
     
     // Handle multiple image uploads (up to 5 images)
-    const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
     if (req.files && req.files.length > 0) {
-      const images = req.files.map(file => `${BASE_URL}/uploads/trainers/${file.filename}`);
+      const images = req.files.map(file => makeUploadsUrl(req, `/uploads/trainers/${file.filename}`));
       
       // Limit to maximum 5 images
       if (images.length > 5) {
@@ -186,7 +185,7 @@ exports.updateTrainer = async (req, res) => {
       }
     } else if (req.file) {
       // Handle single image upload (backward compatibility)
-      trainer.image = `${BASE_URL}/uploads/trainers/${req.file.filename}`;
+      trainer.image = makeUploadsUrl(req, `/uploads/trainers/${req.file.filename}`);
       trainer.images = [trainer.image];
     }
 
@@ -218,12 +217,17 @@ exports.getTrainers = async (req, res) => {
       trainers = await Trainer.find();
     }
     
-    const data = trainers.map(t => ({
-      ...t.toObject(),
+    const data = trainers.map(t => {
+      const obj = t.toObject();
+      return ({
+      ...obj,
+      image: normalizePublicUrl(obj.image, req),
+      images: normalizePublicUrls(obj.images, req),
       status: getTrainerStatus(t),
       specialty: Array.isArray(t.specialty) ? t.specialty.join(", ") : t.specialty,
       schedule: cleanSchedule(t.schedule)
-    }));
+    });
+    });
     res.json(data);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -241,8 +245,11 @@ exports.getTrainerById = async (req, res) => {
       return res.status(404).json({ message: "This trainer is currently unavailable. They may be on leave or temporarily suspended. Please contact support for assistance." });
     }
 
+    const obj = trainer.toObject();
     res.json({
-      ...trainer.toObject(),
+      ...obj,
+      image: normalizePublicUrl(obj.image, req),
+      images: normalizePublicUrls(obj.images, req),
       status: getTrainerStatus(trainer),
       specialty: Array.isArray(trainer.specialty) ? trainer.specialty.join(", ") : trainer.specialty,
       schedule: cleanSchedule(trainer.schedule)
