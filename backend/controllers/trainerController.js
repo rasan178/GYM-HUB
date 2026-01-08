@@ -94,8 +94,9 @@ exports.createTrainer = async (req, res) => {
     const trainerData = { trainerID, trainerName, email, specialty, experience, qualifications, bio, schedule, contactInfo, socialLinks };
     
     // Handle multiple image uploads (up to 5 images)
+    const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
     if (req.files && req.files.length > 0) {
-      const images = req.files.map(file => `http://localhost:8000/uploads/trainers/${file.filename}`);
+      const images = req.files.map(file => `${BASE_URL}/uploads/trainers/${file.filename}`);
       
       // Limit to maximum 5 images
       if (images.length > 5) {
@@ -110,7 +111,7 @@ exports.createTrainer = async (req, res) => {
       }
     } else if (req.file) {
       // Handle single image upload (backward compatibility)
-      trainerData.image = `http://localhost:8000/uploads/trainers/${req.file.filename}`;
+      trainerData.image = `${BASE_URL}/uploads/trainers/${req.file.filename}`;
       trainerData.images = [trainerData.image];
     }
 
@@ -168,8 +169,9 @@ exports.updateTrainer = async (req, res) => {
     trainer.socialLinks = socialLinks || trainer.socialLinks;
     
     // Handle multiple image uploads (up to 5 images)
+    const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
     if (req.files && req.files.length > 0) {
-      const images = req.files.map(file => `http://localhost:8000/uploads/trainers/${file.filename}`);
+      const images = req.files.map(file => `${BASE_URL}/uploads/trainers/${file.filename}`);
       
       // Limit to maximum 5 images
       if (images.length > 5) {
@@ -184,7 +186,7 @@ exports.updateTrainer = async (req, res) => {
       }
     } else if (req.file) {
       // Handle single image upload (backward compatibility)
-      trainer.image = `http://localhost:8000/uploads/trainers/${req.file.filename}`;
+      trainer.image = `${BASE_URL}/uploads/trainers/${req.file.filename}`;
       trainer.images = [trainer.image];
     }
 

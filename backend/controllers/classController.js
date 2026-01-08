@@ -132,8 +132,9 @@ const createClass = async (req, res) => {
     }));
 
     let imageURLs = [];
+    const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
     if (req.files && req.files.length > 0) {
-      imageURLs = req.files.map(file => `http://localhost:8000/uploads/classes/${file.filename}`);
+      imageURLs = req.files.map(file => `${BASE_URL}/uploads/classes/${file.filename}`);
     }
 
     const newClass = new Class({
@@ -368,8 +369,9 @@ const updateClass = async (req, res) => {
     cls.category = category || cls.category;
     cls.level = level || cls.level;
 
+    const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
     if (req.files && req.files.length > 0) {
-      cls.imageURLs = req.files.map(file => `http://localhost:8000/uploads/classes/${file.filename}`);
+      cls.imageURLs = req.files.map(file => `${BASE_URL}/uploads/classes/${file.filename}`);
     }
 
     await cls.save();

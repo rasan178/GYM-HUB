@@ -32,8 +32,9 @@ exports.createTestimonial = async (req, res) => {
     };
 
     // Handle multiple image uploads (up to 5 images)
+    const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
     if (req.files && req.files.length > 0) {
-      const imageURLs = req.files.map(file => `http://localhost:8000/uploads/testimonials/${file.filename}`);
+      const imageURLs = req.files.map(file => `${BASE_URL}/uploads/testimonials/${file.filename}`);
       
       if (imageURLs.length > 5) {
         return res.status(400).json({ message: 'Maximum 5 images allowed per testimonial' });
@@ -45,7 +46,7 @@ exports.createTestimonial = async (req, res) => {
         data.imageURL = imageURLs[0];
       }
     } else if (req.file) {
-      data.imageURL = `http://localhost:8000/uploads/testimonials/${req.file.filename}`;
+      data.imageURL = `${BASE_URL}/uploads/testimonials/${req.file.filename}`;
       data.imageURLs = [data.imageURL];
     }
 
@@ -140,8 +141,9 @@ exports.updateTestimonial = async (req, res) => {
     testimonial.userRole = req.body.userRole || testimonial.userRole;
 
     // Handle multiple image uploads
+    const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
     if (req.files && req.files.length > 0) {
-      const imageURLs = req.files.map(file => `http://localhost:8000/uploads/testimonials/${file.filename}`);
+      const imageURLs = req.files.map(file => `${BASE_URL}/uploads/testimonials/${file.filename}`);
       
       if (imageURLs.length > 5) {
         return res.status(400).json({ message: 'Maximum 5 images allowed per testimonial' });
@@ -150,7 +152,7 @@ exports.updateTestimonial = async (req, res) => {
       testimonial.imageURLs = imageURLs;
       testimonial.imageURL = imageURLs[0];
     } else if (req.file) {
-      testimonial.imageURL = `http://localhost:8000/uploads/testimonials/${req.file.filename}`;
+      testimonial.imageURL = `${BASE_URL}/uploads/testimonials/${req.file.filename}`;
       testimonial.imageURLs = [testimonial.imageURL];
     }
 
