@@ -26,6 +26,7 @@ import {
   ChevronRight,
   Grid3X3
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AdminClasses = () => {
   const [classes, setClasses] = useState([]);
@@ -192,7 +193,7 @@ const AdminClasses = () => {
       fetchClasses();
       fetchClassStats();
       setLocalError(null);
-      alert('Class saved successfully!');
+      toast.success('Class saved successfully!');
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to save class');
     } finally {
@@ -224,7 +225,7 @@ const AdminClasses = () => {
       fetchClasses();
       fetchClassStats();
       setLocalError(null);
-      alert('Class cancelled successfully!');
+      toast.success('Class cancelled successfully!');
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to cancel class');
     } finally {
@@ -239,7 +240,7 @@ const AdminClasses = () => {
       fetchClasses();
       fetchClassStats();
       setLocalError(null);
-      alert('Class activated successfully!');
+      toast.success('Class activated successfully!');
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to activate class');
     } finally {
@@ -254,7 +255,7 @@ const AdminClasses = () => {
       fetchClasses();
       fetchClassStats();
       setLocalError(null);
-      alert('Class deactivated successfully!');
+      toast.success('Class deactivated successfully!');
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to deactivate class');
     } finally {
@@ -269,7 +270,7 @@ const AdminClasses = () => {
       fetchClasses();
       fetchClassStats();
       setLocalError(null);
-      alert('Class reactivated successfully!');
+      toast.success('Class reactivated successfully!');
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to reactivate class');
     } finally {

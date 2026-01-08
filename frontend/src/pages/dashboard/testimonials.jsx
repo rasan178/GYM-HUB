@@ -6,6 +6,7 @@ import AuthContext from '../../context/AuthContext';
 import TextInput from '../../components/Inputs/TextInput';
 import FileInput from '../../components/Inputs/FileInput';
 import Modal from '../../components/Modal';
+import DeleteAlertContent from '../../components/DeleteAlertContent';
 import TestimonialErrorDisplay from '../../components/TestimonialErrorDisplay';
 import { API_PATHS } from '../../utils/apiPaths';
 import { canEditTestimonial, getDaysRemainingToEdit } from '../../utils/helpers';
@@ -27,6 +28,7 @@ import {
   X,
   Trash2
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Testimonials = () => {
   const { user, error } = useContext(AuthContext);
@@ -138,7 +140,7 @@ const Testimonials = () => {
       setFormData({ message: '', rating: '', userRole: '', images: [] });
       fetchTestimonials();
       setLocalError(null);
-      alert('Testimonial submitted successfully!');
+      toast.success('Testimonial submitted successfully!');
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to submit testimonial');
     } finally {
@@ -167,16 +169,21 @@ const Testimonials = () => {
   };
 
   const deleteTestimonial = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this testimonial? This action cannot be undone.')) {
-      return;
-    }
-    
+    // open confirmation modal
+    setConfirmDelete({ open: true, id });
+  };
+
+  const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
+
+  const handleConfirmDelete = async () => {
+    const id = confirmDelete.id;
+    setConfirmDelete({ open: false, id: null });
     setIsAction(prev => ({ ...prev, [id]: 'delete' }));
     try {
       await api.delete(API_PATHS.TESTIMONIALS.DELETE(id));
       fetchTestimonials();
       setLocalError(null);
-      alert('Testimonial deleted successfully!');
+      toast.success('Testimonial deleted successfully!');
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to delete testimonial. You can only delete your own testimonials.');
     } finally {
@@ -661,6 +668,14 @@ const Testimonials = () => {
                   Use ← → arrow keys or click thumbnails to navigate
                 </div>
               )}
+              {/* Delete Confirmation Modal */}
+              <Modal isOpen={confirmDelete.open} onClose={() => setConfirmDelete({ open: false, id: null })}>
+                <DeleteAlertContent
+                  content="Are you sure you want to delete this testimonial? This action cannot be undone."
+                  onDelete={handleConfirmDelete}
+                  onCancel={() => setConfirmDelete({ open: false, id: null })}
+                />
+              </Modal>
             </div>
           </div>
         )}

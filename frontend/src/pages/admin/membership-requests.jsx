@@ -14,6 +14,7 @@ import {
   Trash2,
   Info
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 // Reusable SummaryCard component
 const SummaryCard = ({ icon: Icon, title, count, iconColor }) => (
@@ -82,7 +83,7 @@ const AdminMembershipRequests = () => {
     try {
       await apiCall(requestId);
       fetchRequests();
-      alert(successMessage);
+      toast.success(successMessage);
     } catch (err) {
       setLocalError(err.response?.data?.message || `Failed to ${action} request`);
     } finally {
