@@ -9,7 +9,12 @@ const { makeUploadsUrl, normalizePublicUrl } = require('../utils/publicUrl');
 exports.getUsers = async (req, res) => {
   try {
     const users = await User.find({});
-    res.json(users);
+    const data = users.map((u) => {
+      const obj = u.toObject();
+      obj.profileImageURL = normalizePublicUrl(obj.profileImageURL, req);
+      return obj;
+    });
+    res.json(data);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
