@@ -15,6 +15,7 @@ import {
   Power,
   PowerOff
 } from 'lucide-react';
+import { normalizeImageUrl } from '../../utils/helpers';
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
@@ -188,7 +189,7 @@ const AdminUsers = () => {
                     <div className="flex-shrink-0 mr-3">
                       {u.profileImageURL ? (
                         <img
-                          src={u.profileImageURL}
+                            src={normalizeImageUrl(u.profileImageURL)}
                           alt={u.name}
                           className="w-8 h-8 rounded-full object-cover border border-gray-200"
                         />
@@ -292,7 +293,7 @@ const AdminUsers = () => {
                         <div className="flex-shrink-0 mr-3">
                           {u.profileImageURL ? (
                             <img
-                              src={u.profileImageURL}
+                              src={normalizeImageUrl(u.profileImageURL)}
                               alt={u.name}
                               className="w-8 h-8 rounded-full object-cover border border-gray-200"
                             />

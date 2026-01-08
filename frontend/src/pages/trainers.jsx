@@ -5,6 +5,7 @@ import api from '../utils/axiosInstance';
 import MainLayout from '../components/Layouts/MainLayout';
 import TrainerCard from '../components/Cards/TrainerCard';
 import { API_PATHS } from '../utils/apiPaths';
+import { normalizeImageUrl } from "../utils/helpers";
 
 // Simple loader component for trainers
 const TrainerLoader = ({ text = "Loading...", size = "md" }) => {
@@ -191,7 +192,7 @@ const Trainers = () => {
                 {selectedTrainer.image && (
                   <div className="overflow-hidden border-4 border-black relative group">
                     <img
-                      src={selectedTrainer.image}
+                      src={normalizeImageUrl(selectedTrainer.image)}
                       alt={selectedTrainer.trainerName}
                       className="w-full h-64 sm:h-72 md:h-80 lg:h-96 object-cover group-hover:scale-105 transition-transform duration-500"
                     />

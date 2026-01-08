@@ -66,3 +66,44 @@ export const getDaysRemainingToEdit = (createdAt) => {
   
   return remaining > 0 ? remaining : 0;
 };
+
+/**
+ * Normalize image URLs coming from the API.
+ * - Fixes stale/incorrect localhost URLs (common when data was created in dev)
+ * - Optionally prefixes relative /uploads paths with NEXT_PUBLIC_API_URL
+ */
+export const normalizeImageUrl = (url) => {
+  if (!url || typeof url !== "string") return url;
+
+  // Local static assets served by Next.js
+  if (url.startsWith("/images/")) return url;
+  if (url.startsWith("data:") || url.startsWith("blob:")) return url;
+
+  const base = process.env.NEXT_PUBLIC_API_URL;
+  if (!base) return url;
+
+  // Relative uploads -> absolute
+  if (url.startsWith("/uploads/")) return `${base}${url}`;
+  if (url.startsWith("uploads/")) return `${base}/${url}`;
+
+  // Replace localhost origin with the configured backend
+  if (url.startsWith("http://localhost:5000/") || url.startsWith("http://127.0.0.1:5000/")) {
+    return `${base}${url.replace(/^http:\/\/(localhost|127\.0\.0\.1):5000/, "")}`;
+  }
+
+  // Mixed content: if backend is https, upgrade obvious http URLs for same host
+  if (base.startsWith("https://") && url.startsWith("http://")) {
+    try {
+      const u = new URL(url);
+      const b = new URL(base);
+      if (u.host === b.host || u.hostname.endsWith("onrender.com")) {
+        u.protocol = "https:";
+        return u.toString();
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return url;
+};

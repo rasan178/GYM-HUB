@@ -9,6 +9,7 @@ import { API_PATHS } from "../utils/apiPaths";
 import SpinnerLoader from "../components/Loaders/SpinnerLoader";
 import toast from 'react-hot-toast';
 import { User, Mail, Lock, Camera, Calendar, Shield, Activity, Phone, Trash2, AlertTriangle, X, Check } from 'lucide-react';
+import { normalizeImageUrl } from "../utils/helpers";
 
 const Profile = () => {
   const { user, loading, error, refreshUser } = useContext(AuthContext);
@@ -208,7 +209,7 @@ const Profile = () => {
                   <div className="relative inline-block group">
                     <div className="relative">
                       <img
-                        src={formData.previewImage || user?.profileImageURL || "/images/default-profile.svg"}
+                        src={formData.previewImage || normalizeImageUrl(user?.profileImageURL) || "/images/default-profile.svg"}
                         alt="Profile"
                         className="w-36 h-36 rounded-full border-4 border-black object-cover mx-auto shadow-xl transition-all duration-300 group-hover:scale-105"
                       />
