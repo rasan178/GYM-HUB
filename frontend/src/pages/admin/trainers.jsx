@@ -25,7 +25,6 @@ import {
   Phone
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { normalizeImageUrl } from '../../utils/helpers';
 
 const AdminTrainers = () => {
   const [trainers, setTrainers] = useState([]);
@@ -1113,7 +1112,7 @@ const AdminTrainers = () => {
                       }`}
                     >
                       <img
-                        src={normalizeImageUrl(image)}
+                        src={image}
                         alt={`Thumbnail ${index + 1}`}
                         className="w-full h-full object-cover"
                         style={{ minWidth: '64px', minHeight: '64px' }}

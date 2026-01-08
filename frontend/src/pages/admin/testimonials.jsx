@@ -20,7 +20,6 @@ import {
   ChevronRight,
   Grid3X3
 } from 'lucide-react';
-import { normalizeImageUrl } from '../../utils/helpers';
 
 const AdminTestimonials = () => {
   const [testimonials, setTestimonials] = useState([]);
@@ -539,7 +538,7 @@ const AdminTestimonials = () => {
                       }`}
                     >
                       <img
-                        src={normalizeImageUrl(image)}
+                        src={image}
                         alt={`Thumbnail ${index + 1}`}
                         className="w-full h-full object-cover"
                         style={{ minWidth: '64px', minHeight: '64px' }}
