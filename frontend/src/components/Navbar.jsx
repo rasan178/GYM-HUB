@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import AuthPopup from '../pages/auth/components/AuthPopup';
 
-const Navbar = () => {
+const Navbar = ({ onMenuClick }) => {
   const { user, logout, error } = useContext(AuthContext);
   const [role, setRole] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -69,7 +69,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-black text-white shadow-xl">
+      <nav className="bg-black text-white shadow-xl h-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -81,8 +81,8 @@ const Navbar = () => {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:block">
+            {/* Desktop Navigation (visible on extra-large screens only) */}
+            <div className="hidden xl:block">
               <div className="ml-10 flex items-baseline space-x-4">
                 {/* Always visible links for newcomers */}
                 {!user && (
@@ -206,21 +206,22 @@ const Navbar = () => {
               </div>
             </div>
 
-            {/* Mobile menu button */}
-            <div className="md:hidden">
+            {/* Mobile menu button: visible on tablet and mobile (hidden on extra-large screens) */}
+            <div className="xl:hidden">
               <button
-                onClick={toggleMobileMenu}
+                onClick={() => onMenuClick ? onMenuClick() : toggleMobileMenu()}
                 className="bg-white text-black p-2 rounded-md hover:bg-black hover:text-white transition-colors"
+                aria-label="Open menu"
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {onMenuClick ? <Menu className="w-5 h-5" /> : (mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />)}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        {mobileMenuOpen && (
-          <div className="md:hidden">
+        {/* Mobile Navigation (only when no parent menu handler provided) — shown on tablet and mobile */}
+        {!onMenuClick && mobileMenuOpen && (
+          <div className="xl:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-black">
               {/* Always visible links for newcomers */}
               {!user && (

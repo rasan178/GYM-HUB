@@ -24,16 +24,16 @@ const AdminLayout = ({ children }) => {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar for desktop */}
-        <aside className="hidden lg:block">
+        {/* Sidebar for desktop (visible on extra-large screens only) */}
+        <aside className="hidden xl:block">
           <Sidebar role={role} />
         </aside>
 
         {/* Main content */}
         <main className="flex-1 overflow-auto p-4 sm:p-6 bg-black text-white border-l border-white/10">{children}</main>
 
-        {/* Mobile sidebar drawer */}
-        <div className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        {/* Mobile/sidebar drawer (hidden on extra-large screens) */}
+        <div className={`fixed inset-0 z-50 xl:hidden transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
           {/* Overlay */}
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-sm"
