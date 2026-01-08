@@ -13,6 +13,7 @@ import {
   X,
   Info
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AdminPlans = () => {
   const router = useRouter();
@@ -82,7 +83,7 @@ const AdminPlans = () => {
         durationMonths: ''
       });
       fetchPlans();
-      alert('Plan saved successfully!');
+      toast.success('Plan saved successfully!');
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to save plan');
     } finally {
@@ -109,7 +110,7 @@ const AdminPlans = () => {
     try {
       await api.delete(API_PATHS.ADMIN.PLANS.DELETE(id));
       fetchPlans();
-      alert('Plan deleted successfully!');
+      toast.success('Plan deleted successfully!');
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to delete plan');
     } finally {

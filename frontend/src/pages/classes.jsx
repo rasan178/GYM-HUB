@@ -7,6 +7,7 @@ import { formatTime } from "../utils/helpers";
 import { API_PATHS } from "../utils/apiPaths";
 import BookingLoader from "../components/Loaders/BookingLoader";
 import BookingErrorDisplay from "../components/BookingErrorDisplay";
+import toast from 'react-hot-toast';
 
 const Classes = () => {
   const { user, error } = useContext(AuthContext);
@@ -111,7 +112,7 @@ const Classes = () => {
         date,
       });
       setLocalError(null);
-      alert("Class booked successfully!");
+      toast.success("Class booked successfully!");
     } catch (err) {
       // Display the actual error message from the backend
       const errorMessage = err.response?.data?.message || "Failed to book class. Please try again.";

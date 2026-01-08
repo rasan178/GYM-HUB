@@ -21,6 +21,7 @@ import {
   PowerOff,
   Clock
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AdminMemberships = () => {
   const [memberships, setMemberships] = useState([]);
@@ -102,7 +103,7 @@ const AdminMemberships = () => {
       fetchMemberships();
       fetchMembershipStats();
       setLocalError(null);
-      alert('Membership saved successfully!');
+      toast.success('Membership saved successfully!');
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to save membership');
     } finally {
@@ -159,7 +160,7 @@ const AdminMemberships = () => {
       fetchMemberships();
       fetchMembershipStats();
       setLocalError(null);
-      alert(`Renewal option ${newRenewalOption ? 'enabled' : 'disabled'} successfully!`);
+      toast.success(`Renewal option ${newRenewalOption ? 'enabled' : 'disabled'} successfully!`);
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to update renewal option');
     } finally {

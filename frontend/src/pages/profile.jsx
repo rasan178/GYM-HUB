@@ -7,15 +7,18 @@ import TextInput from "../components/Inputs/TextInput";
 import FileInput from "../components/Inputs/FileInput";
 import { API_PATHS } from "../utils/apiPaths";
 import SpinnerLoader from "../components/Loaders/SpinnerLoader";
+import toast from 'react-hot-toast';
 import { User, Mail, Lock, Camera, Calendar, Shield, Activity, Phone, Trash2, AlertTriangle, X, Check } from 'lucide-react';
 
 const Profile = () => {
   const { user, loading, error, refreshUser } = useContext(AuthContext);
   const [formData, setFormData] = useState({ name: "", email: "", phoneNumber: "", password: "", image: null, previewImage: null });
+  const [initialFormData, setInitialFormData] = useState(null);
   const [localError, setLocalError] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isRemovingImage, setIsRemovingImage] = useState(false);
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+  const [membership, setMembership] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -31,6 +34,12 @@ const Profile = () => {
           image: null,
           previewImage: null,
         });
+        setInitialFormData({
+          name: user?.name || "",
+          email: user?.email || "",
+          phoneNumber: user?.phoneNumber || "",
+          image: null,
+        });
       }
     }
   }, [loading, user, router]);
@@ -43,6 +52,30 @@ const Profile = () => {
       }
     };
   }, [formData.previewImage]);
+
+  // Fetch user's membership (most recent) to display plan name
+  useEffect(() => {
+    const fetchMembership = async () => {
+      if (!user) return;
+      try {
+        const token = localStorage.getItem('token');
+        if (token) api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        const res = await api.get(API_PATHS.MEMBERSHIPS.GET_ALL);
+        const items = res.data?.memberships || res.data?.memberships || res.data?.memberships;
+        // API returns memberships array under `memberships` (per controller)
+        const memberships = res.data?.memberships || res.data || [];
+        if (Array.isArray(memberships) && memberships.length > 0) {
+          setMembership(memberships[0]);
+        } else {
+          setMembership(null);
+        }
+      } catch (err) {
+        // ignore silently
+        setMembership(null);
+      }
+    };
+    fetchMembership();
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -81,7 +114,9 @@ const Profile = () => {
         URL.revokeObjectURL(formData.previewImage);
         setFormData(prev => ({ ...prev, previewImage: null }));
       }
-      alert("Profile updated successfully!");
+      // update initial values so the form is considered not-changed
+      setInitialFormData({ name: formData.name, email: formData.email, phoneNumber: formData.phoneNumber, image: null });
+      toast.success("Profile updated successfully!");
     } catch (err) {
       setLocalError(err.response?.data?.message || "Failed to update profile");
     } finally {
@@ -106,7 +141,7 @@ const Profile = () => {
         URL.revokeObjectURL(formData.previewImage);
         setFormData(prev => ({ ...prev, previewImage: null, image: null }));
       }
-      alert("Profile image removed successfully!");
+      toast.success("Profile image removed successfully!");
     } catch (err) {
       setLocalError(err.response?.data?.message || "Failed to remove profile image");
     } finally {
@@ -115,6 +150,17 @@ const Profile = () => {
   };
 
   const hasCustomImage = user?.profileImageURL && !user.profileImageURL.includes('/images/default-profile.svg');
+
+  // check if the user modified any fields compared to initial load
+  const isChanged = (() => {
+    if (!initialFormData) return false;
+    if (formData.name !== (initialFormData.name || "")) return true;
+    if (formData.email !== (initialFormData.email || "")) return true;
+    if (formData.phoneNumber !== (initialFormData.phoneNumber || "")) return true;
+    if (formData.image) return true;
+    if (formData.password && formData.password.trim() !== "") return true;
+    return false;
+  })();
 
   if (loading) return <SpinnerLoader />;
   // Block admin access to profile page
@@ -232,8 +278,8 @@ const Profile = () => {
                     <span className="text-green-700 font-black bg-green-100 px-3 py-1 rounded-full text-sm">Active</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-200">
-                    <span className="text-gray-700 font-medium">Role</span>
-                    <span className="text-blue-700 font-black bg-blue-100 px-3 py-1 rounded-full text-sm capitalize">{user?.role || "User"}</span>
+                    <span className="text-gray-700 font-medium">Membership</span>
+                    <span className="text-blue-700 font-black bg-blue-100 px-3 py-1 rounded-full text-sm">{membership?.planName || membership?.planID?.planName || 'No membership'}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-purple-50 rounded-xl border border-purple-200">
                     <span className="text-gray-700 font-medium">Last Updated</span>
@@ -301,7 +347,7 @@ const Profile = () => {
                     <button 
                       className="w-full bg-gradient-to-r from-black to-gray-800 text-white py-4 px-8 rounded-xl font-black text-lg hover:from-gray-800 hover:to-black transition-all duration-300 disabled:opacity-60 flex items-center justify-center shadow-xl hover:shadow-2xl transform hover:scale-[1.02]" 
                       type="submit" 
-                      disabled={isUpdating}
+                      disabled={!isChanged || isUpdating}
                     >
                       {isUpdating ? (
                         <>
@@ -319,45 +365,7 @@ const Profile = () => {
                 </form>
               </div>
 
-              {/* Account Settings Section */}
-              <div className="bg-gradient-to-br from-white to-gray-50 text-black rounded-2xl p-8 border-2 border-black shadow-xl">
-                <h3 className="text-2xl font-black mb-8 flex items-center text-black">
-                  <Shield className="w-7 h-7 mr-3 text-purple-600" />
-                  Account Settings
-                </h3>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl border border-blue-200">
-                    <div>
-                      <h4 className="font-black text-lg text-black">Email Notifications</h4>
-                      <p className="text-sm text-gray-700 mt-1">Receive updates about your bookings and memberships</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-12 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-blue-600 peer-checked:to-purple-600"></div>
-                    </label>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-6 bg-gradient-to-r from-green-50 to-green-100 rounded-2xl border border-green-200">
-                    <div>
-                      <h4 className="font-black text-lg text-black">Two-Factor Authentication</h4>
-                      <p className="text-sm text-gray-700 mt-1">Add an extra layer of security to your account</p>
-                    </div>
-                    <button className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl text-sm font-black hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                      Enable
-                    </button>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-6 bg-gradient-to-r from-purple-50 to-purple-100 rounded-2xl border border-purple-200">
-                    <div>
-                      <h4 className="font-black text-lg text-black">Data Export</h4>
-                      <p className="text-sm text-gray-700 mt-1">Download a copy of your account data</p>
-                    </div>
-                    <button className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-3 rounded-xl text-sm font-black hover:from-purple-700 hover:to-purple-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                      Download
-                    </button>
-                  </div>
-                </div>
-              </div>
+              
             </div>
           </div>
         </div>

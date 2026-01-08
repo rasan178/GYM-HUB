@@ -24,6 +24,7 @@ import {
   Grid3X3,
   Phone
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AdminTrainers = () => {
   const [trainers, setTrainers] = useState([]);
@@ -193,7 +194,7 @@ const AdminTrainers = () => {
       fetchTrainers();
       fetchTrainerStats();
       setLocalError(null);
-      alert('Trainer saved successfully!');
+      toast.success('Trainer saved successfully!');
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to save trainer');
     } finally {
@@ -222,7 +223,7 @@ const AdminTrainers = () => {
       fetchTrainers();
       fetchTrainerStats();
       setLocalError(null);
-      alert('Trainer deactivated successfully!');
+      toast.success('Trainer deactivated successfully!');
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to deactivate trainer');
     } finally {
@@ -237,7 +238,7 @@ const AdminTrainers = () => {
       fetchTrainers();
       fetchTrainerStats();
       setLocalError(null);
-      alert('Trainer reactivated successfully!');
+      toast.success('Trainer reactivated successfully!');
     } catch (err) {
       setLocalError(err.response?.data?.message || 'Failed to reactivate trainer');
     } finally {

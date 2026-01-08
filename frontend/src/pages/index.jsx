@@ -20,6 +20,7 @@ import {
   Plus,
   X
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 
 export default function Home() {
@@ -156,14 +157,14 @@ export default function Home() {
         }
       );
 
-      alert('Testimonial submitted successfully! It will be reviewed before appearing.');
+      toast.success('Testimonial submitted successfully! It will be reviewed before appearing.');
       setShowCreateForm(false);
       setTestimonialForm({ message: '', rating: 5, userRole: '', image: null });
       const fileInput = document.querySelector('input[type="file"]');
       if (fileInput) fileInput.value = '';
     } catch (error) {
       console.error('Error creating testimonial:', error);
-      alert('Failed to submit testimonial');
+      toast.error('Failed to submit testimonial');
     } finally {
       setCreateLoading(false);
     }
