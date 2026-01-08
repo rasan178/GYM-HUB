@@ -1,5 +1,6 @@
 const Class = require('../models/Class');
 const Trainer = require('../models/Trainer');
+const { makeUploadsUrl, normalizePublicUrls } = require('../utils/publicUrl');
 
 // ========================= HELPERS =========================
 
@@ -132,9 +133,8 @@ const createClass = async (req, res) => {
     }));
 
     let imageURLs = [];
-    const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
     if (req.files && req.files.length > 0) {
-      imageURLs = req.files.map(file => `${BASE_URL}/uploads/classes/${file.filename}`);
+      imageURLs = req.files.map(file => makeUploadsUrl(req, `/uploads/classes/${file.filename}`));
     }
 
     const newClass = new Class({
@@ -152,7 +152,9 @@ const createClass = async (req, res) => {
     });
 
     await newClass.save();
-    res.status(201).json({ message: 'Class created successfully', class: newClass });
+    const obj = newClass.toObject();
+    obj.imageURLs = normalizePublicUrls(obj.imageURLs, req);
+    res.status(201).json({ message: 'Class created successfully', class: obj });
 
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -190,7 +192,7 @@ const getAllClassesWithAvailability = async (req, res) => {
         status: cls.status,
         category: cls.category,
         level: cls.level,
-        imageURLs: cls.imageURLs,
+        imageURLs: normalizePublicUrls(cls.imageURLs, req),
         cancellations: cls.cancellations,
       }));
       return res.json(result);
@@ -222,7 +224,7 @@ const getAllClassesWithAvailability = async (req, res) => {
           cancelled: isCancelled,
           startTime: scheduleEntry.startTime,
           endTime: scheduleEntry.endTime,
-          imageURLs: cls.imageURLs,
+          imageURLs: normalizePublicUrls(cls.imageURLs, req),
         };
       })
       .filter(Boolean); // remove nulls
@@ -271,7 +273,7 @@ const getAllClasses = async (req, res) => {
       adminDeactivatedAt: cls.adminDeactivatedAt,
       category: cls.category,
       level: cls.level,
-      imageURLs: cls.imageURLs,
+      imageURLs: normalizePublicUrls(cls.imageURLs, req),
       cancellations: cls.cancellations
     }));
 
@@ -294,8 +296,10 @@ const getClassById = async (req, res) => {
       return res.status(404).json({ message: 'This class has been temporarily suspended by the gym administration. Please contact support for more information.' });
     }
 
+    const obj = cls.toObject();
     res.json({
-      ...cls.toObject(),
+      ...obj,
+      imageURLs: normalizePublicUrls(obj.imageURLs, req),
       cancellations: cls.cancellations.map(c => ({
         date: c.date,           // "yyyy-mm-dd" string
         startTime: c.startTime,
@@ -369,13 +373,14 @@ const updateClass = async (req, res) => {
     cls.category = category || cls.category;
     cls.level = level || cls.level;
 
-    const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
     if (req.files && req.files.length > 0) {
-      cls.imageURLs = req.files.map(file => `${BASE_URL}/uploads/classes/${file.filename}`);
+      cls.imageURLs = req.files.map(file => makeUploadsUrl(req, `/uploads/classes/${file.filename}`));
     }
 
     await cls.save();
-    res.json({ message: 'Class updated successfully', class: cls });
+    const obj = cls.toObject();
+    obj.imageURLs = normalizePublicUrls(obj.imageURLs, req);
+    res.json({ message: 'Class updated successfully', class: obj });
 
   } catch (error) {
     res.status(400).json({ message: error.message });
