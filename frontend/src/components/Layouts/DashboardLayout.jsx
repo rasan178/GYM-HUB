@@ -25,19 +25,14 @@ const DashboardLayout = ({ children }) => {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar for desktop */}
-        <aside className="hidden lg:block">
-          <Sidebar role={role} />
-        </aside>
-
-        {/* Main content */}
+        {/* Main content (desktop shows navbar only; sidebar accessible via menu on tablet/mobile) */}
         <main className="flex-1 overflow-auto p-4 sm:p-6 bg-black text-white border-l border-white/10">
           {error && <div className="bg-white text-black p-3 mb-4 border-2 border-black">{error}</div>}
           {children}
         </main>
 
-        {/* Mobile sidebar drawer */}
-        <div className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        {/* Mobile/sidebar drawer (hidden on extra-large screens) */}
+        <div className={`fixed inset-0 z-50 xl:hidden transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
           {/* Overlay */}
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-sm"

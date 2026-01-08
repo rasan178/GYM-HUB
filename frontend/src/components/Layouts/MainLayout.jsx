@@ -35,8 +35,8 @@ const MainLayout = ({ children }) => {
         </div>
       )}
       
-      {/* Main Content - starts immediately after navbar */}
-      <main className="bg-black">
+      {/* Main Content - add top padding to account for fixed navbar */}
+      <main className="bg-black pt-16">
         {children}
       </main>
       
