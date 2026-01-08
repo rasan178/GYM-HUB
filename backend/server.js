@@ -52,7 +52,8 @@ app.use(cors({
   credentials: true,
   optionsSuccessStatus: 204,
 }));
-app.options('*', cors());
+// Express 5 is stricter about wildcard routes; use a regex to match all paths.
+app.options(/.*/, cors());
 
 app.use(express.json());
 
@@ -68,6 +69,11 @@ app.use(
     },
   })
 );
+
+// Health check endpoint for Render (configure health check path to /healthz, or keep / as needed)
+app.get('/healthz', (req, res) => {
+  res.status(200).json({ ok: true });
+});
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
