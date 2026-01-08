@@ -16,6 +16,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import AuthPopup from '../pages/auth/components/AuthPopup';
+import { normalizeImageUrl } from "../utils/helpers";
 
 const Navbar = ({ onMenuClick }) => {
   const { user, logout, error } = useContext(AuthContext);
@@ -173,7 +174,7 @@ const Navbar = ({ onMenuClick }) => {
                       className="flex items-center space-x-2 ml-4 hover:opacity-80 transition-opacity"
                     >
                       <img
-                        src={user?.profileImageURL || "/images/default-profile.svg"}
+                        src={normalizeImageUrl(user?.profileImageURL) || "/images/default-profile.svg"}
                         alt="Profile"
                         className="w-8 h-8 rounded-full border-2 border-white object-cover"
                       />

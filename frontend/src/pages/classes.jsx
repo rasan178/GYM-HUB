@@ -8,6 +8,7 @@ import { API_PATHS } from "../utils/apiPaths";
 import BookingLoader from "../components/Loaders/BookingLoader";
 import BookingErrorDisplay from "../components/BookingErrorDisplay";
 import toast from 'react-hot-toast';
+import { normalizeImageUrl } from "../utils/helpers";
 
 const Classes = () => {
   const { user, error } = useContext(AuthContext);
@@ -244,7 +245,7 @@ const Classes = () => {
     <div className="group bg-white border-2 border-black shadow-lg hover:shadow-2xl transform hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-300 overflow-hidden">
       <div className="relative overflow-hidden">
         <img
-          src={c.imageURLs?.[0] || "/images/default-class.png"}
+          src={normalizeImageUrl(c.imageURLs?.[0]) || "/images/default-class.png"}
           alt={c.className}
           className="w-full h-48 sm:h-64 object-cover transition-transform duration-500 group-hover:scale-110"
         />
@@ -463,7 +464,7 @@ const Classes = () => {
             {selectedClass.imageURLs?.[0] && (
               <div className="mb-6 sm:mb-8 overflow-hidden border-2 sm:border-4 border-black relative group">
                 <img
-                  src={selectedClass.imageURLs[0]}
+                  src={normalizeImageUrl(selectedClass.imageURLs[0])}
                   alt={selectedClass.className}
                   className="w-full h-48 sm:h-96 object-cover group-hover:scale-105 transition-transform duration-500"
                 />
