@@ -10,7 +10,7 @@ if (backendUrl) {
   try {
     const u = new URL(backendUrl);
     backendPattern = {
-      protocol: u.protocol.replace(':', ''),
+      protocol: u.protocol === 'https:' ? 'https' : 'http',
       hostname: u.hostname,
       pathname: '/uploads/**',
       ...(u.port ? { port: u.port } : {}),
