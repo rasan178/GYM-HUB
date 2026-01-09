@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const errorMiddleware = require('./middleware/errorMiddleware');
 const cors = require('cors');
+const path = require('path');
 
 // Import models
 require('./models/Counter');
@@ -22,19 +23,57 @@ connectDB();
 
 const app = express(); // ✅ initialize app first
 
+// Trust first proxy hop (Render sets X-Forwarded-*). Needed so req.protocol becomes "https" behind the proxy.
+app.set('trust proxy', 1);
+
 // ✅ CORS middleware must come after app is created
-app.use(cors({
-  origin: [
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true; // allow non-browser/healthcheck/no-origin requests
+
+  const allowList = new Set([
     'http://localhost:3000',
-    'https://gym-hub-kappa.vercel.app'
-  ],  // your Next.js frontend
+    'https://gym-hub-kappa.vercel.app',
+  ]);
+  if (allowList.has(origin)) return true;
+
+  // Allow Vercel preview deployments as well (https://*.vercel.app)
+  try {
+    const u = new URL(origin);
+    return u.protocol === 'https:' && u.hostname.endsWith('.vercel.app');
+  } catch {
+    return false;
+  }
+};
+
+app.use(cors({
+  origin: (origin, cb) => cb(null, isAllowedOrigin(origin)),
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  credentials: true, // if you send cookies/auth headers
+  credentials: true,
+  optionsSuccessStatus: 204,
 }));
+// Express 5 is stricter about wildcard routes; use a regex to match all paths.
+app.options(/.*/, cors());
 
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+
+// Publicly serve uploads. Add headers to avoid cross-origin policy surprises on mobile browsers.
+app.use(
+  '/uploads',
+  cors({ origin: '*', credentials: false }),
+  express.static(path.join(__dirname, 'uploads'), {
+    fallthrough: true,
+    setHeaders: (res) => {
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    },
+  })
+);
+
+// Health check endpoint for Render
+app.get('/healthz', (req, res) => {
+  res.status(200).json({ ok: true });
+});
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));

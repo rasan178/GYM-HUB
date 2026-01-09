@@ -1,12 +1,30 @@
+const backendUrl = process.env.NEXT_PUBLIC_API_URL;
+let backendPattern = {
+  protocol: 'http',
+  hostname: 'localhost',
+  port: '5000',
+  pathname: '/uploads/**',
+};
+
+if (backendUrl) {
+  try {
+    const u = new URL(backendUrl);
+    backendPattern = {
+      protocol: u.protocol.replace(':', ''),
+      hostname: u.hostname,
+      pathname: '/uploads/**',
+      ...(u.port ? { port: u.port } : {}),
+    };
+  } catch {
+    // ignore; keep localhost defaults
+  }
+}
+
 module.exports = {
   images: {
     remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '5000',
-        pathname: '/uploads/**',
-      },
+      backendPattern,
+      { protocol: 'https', hostname: 'images.unsplash.com', pathname: '/**' },
     ],
   },
   // Optimize development server
