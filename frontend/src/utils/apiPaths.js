@@ -1,4 +1,8 @@
-export const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+// In production (Vercel), you MUST set NEXT_PUBLIC_API_URL to your Render backend (https://...onrender.com).
+// In development, we fall back to localhost.
+export const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === "development" ? "http://localhost:5000" : "");
 
 export const API_PATHS = {
   AUTH: {

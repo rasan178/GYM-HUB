@@ -1,5 +1,5 @@
-﻿# Use Node.js LTS version
-FROM node:18-alpine
+﻿# Use Node.js LTS version (Node 20+ required by @google/genai)
+FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Copy application files
 COPY . .
@@ -21,4 +21,5 @@ RUN mkdir -p uploads && \
 EXPOSE 5000
 
 # Start the application
-CMD ["npm", "start"]
+ENV NODE_ENV=production
+CMD ["node", "server.js"]

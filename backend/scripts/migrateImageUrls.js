@@ -3,8 +3,6 @@
  *
  * Usage:
  *   PUBLIC_BASE_URL=https://<your-render-service>.onrender.com MONGO_URI=... node scripts/migrateImageUrls.js
- * or:
- *   PUBLIC_BASE_URL=... MONGO_URI=... npm run migrate:image-urls
  */
 
 const dotenv = require('dotenv');

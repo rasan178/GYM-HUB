@@ -3,12 +3,18 @@ const User = require('../models/User');
 const Booking = require('../models/Booking');
 const Membership = require('../models/Membership');
 const Testimonial = require('../models/Testimonial');
+const { makeUploadsUrl, normalizePublicUrl } = require('../utils/publicUrl');
 
 // Get all users (admin)
 exports.getUsers = async (req, res) => {
   try {
     const users = await User.find({});
-    res.json(users);
+    const data = users.map((u) => {
+      const obj = u.toObject();
+      obj.profileImageURL = normalizePublicUrl(obj.profileImageURL, req);
+      return obj;
+    });
+    res.json(data);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -116,8 +122,7 @@ exports.updateProfile = async (req, res) => {
     if (req.body.password) user.password = req.body.password;
 
     if (req.file) {
-      const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
-      user.profileImageURL = `${BASE_URL}/uploads/users/profile/${req.file.filename}`;
+      user.profileImageURL = makeUploadsUrl(req, `/uploads/users/profile/${req.file.filename}`);
     }
 
     await user.save();
@@ -130,7 +135,7 @@ exports.updateProfile = async (req, res) => {
         email: user.email,
         phoneNumber: user.phoneNumber,
         role: user.role,
-        profileImageURL: user.profileImageURL,
+        profileImageURL: normalizePublicUrl(user.profileImageURL, req),
         status: user.status,
         createdDate: user.createdDate,
         updatedDate: user.updatedDate
